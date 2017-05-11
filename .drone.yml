@@ -40,17 +40,6 @@ pipeline:
     token: 308131828:AAFJg0FiiAGRNGKiJ_zye5tYOgkOxyDq8-8
     to: [2498943, 264704572]
 
-  # notify:
-  #   image: drillster/drone-email
-  #   host: smtp.yandex.ru
-  #   username: git@itcloud.pro
-  #   password: cisgWDuGC2ARgfurNz7Z
-  #   from: git@itcloud.pro
-  #   recipients: [ dkononov@itcloud.pro ]
-  #   recipients_only: true
-  #   when:
-  #     status: [ failed ]
-
 # services:
 #   sas-mongo-dev:
 #     image: mongo
