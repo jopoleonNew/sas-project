@@ -31,17 +31,16 @@ pipeline:
       - docker pull registry.itcloud.pro/sas-project/sas:latest
       - sudo /bin/systemctl restart compose@sas-dev.service
   
-  notify:
-    telegram:
-      image: appleboy/drone-telegram
-      token: 308131828:AAFJg0FiiAGRNGKiJ_zye5tYOgkOxyDq8-8
-      to: 2498943
-      message: |
-        {{ #success build.status }}
-            build {{ repo.name }} by {{ build.author }} succeeded.
-        {{ else }}
-          build {{ repo.name }} by {{ build.author }} failed.
-        {{ /success }}
+  telegram:
+    image: appleboy/drone-telegram
+    token: 308131828:AAFJg0FiiAGRNGKiJ_zye5tYOgkOxyDq8-8
+    to: 2498943
+    message: |
+      {{ #success build.status }}
+          build {{ repo.name }} by {{ build.author }} succeeded.
+      {{ else }}
+        build {{ repo.name }} by {{ build.author }} failed.
+      {{ /success }}
 
   # notify:
   #   image: drillster/drone-email
