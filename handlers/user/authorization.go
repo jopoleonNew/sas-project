@@ -9,9 +9,6 @@ import (
 	"net/http"
 )
 
-func IsUserLoggedInSession() bool {
-	return true
-}
 
 func LoginSubmitHandler(w http.ResponseWriter, r *http.Request) {
 	session, err := store.Get(r, "sessionSSA")
@@ -87,11 +84,16 @@ func LogoutSubmitHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if exist && session.Values["loggedin"].(string) == "true" {
+		session.Options.MaxAge = -1
 		session.Values["username"] = ""
 		session.Values["password"] = ""
 		session.Values["loggedin"] = "false"
 
 	}
+	//var options sessions.Options
+	//options.MaxAge = -1
+	//session.
+	session.Options.MaxAge = -1
 	session.Save(r, w)
 	http.Redirect(w, r, "/", 302)
 	return
