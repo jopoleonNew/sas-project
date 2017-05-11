@@ -9,7 +9,6 @@ import (
 	"net/http"
 )
 
-
 func LoginSubmitHandler(w http.ResponseWriter, r *http.Request) {
 	session, err := store.Get(r, "sessionSSA")
 	if err != nil {
