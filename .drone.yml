@@ -46,4 +46,4 @@ pipeline:
 #   sas-mongo-dev:
 #     image: mongo
 
-branches: refactoring
+branches: master
