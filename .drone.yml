@@ -19,7 +19,6 @@ pipeline:
     tags: latest
     when:
       status: [ success ]
-      event: [ deploy ]
 
   deploy:
     image: appleboy/drone-ssh
@@ -33,7 +32,6 @@ pipeline:
       - sudo /bin/systemctl restart compose@sas-dev.service
     when:
       status: [ success ]
-      event: [ deploy ]
   
   telegram:
     image: appleboy/drone-telegram
