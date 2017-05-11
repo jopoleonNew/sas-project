@@ -30,17 +30,29 @@ pipeline:
       - docker login -u docker -p 88C7W5AX6Yd34yzFzMFD https://registry.itcloud.pro
       - docker pull registry.itcloud.pro/sas-project/sas:latest
       - sudo /bin/systemctl restart compose@sas-dev.service
-
+  
   notify:
-    image: drillster/drone-email
-    host: smtp.yandex.ru
-    username: git@itcloud.pro
-    password: cisgWDuGC2ARgfurNz7Z
-    from: git@itcloud.pro
-    recipients: [ dkononov@itcloud.pro ]
-    recipients_only: true
-    when:
-      status: [ success ]
+    telegram:
+      image: appleboy/drone-telegram
+      token: 308131828:AAFJg0FiiAGRNGKiJ_zye5tYOgkOxyDq8-8
+      to: 2498943
+      message: |
+      {{ #success build.status }}
+          build {{ repo.name }} by {{ build.author }} succeeded.
+      {{ else }}
+        build {{ repo.name }} by {{ build.author }} failed.
+      {{ /success }}
+
+  # notify:
+  #   image: drillster/drone-email
+  #   host: smtp.yandex.ru
+  #   username: git@itcloud.pro
+  #   password: cisgWDuGC2ARgfurNz7Z
+  #   from: git@itcloud.pro
+  #   recipients: [ dkononov@itcloud.pro ]
+  #   recipients_only: true
+  #   when:
+  #     status: [ failed ]
 
 # services:
 #   sas-mongo-dev:
