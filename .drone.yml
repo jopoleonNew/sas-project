@@ -19,6 +19,7 @@ pipeline:
     tags: latest
     when:
       status: [ success ]
+      event: [ deploy ]
 
   deploy:
     image: appleboy/drone-ssh
@@ -30,11 +31,14 @@ pipeline:
       - docker login -u docker -p 88C7W5AX6Yd34yzFzMFD https://registry.itcloud.pro
       - docker pull registry.itcloud.pro/sas-project/sas:latest
       - sudo /bin/systemctl restart compose@sas-dev.service
+    when:
+      status: [ success ]
+      event: [ deploy ]
   
   telegram:
     image: appleboy/drone-telegram
     token: 308131828:AAFJg0FiiAGRNGKiJ_zye5tYOgkOxyDq8-8
-    to: 2498943
+    to: [2498943, 264704572]
 
   # notify:
   #   image: drillster/drone-email
