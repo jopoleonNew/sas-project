@@ -68,46 +68,46 @@ func GetYandexAccessToken(w http.ResponseWriter, r *http.Request) {
 		log.Println("SubmitConfirmationYandexCode GetAccountInfo: ", accinfo)
 		log.Println("SubmitConfirmationYandexCode account.GetAgencyLogins(): ", agencystruct)
 
-		//TODO: add concurrency to getting campaign list for every agency account login
+		//DONETODO: add concurrency to getting campaign list for every agency account login
 		wg := sync.WaitGroup{}
 		wg.Add(len(agencystruct))
 		for _, agClient := range agencystruct {
+			go func() {
+				agencyacc := model.NewAccount()
+				agencyacc.Accountlogin = agClient.Login
+				agencyacc.Username = username
+				agencyacc.Email = agClient.Representatives[0].Email
+				agencyacc.YandexRole = agClient.Representatives[0].Role
+				agencyacc.Source = "Яндекс Директ"
+				agencyacc.OauthToken = oauthresp.AccessToken
+				//var campjson model.CampaingsGetResult
+				account := yad.NewAccount()
+				account.Login = agClient.Login
+				account.OAuthToken = accinfo.OauthToken
+				yadcamps, err := account.GetCampaignList()
+				if err != nil {
+					log.Fatal("SubmitConfirmationYandexCode GetAgencyLogins GetCampaignList: ", err)
+					//w.Write([]byte("SubmitConfirmationYandexCode GetCampaignsListYandex:" + err.Error()))
+					return
+				}
+				acccamps := make([]model.Campaign, len(yadcamps))
+				for i, camp := range yadcamps {
+					acccamps[i].ID = camp.ID
+					acccamps[i].Status = camp.Status
+					acccamps[i].Name = camp.Name
+				}
+				agencyacc.CampaignsInfo = acccamps
 
-			agencyacc := model.NewAccount()
-			agencyacc.Accountlogin = agClient.Login
-			agencyacc.Username = username
-			agencyacc.Email = agClient.Representatives[0].Email
-			agencyacc.YandexRole = agClient.Representatives[0].Role
-			agencyacc.Source = "Яндекс Директ"
-			agencyacc.OauthToken = oauthresp.AccessToken
-			//var campjson model.CampaingsGetResult
-			account := yad.NewAccount()
-			account.Login = agClient.Login
-			account.OAuthToken = accinfo.OauthToken
-			yadcamps, err := account.GetCampaignList()
-			if err != nil {
-				log.Fatal("SubmitConfirmationYandexCode GetAgencyLogins GetCampaignList: ", err)
-				//w.Write([]byte("SubmitConfirmationYandexCode GetCampaignsListYandex:" + err.Error()))
-				return
-			}
-			acccamps := make([]model.Campaign, len(yadcamps))
-			for i, camp := range yadcamps {
-				acccamps[i].ID = camp.ID
-				acccamps[i].Status = camp.Status
-				acccamps[i].Name = camp.Name
-			}
-			agencyacc.CampaignsInfo = acccamps
-
-			err = agencyacc.AdvanceUpdate()
-			if err != nil {
-				log.Fatal("SubmitConfirmationYandexCode agencyacc.Update() error: ", err)
-				return
-			}
-			wg.Done()
-			//log.Printf("\n %+v", campjson)
+				err = agencyacc.AdvanceUpdate()
+				if err != nil {
+					log.Fatal("SubmitConfirmationYandexCode agencyacc.Update() error: ", err)
+					return
+				}
+				wg.Done()
+			}()
 		}
 		wg.Wait()
-		//log.Printf("\n %+v", campjson)
+		return
 	}
 	yadacc := yad.NewAccount()
 	yadacc.Login = accountlogin
