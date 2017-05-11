@@ -1,0 +1,1 @@
+[![Build Status](https://drone.itcloud.pro/api/badges/SAS-project/sas/status.svg)](https://drone.itcloud.pro/SAS-project/sas)

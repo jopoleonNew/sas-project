@@ -1,0 +1,31 @@
+memo = "ce70cea0a74b36e6da486f3e58cd073fddc8670de6723b03eb778cd13b6a8154"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/gorilla/context"
+  packages = ["."]
+  revision = "08b5f424b9271eedf6f9f0ce86cb9396ed337a42"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/gorilla/securecookie"
+  packages = ["."]
+  revision = "e59506cc896acb7f7bf732d4fdf5e25f7ccd8983"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/gorilla/sessions"
+  packages = ["."]
+  revision = "8b6b4cd75f07f7ee036eb37b8127bd40ab1efc49"
+
+[[projects]]
+  branch = "master"
+  name = "golang.org/x/crypto"
+  packages = ["bcrypt","blowfish"]
+  revision = "122d919ec1efcfb58483215da23f815853e24b81"
+
+[[projects]]
+  branch = "v2"
+  name = "gopkg.in/mgo.v2"
+  packages = [".","bson","internal/json","internal/sasl","internal/scram"]
+  revision = "3f83fa5005286a7fe593b055f0d7771a7dce4655"

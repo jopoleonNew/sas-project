@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<script src="../js/jquery-3.1.1.min.js"></script>
+	<script src="../js/jquery.dynatable.js"></script>
+	<script src="../js/jquery.jsontotable.min.js"></script>
+	<!--	<script src="../js/jquery.dynatable.css"></script>-->
+
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+</head>
+
+<body>
+	<style type="text/css">
+		* {
+			font-size: 100%;
+			font-family: "Roboto Condensed";
+		}
+		
+		th,
+		tr,
+		td {
+			border-radius: 2px;
+			border: solid 1px;
+			text-align: center;
+			padding: 2px;
+		}
+
+	</style>
+	<div id="jsontotable" class="jsontotable"></div>
+
+	<h2>Make a table based on JSON data.</h2>
+
+	<p id="demo"></p>
+	<button id="somebutton">Use it</button>
+	<div id="yandextabel"></div>
+-
+
+	<!--
+
+	<table id="my-final-table">
+		<thead>
+			<th>SessionDepthSearch</th>
+			<th>SumSearch</th>
+			<th>ClicksContext</th>
+			<th>SessionDepthContext</th>
+			<th>StatDate</th>
+			<th>GoalCostSearch</th>
+			<th>GoalConversionContext</th>
+			<th>ShowsContext</th>
+			<th>SumContext</th>
+			<th>GoalConversionSearch</th>
+			<th>ShowsSearch</th>
+			<th>CampaignID</th>
+			<th>GoalCostContext</th>
+			<th>ClicksSearch</th>
+		</thead>
+		<tbody>
+		</tbody>
+	</table>
+-->
+
+
+	<!--
+
+"<td>Количество кликов в Рекламной сети Яндекса.: " + objsd.ClicksContext + "</td>" +
+				//							"<td>Количество кликов на поиске.: " + objsd.ClicksSearch + "</td>" +
+				//							"<td>Глубина просмотра сайта при переходе из Рекламной сети Яндекса.: " + objsd.SessionDepthContext + "</td>" +
+				//							"<td>Глубина просмотра сайта при переходе с поиска.: " + objsd.SessionDepthSearch + "</td>" +
+				//							"<td>Количество показов в Рекламной сети Яндекса.: " + objsd.ShowsContext + "</td>" +
+				//							"<td>Количество показов на поиске.: " + objsd.ShowsSearch + "</td>" +
+				//							"<td>Дата, за которую приведена статистика.: " + objsd.StatDate + "</td>" +
+				//							"<td>Стоимость кликов в Рекламной сети Яндекса.: " + (objsd.SumContext / 1000000) + "</td>" +
+				//							"<td>Доля целевых визитов в общем числе визитов при переходе с поиска, в процентах..: " + objsd.GoalConversionSearch + "</td>" +
+				//							"<td>Доля целевых визитов в общем числе визитов при переходе из Рекламной сети Яндекса, в процентах: " + objsd.GoalConversionContext + "</p>" +
+				//							"<td>Цена достижения <a target='_blank' href='https://yandex.ru/support/metrika/general/goals.xml'>цели</a> Яндекс.Метрики при переходе с поиска.: " + objsd.GoalCostSearch + "</td>" +
+				//							"<td>Цена достижения <a target='_blank' href='https://yandex.ru/support/metrika/general/goals.xml'>цели</a> Яндекс.Метрики при переходе из Рекламной сети Яндекса.: " + objsd.GoalCostContext + "</td>"+"</tr>")
+-->
+
+	<script>
+		var data = [{
+				"Data": [{
+					"SessionDepthSearch": "2.94",
+					"SumSearch": 256850000,
+					"ClicksContext": 2807,
+					"SessionDepthContext": "2.89",
+					"StatDate": "2017-03-07",
+					"GoalCostSearch": 0,
+					"GoalConversionContext": "0.00",
+					"ShowsContext": 28569,
+					"SumContext": 68775000,
+					"GoalConversionSearch": "0.00",
+					"ShowsSearch": 112245,
+					"CampaignID": 189887,
+					"GoalCostContext": 0,
+					"ClicksSearch": 10528
+				}]
+			},
+			{
+				"Data": [{
+					"SessionDepthSearch": "3.01",
+					"SumSearch": 254695000,
+					"ClicksContext": 2327,
+					"SessionDepthContext": "2.93",
+					"StatDate": "2017-03-20",
+					"GoalCostSearch": 0,
+					"GoalConversionContext": "0.00",
+					"ShowsContext": 26424,
+					"SumContext": 58980000,
+					"GoalConversionSearch": "0.00",
+					"ShowsSearch": 113338,
+					"CampaignID": 191389,
+					"GoalCostContext": 0,
+					"ClicksSearch": 10857
+				}]
+			}
+		]
+		var htmltab = "<table id='yandextableheaders' style='border-radius: 2px; text-align: center; padding: 2px; border: solid 1px'><tr>" +
+			"<th onclick='sortTable(0)'> Campaign ID </th>" +
+			"<th onclick='sortTable(1)'> Clicks Context </th>" +
+			"<th onclick='sortTable(2)'> Clicks Search </th>" +
+			"<th onclick='sortTable(3)'> Sum Search </th>" +
+			"<th onclick='sortTable(4)'> Session Depth Context </th>" +
+			"<th onclick='sortTable(5)'>Session Depth Search</th>" +
+			"<th onclick='sortTable(6)'>Shows Context</th>" +
+			"<th onclick='sortTable(7)'>Shows Search</th>" +
+			"<th onclick='sortTable(8)'>Stat Date</th>" +
+			"<th onclick='sortTable(9)'>Sum Context</th>" +
+			"<th onclick='sortTable(10)'>Goal Conversion Search</th>" +
+			"<th onclick='sortTable(11)'>Goal Conversion Context</th>" +
+			"<th onclick='sortTable(12)'>Goal Cost Search</th>" +
+			"<th onclick='sortTable(13)'>Goal Cost Context</th>" +
+			"</tr></table>"
+		$("#yandextabel").append(htmltab)
+
+		for (objsd1 in data) {
+			var objsd2 = data[objsd1]
+			var objsd = objsd2.Data[0]
+			//var objsd = objsd3.Object
+			console.log("Hello", objsd1)
+			//var objsd = data.Object
+			console.log("The object: ", objsd)
+			console.log(typeof objsd)
+			console.log(data[0].Data[0])
+			$("#yandextableheaders").append("<tr>" +
+				"<td>" + objsd.CampaignID + "</td>" +
+				"<td>" + objsd.ClicksContext + "</td>" +
+				"<td>" + objsd.ClicksSearch + "</td>" +
+				"<td>" + objsd.SumSearch + "</td>" +
+				"<td>" + objsd.SessionDepthContext + "</td>" +
+				"<td>" + objsd.SessionDepthSearch + "</td>" +
+				"<td>" + objsd.ShowsContext + "</td>" +
+				"<td>" + objsd.ShowsSearch + "</td>" +
+				"<td>" + objsd.StatDate + "</td>" +
+				"<td>" + (objsd.SumContext / 1000000) + "</td>" +
+				"<td>" + objsd.GoalConversionSearch + "</td>" +
+				"<td>" + objsd.GoalConversionContext + "</p>" +
+				"<td>" + objsd.GoalCostSearch + "</td>" +
+				"<td>" + objsd.GoalCostContext + "</td>" + "</tr>")
+		}
+
+		function sortTable(n) {
+			var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+			table = document.getElementById("yandextableheaders");
+			switching = true;
+			//Set the sorting direction to ascending:
+			dir = "asc";
+			/*Make a loop that will continue until
+			no switching has been done:*/
+			while (switching) {
+				//start by saying: no switching is done:
+				switching = false;
+				rows = table.getElementsByTagName("TR");
+				/*Loop through all table rows (except the
+				first, which contains table headers):*/
+				for (i = 1; i < (rows.length - 1); i++) {
+					//start by saying there should be no switching:
+					shouldSwitch = false;
+					/*Get the two elements you want to compare,
+					one from current row and one from the next:*/
+					x = rows[i].getElementsByTagName("TD")[n];
+					y = rows[i + 1].getElementsByTagName("TD")[n];
+					/*check if the two rows should switch place,
+					based on the direction, asc or desc:*/
+					if (dir == "asc") {
+						if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+							//if so, mark as a switch and break the loop:
+							shouldSwitch = true;
+							break;
+						}
+					} else if (dir == "desc") {
+						if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+							//if so, mark as a switch and break the loop:
+							shouldSwitch = true;
+							break;
+						}
+					}
+				}
+				if (shouldSwitch) {
+					/*If a switch has been marked, make the switch
+					and mark that a switch has been done:*/
+					rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+					switching = true;
+					//Each time a switch is done, increase this count by 1:
+					switchcount++;
+				} else {
+					/*If no switching has been done AND the direction is "asc",
+					set the direction to "desc" and run the while loop again.*/
+					if (switchcount == 0 && dir == "asc") {
+						dir = "desc";
+						switching = true;
+					}
+				}
+			}
+		}
+
+		//$.jsontotable(objsd, { id: '#jsontotable', header: false });
+		//var myRecords = JSON.parse(data);
+		//for (objsd1 in data) {
+		//				var objsd2 = data[objsd1]
+		//				var objsd = objsd2.Data[0]
+		//				//var objsd = objsd3.Object
+		//
+		//				console.log("Hello")
+		//				//var objsd = data.Object
+		//				console.log("The object: ", objsd)
+		//				console.log(typeof objsd)
+		//$('#my-final-table').dynatable({
+		//	  dataset: {
+		//    records: objsd
+		// 	}
+		//})
+		//}
+
+
+		//		$(document).ready(function() {
+		//			$("#somebutton").onclick = function() {
+		//			var data = [{
+		//					"Data": [{
+		//						"SessionDepthSearch": "2.94",
+		//						"SumSearch": 256850000,
+		//						"ClicksContext": 2807,
+		//						"SessionDepthContext": "2.89",
+		//						"StatDate": "2017-03-07",
+		//						"GoalCostSearch": 0,
+		//						"GoalConversionContext": "0.00",
+		//						"ShowsContext": 28569,
+		//						"SumContext": 68775000,
+		//						"GoalConversionSearch": "0.00",
+		//						"ShowsSearch": 112245,
+		//						"CampaignID": 189887,
+		//						"GoalCostContext": 0,
+		//						"ClicksSearch": 10528
+		//					}]
+		//				},
+		//				{
+		//					"Data": [{
+		//						"SessionDepthSearch": "3.01",
+		//						"SumSearch": 254695000,
+		//						"ClicksContext": 2327,
+		//						"SessionDepthContext": "2.93",
+		//						"StatDate": "2017-03-20",
+		//						"GoalCostSearch": 0,
+		//						"GoalConversionContext": "0.00",
+		//						"ShowsContext": 26424,
+		//						"SumContext": 58980000,
+		//						"GoalConversionSearch": "0.00",
+		//						"ShowsSearch": 113338,
+		//						"CampaignID": 191389,
+		//						"GoalCostContext": 0,
+		//						"ClicksSearch": 10857
+		//					}]
+		//				}
+		//			]
+		//			console.log(data)
+		//			var obj, dbParam, xmlhttp, myObj, x, txt = "";
+		//			for (objsd1 in data) {
+		//				var objsd2 = data[objsd1]
+		//				var objsd = objsd2.Data[0]
+		//				//var objsd = objsd3.Object
+		//
+		//				console.log("Hello")
+		//				//var objsd = data.Object
+		//				console.log("The object: ", objsd)
+		//				console.log(typeof objsd)
+		//				
+		//									$("#yandexstats").append("<tr>"+
+		//											"<td>Количество кликов в Рекламной сети Яндекса.: " + objsd.ClicksContext + "</td>" +
+		//											"<td>Количество кликов на поиске.: " + objsd.ClicksSearch + "</td>" +
+		//											"<td>Глубина просмотра сайта при переходе из Рекламной сети Яндекса.: " + objsd.SessionDepthContext + "</td>" +
+		//											"<td>Глубина просмотра сайта при переходе с поиска.: " + objsd.SessionDepthSearch + "</td>" +
+		//											"<td>Количество показов в Рекламной сети Яндекса.: " + objsd.ShowsContext + "</td>" +
+		//											"<td>Количество показов на поиске.: " + objsd.ShowsSearch + "</td>" +
+		//											"<td>Дата, за которую приведена статистика.: " + objsd.StatDate + "</td>" +
+		//											"<td>Стоимость кликов в Рекламной сети Яндекса.: " + (objsd.SumContext / 1000000) + "</td>" +
+		//											"<td>Доля целевых визитов в общем числе визитов при переходе с поиска, в процентах..: " + objsd.GoalConversionSearch + "</td>" +
+		//											"<td>Доля целевых визитов в общем числе визитов при переходе из Рекламной сети Яндекса, в процентах: " + objsd.GoalConversionContext + "</p>" +
+		//											"<td>Цена достижения <a target='_blank' href='https://yandex.ru/support/metrika/general/goals.xml'>цели</a> Яндекс.Метрики при переходе с поиска.: " + objsd.GoalCostSearch + "</td>" +
+		//											"<td>Цена достижения <a target='_blank' href='https://yandex.ru/support/metrika/general/goals.xml'>цели</a> Яндекс.Метрики при переходе из Рекламной сети Яндекса.: " + objsd.GoalCostContext + "</td>"+"</tr>")
+		//			}
+		//
+		//			
+		//
+		//				myObj = JSON.parse(data.Data);
+		//				txt += "<table border='1'>"
+		//				for (x in myObj) {
+		//					txt += "<tr><td>" + myObj[x].name + "</td></tr>";
+		//				}
+		//				txt += "</table>"
+		//				document.getElementById("demo").innerHTML = txt;
+		//
+		//			};
+		//		});
+		//					for (objsd1 in data) {
+		//						var objsd2 = data[objsd1]
+		//						var objsd = objsd2.Data[0]
+		//						//var objsd = objsd3.Object
+		//
+		//						console.log("Hello")
+		//						//var objsd = data.Object
+		//						console.log("The object: ", objsd)
+		//						console.log(typeof objsd)
+		//						var tbl1 = $("<table><tr class='t1'><th>Название</th><th>Высота(см)</th></tr>").attr("id", "all_bridges");
+		//						//$("#table1").append(tbl1);
+		//						$(tbl1).hide().appendTo("#table1")
+		//						for (var i = 0; i < objsd.length; i++) {
+		//							var tr = "<tr class='t1'>";
+		//							var td1 = "<td class='text-left1'>" + objsd.ClicksContext + "</td>";
+		//							var td2 = "<td class='text-left1'>" + objsd.ClicksSearch + "</td></tr>";
+		//
+		//							$(tr + td1 + td2).appendTo("#all_bridges")
+		//							//$("#all_bridges").append(tr + td1 + td2).fadeIn();
+		//						};
+		//						$("#" + appendid).append("<tr>"+
+		//							"<td>Количество кликов в Рекламной сети Яндекса.: " + objsd.ClicksContext + "</td>" +
+		//							"<td>Количество кликов на поиске.: " + objsd.ClicksSearch + "</td>" +
+		//							"<td>Глубина просмотра сайта при переходе из Рекламной сети Яндекса.: " + objsd.SessionDepthContext + "</td>" +
+		//							"<td>Глубина просмотра сайта при переходе с поиска.: " + objsd.SessionDepthSearch + "</td>" +
+		//							"<td>Количество показов в Рекламной сети Яндекса.: " + objsd.ShowsContext + "</td>" +
+		//							"<td>Количество показов на поиске.: " + objsd.ShowsSearch + "</td>" +
+		//							"<td>Дата, за которую приведена статистика.: " + objsd.StatDate + "</td>" +
+		//							"<td>Стоимость кликов в Рекламной сети Яндекса.: " + (objsd.SumContext / 1000000) + "</td>" +
+		//							"<td>Доля целевых визитов в общем числе визитов при переходе с поиска, в процентах..: " + objsd.GoalConversionSearch + "</td>" +
+		//							"<td>Доля целевых визитов в общем числе визитов при переходе из Рекламной сети Яндекса, в процентах: " + objsd.GoalConversionContext + "</p>" +
+		//							"<td>Цена достижения <a target='_blank' href='https://yandex.ru/support/metrika/general/goals.xml'>цели</a> Яндекс.Метрики при переходе с поиска.: " + objsd.GoalCostSearch + "</td>" +
+		//							"<td>Цена достижения <a target='_blank' href='https://yandex.ru/support/metrika/general/goals.xml'>цели</a> Яндекс.Метрики при переходе из Рекламной сети Яндекса.: " + objsd.GoalCostContext + "</td>"+"</tr>")
+		//					}
+
+	</script>
+	<!--
+
+"<tr>"+
+											"<td>Количество кликов в Рекламной сети Яндекса.: " + objsd.ClicksContext + "</td>" +
+											"<td>Количество кликов на поиске.: " + objsd.ClicksSearch + "</td>" +
+											"<td>Глубина просмотра сайта при переходе из Рекламной сети Яндекса.: " + objsd.SessionDepthContext + "</td>" +
+											"<td>Глубина просмотра сайта при переходе с поиска.: " + objsd.SessionDepthSearch + "</td>" +
+											"<td>Количество показов в Рекламной сети Яндекса.: " + objsd.ShowsContext + "</td>" +
+											"<td>Количество показов на поиске.: " + objsd.ShowsSearch + "</td>" +
+											"<td>Дата, за которую приведена статистика.: " + objsd.StatDate + "</td>" +
+											"<td>Стоимость кликов в Рекламной сети Яндекса.: " + (objsd.SumContext / 1000000) + "</td>" +
+											"<td>Доля целевых визитов в общем числе визитов при переходе с поиска, в процентах..: " + objsd.GoalConversionSearch + "</td>" +
+											"<td>Доля целевых визитов в общем числе визитов при переходе из Рекламной сети Яндекса, в процентах: " + objsd.GoalConversionContext + "</p>" +
+											"<td>Цена достижения <a target='_blank' href='https://yandex.ru/support/metrika/general/goals.xml'>цели</a> Яндекс.Метрики при переходе с поиска.: " + objsd.GoalCostSearch + "</td>" +
+											"<td>Цена достижения <a target='_blank' href='https://yandex.ru/support/metrika/general/goals.xml'>цели</a> Яндекс.Метрики при переходе из Рекламной сети Яндекса.: " + objsd.GoalCostContext + "</td>"+"</tr>"
+-->
+
+</body>
+
+</html>

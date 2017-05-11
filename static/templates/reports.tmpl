@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	
+<link rel="application/octet-stream" href="../static/fonts/open-iconic/open-iconic.ttf">
+<link rel="application/octet-stream" href="../static/fonts/open-iconic/open-iconic.woff">
+<link rel="application/octet-stream" href="../static/fonts/open-iconic/open-iconic.eot">
+<link rel="image/svg+xml" href="../static/fonts/open-iconic/open-iconic.svg">
+<link rel="application/octet-stream" href="../static/fonts/open-iconic/open-iconic.otf">
+	<script src="../static/js/jquery-3.1.1.min.js"></script>
+	<!-- <script src="../static/js/accounts.js"></script> -->
+	<script src="../static/js/accesstokenauto.js"></script>
+	<script src="../static/js/report.js"></script>
+	<script src="../static/js/refreshcampaings.js"></script>
+		
+<script src="../static/js/moment.js"></script>
+<script src="../static/js/pikaday.js"></script>
+<script src="../static/js/libs/kingtable.js"></script>
+
+<script src="../static/js/jquery.tablesorter.js"></script>
+
+
+<link rel="stylesheet" href="../static/css/site.css">
+<link rel="stylesheet" href="../static/css/pikaday.css">
+<link rel="stylesheet" href="../static/css/kingtable.css">
+<link href="../static/css/open-iconic.css" rel="stylesheet">
+
+
+
+	<link href="https://fonts.googleapis.com/css?family=Roboto+Condensed" rel="stylesheet">
+	<link rel="stylesheet" href="https://github.com/iconic/open-iconic/blob/master/font/fonts/open-iconic.woff">
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+	
+</head>
+
+<body>
+	<style type="text/css">
+		* {
+			font-size: 100%;
+			font-family: "Roboto Condensed";
+		}
+		s
+		th,
+		tr,
+		td {
+			border-radius: 2px;
+			border: solid 1px;
+			text-align: center;
+			padding: 2px;
+		}
+
+	</style>
+	{{ template "header.tmpl" . }}
+	<div id="currentusername" class="{{ .CurrentUser }}" style="margin: 20px; padding-top: 50px;  text-align: center;">
+
+		<button style="float: left" type="button" class="btn btn-default" data-toggle="modal" data-target="#helpModal">Справка</button>
+		<button user="{{ .CurrentUser }}" result="resultstat" type="button" name="" id="yandex" class="btn btn-lg btn-success refreshstatistic">Обновляем статистику по пользователю {{ .CurrentUser }}</button></div>
+		<div id="dateerror"></div>
+	<div>
+		Start date: <input type="text" id="cal_1">
+		End date: <input type="text" id="cal_2">
+
+<script>
+    var picker = new Pikaday({
+        field: document.getElementById("cal_1"),
+        format: 'YYYY-MM-DD',
+        onSelect: function() {
+            console.log(this.getMoment().format('YYYY-MM-DD'));
+        }
+    });
+	 var picker2 = new Pikaday({
+        field: document.getElementById("cal_2"),
+        format: 'YYYY-MM-DD',
+        onSelect: function() {
+            console.log(this.getMoment().format('YYYY-MM-DD'));
+        }
+    });
+</script>
+	</div>
+	
+	<div class="ajaxloader" style="margin: 0 auto; padding-top: 5px;  text-align: center; display:none">
+	<img id='imgcode' src='../static/img/loader.gif'/><p>Загружаем</p>
+	</div>
+	
+	</div>
+	<div id="table1" style="margin: 0 auto; padding-top: 5px;  text-align: center;">
+		<div id="yandextable" style="margin: 5px; padding-top: 5px;  text-align: center;">
+			
+
+		</div>
+	</div>
+	<div id="pager" class="pager"></div>
+	
+	<div class="modal fade" id="helpModal" role="dialog">
+		<div>
+
+			<table style="text-align: center; background-color: white;margin: 0 auto;padding: 10px; width: 90%; font-size: 20px">
+
+				<tbody>
+					<tr>
+						<td width="4cm">
+							<strong>
+                  <sup>Параметр</sup>
+                </strong>
+						</td>
+						<td width="">
+							<strong>
+                  <sup>Описание</sup>
+                </strong>
+							<button style="float: right; " type="button" class="btn btn-info btn-xs" data-dismiss="modal"><span class="glyphicon glyphicon-remove">Закрыть</span></button>
+						</td>
+					</tr>
+
+				</tbody>
+				<tbody>
+					<tr>
+						<td width="4cm">
+							<a id="StatItem-CampaignID"></a>
+							<span class="tag">CampaignID</span>
+						</td>
+						<td width="" id="dt2r3">
+							<a id="dt2r3"></a>Идентификатор кампании.</td>
+					</tr>
+					<tr>
+						<td width="4cm">
+							<a id="StatItem-StatDate"></a>
+							<span class="tag">StatDate</span>
+						</td>
+						<td width="" id="dt2r4">
+							<a id="dt2r4"></a>Дата, за которую приведена статистика.</td>
+					</tr>
+					<tr>
+						<td width="4cm">
+							<a id="StatItem-SumSearch"></a>
+							<span class="tag">SumSearch</span>
+						</td>
+						<td width="" id="dt2r5">
+							<a id="dt2r5"></a>Стоимость кликов на поиске.</td>
+					</tr>
+					<tr>
+						<td width="4cm">
+							<a id="StatItem-SumContext"></a>
+							<span class="tag">SumContext</span>
+						</td>
+						<td width="" id="dt2r6">
+							<a id="dt2r6"></a>Стоимость кликов в Рекламной сети Яндекса.</td>
+					</tr>
+					<tr>
+						<td width="4cm">
+							<a id="StatItem-ShowsSearch"></a>
+							<span class="tag">ShowsSearch</span>
+						</td>
+						<td width="" id="dt2r7">
+							<a id="dt2r7"></a>Количество показов на поиске.</td>
+					</tr>
+					<tr>
+						<td width="4cm">
+							<a id="StatItem-ShowsContext"></a>
+							<span class="tag">ShowsContext</span>
+						</td>
+						<td width="" id="dt2r8">
+							<a id="dt2r8"></a>Количество показов в Рекламной сети Яндекса.</td>
+					</tr>
+					<tr>
+						<td width="4cm">
+							<a id="StatItem-ClicksSearch"></a>
+							<span class="tag">ClicksSearch</span>
+						</td>
+						<td width="" id="dt2r9">
+							<a id="dt2r9"></a>Количество кликов на поиске.</td>
+					</tr>
+					<tr>
+						<td width="4cm">
+							<a id="StatItem-ClicksContext"></a>
+							<span class="tag">ClicksContext</span>
+						</td>
+						<td width="" id="dt2r10">
+							<a id="dt2r10"></a>Количество кликов в Рекламной сети Яндекса.</td>
+					</tr>
+					<tr>
+						<td width="4cm">
+							<a id="StatItem-SessionDepthSearch"></a>
+							<span class="tag">SessionDepthSearch</span>
+						</td>
+						<td width="" id="dt2r11">
+							<a id="dt2r11"></a>
+							<p>Глубина просмотра сайта при переходе с поиска.</p>
+							<p>Берется по данным Яндекс.Метрики и если на поиске применяется автоматическая стратегия CPAOptimizer.</p>
+						</td>
+					</tr>
+					<tr>
+						<td width="4cm">
+							<a id="StatItem-SessionDepthContext"></a>
+							<span class="tag">SessionDepthContext</span>
+						</td>
+						<td width="" id="dt2r12">
+							<a id="dt2r12"></a>
+							<p>Глубина просмотра сайта при переходе из Рекламной сети Яндекса.</p>
+							<p>Берется по данным Яндекс.Метрики и если в Рекламной сети применяется автоматическая стратегия CPAOptimizer.</p>
+						</td>
+					</tr>
+					<tr>
+						<td width="4cm">
+							<a id="StatItem-GoalConversionSearch"></a>
+							<span class="tag">GoalConversionSearch</span>
+						</td>
+						<td width="" id="dt2r13">
+							<a id="dt2r13"></a>
+							<p>Доля целевых визитов в общем числе визитов при переходе с поиска, в процентах.</p>
+							<p>Берется по данным Яндекс.Метрики и если на поиске применяется автоматическая стратегия CPAOptimizer.</p>
+						</td>
+					</tr>
+					<tr>
+						<td width="4cm">
+							<a id="StatItem-GoalConversionContext"></a>
+							<span class="tag">GoalConversionContext</span>
+						</td>
+						<td width="" id="dt2r14">
+							<a id="dt2r14"></a>
+							<p>Доля целевых визитов в общем числе визитов при переходе из Рекламной сети Яндекса, в процентах.</p>
+							<p>Берется по данным Яндекс.Метрики и если в Рекламной сети применяется автоматическая стратегия CPAOptimizer.</p>
+						</td>
+					</tr>
+					<tr>
+						<td width="4cm">
+							<a id="StatItem-GoalCostSearch"></a>
+							<span class="tag">GoalCostSearch</span>
+						</td>
+						<td width="" id="dt2r15">
+							<a id="dt2r15"></a>
+							<p>Цена достижения <a target="_blank" href="https://yandex.ru/support/metrika/general/goals.xml">цели</a> Яндекс.Метрики при переходе с поиска.</p>
+							<p>Берется по данным Яндекс.Метрики и если на поиске применяется автоматическая стратегия CPAOptimizer.</p>
+						</td>
+					</tr>
+					<tr>
+						<td width="4cm">
+							<a id="StatItem-GoalCostContext"></a>
+							<span class="tag">GoalCostContext</span>
+						</td>
+						<td width="" id="dt2r16">
+							<a id="dt2r16"></a>
+							<p>Цена достижения <a target="_blank" href="https://yandex.ru/support/metrika/general/goals.xml">цели</a> Яндекс.Метрики при переходе из Рекламной сети Яндекса.</p>
+							<p>Берется по данным Яндекс.Метрики и если в Рекламной сети применяется автоматическая стратегия CPAOptimizer.</p>
+						</td>
+					</tr>
+
+				</tbody>
+			</table>
+		</div>
+	</div>
+	
+	<script>
+		
+		function sortTable(n) {
+			var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+			table = document.getElementById("yandextableheaders");
+			switching = true;
+			//Set the sorting direction to ascending:
+			dir = "asc";
+			/*Make a loop that will continue until
+			no switching has been done:*/
+			while (switching) {
+				//start by saying: no switching is done:
+				switching = false;
+				rows = table.getElementsByTagName("TR");
+				/*Loop through all table rows (except the
+				first, which contains table headers):*/
+				for (i = 1; i < (rows.length - 1); i++) {
+					//start by saying there should be no switching:
+					shouldSwitch = false;
+					/*Get the two elements you want to compare,
+					one from current row and one from the next:*/
+					x = rows[i].getElementsByTagName("TD")[n];
+					y = rows[i + 1].getElementsByTagName("TD")[n];
+					/*check if the two rows should switch place,
+					based on the direction, asc or desc:*/
+					if (dir == "asc") {
+						if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+							//if so, mark as a switch and break the loop:
+							shouldSwitch = true;
+							break;
+						}
+					} else if (dir == "desc") {
+						if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+							//if so, mark as a switch and break the loop:
+							shouldSwitch = true;
+							break;
+						}
+					}
+				}
+				if (shouldSwitch) {
+					/*If a switch has been marked, make the switch
+					and mark that a switch has been done:*/
+					rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+					switching = true;
+					//Each time a switch is done, increase this count by 1:
+					switchcount++;
+				} else {
+					/*If no switching has been done AND the direction is "asc",
+					set the direction to "desc" and run the while loop again.*/
+					if (switchcount == 0 && dir == "asc") {
+						dir = "desc";
+						switching = true;
+					}
+				}
+			}
+		}
+
+	</script>
+</body>
+
+</html>

@@ -1,0 +1,9 @@
+{
+	"mongourl": "localhost",
+	"bdname": "test",
+	"yandexappid": "",
+	"yandexappsecret": "",
+	"yandexapiurl": "",
+	"sessionsecret": "secret",
+	"serverport": ""
+}

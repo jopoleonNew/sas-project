@@ -1,0 +1,167 @@
+<!doctype html>
+<html>
+
+<head>
+	<meta charset="utf-8" />
+	<script src="../static/jquery-3.1.1.min.js"></script>
+	<script src="../static/accounts.js">
+	</script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+</head>
+
+<body>
+
+	<div id="currentusername" class="{{ .CurrentUser }}"  style="margin: 50px; text-align: center;">
+		{{ if .CurrentUser }}
+		<div>
+			<p style="font-size:18px">Здравствуйте {{ .CurrentUser }}. Ваши существующие аккаунты источников данных в базе: </p>
+			<br>
+			<br>
+			<br> 
+			{{ if .AccountList -}}
+				{{- range $index, $acc := .AccountList }}
+					{{ if eq $acc.Source "Яндекс Директ" -}}
+						<div class="bg-info" style="border-radius: 6px; text-align: left; padding: 10px; font-size: 18px; border: solid 1px">
+						<p id="yandexlogin" class="{{$acc.Accountlogin }}" > Accountlogin: <p style="font-size: 22px; color: brown">{{$acc.Accountlogin }}</p></p>
+											
+						Источник: {{$acc.Source }}
+						{{ if eq $acc.Status  "notactive" -}}
+						<p style="font-size: 14px; color: red">Аккаунт на активирован</p>
+						<img src="../static/yandex.png" style="width: 100px; height: 60px">
+						<div>
+							
+							Чтобы активировать аккаунт: Получение кода подтверждения на Яндекс.OAuth <br> 
+							 
+						<strong style="font-size: 18px">Вручную</strong>
+						<button result="{{$acc.Accountlogin}}result" type="button" name="{{$acc.Accountlogin}}" id="{{$acc.Accountlogin}}yandex" class="btn btn-info getauthcodeyandex">Получить</button><br>
+						
+						<strong style="font-size: 18px">Автоматически</strong>					 
+						<button result="{{$acc.Accountlogin}}resultauto" type="button" name="{{$acc.Accountlogin}}" id="{{$acc.Accountlogin}}yandexauto" class="btn btn-info getaccesstokenauto">Получить</button>
+						
+						
+						</div>
+						<div  id="{{$acc.Accountlogin}}result"></div>
+						</p>
+      			</div>
+						<br>
+						{{- else}}
+						<div>
+							<p style="font-size: 14px; color: green; font-weight: 800;">Аккаунт активен</p>
+							</div>
+						{{- end}}
+						
+					{{- else}}
+						{{ if eq $acc.Source "Youtube" -}}
+							<div class="bg-info" style="border-radius: 6px; text-align: left; padding: 10px; font-size: 18px; border: solid 1px">
+							<p id="youtubelogin" class="{{$acc.Accountlogin}}" > Accountlogin: <p style="font-size: 22px; color: brown">{{$acc.Accountlogin }}</p></p>
+											
+							Источник: {{$acc.Source }}
+													
+							<img src="../static/youtubeads3.png" style="width: 100px; height: 60px">
+							<div>
+							
+							</div>
+							<div  id="{{$acc.Accountlogin}}result"></div>
+						 
+							</div>
+							<br>
+						{{- else}}
+							{{ if eq $acc.Source "Вконтакте" -}}
+								<div class="bg-info" style="border-radius: 6px; text-align: left; padding: 10px; font-size: 18px; border: solid 1px">
+								<p id="youtubelogin" class="{{$acc.Accountlogin}}" > Accountlogin: <p style="font-size: 22px; color: brown">	{{$acc.Accountlogin }}</p></p>
+											
+								Источник: {{$acc.Source }}
+												
+								<img src="../static/vkapi.png" style="width: 130px; height: 60px; border-radius: 6px;">
+								<div>
+							
+								</div>
+								<div  id="{{$acc.Accountlogin}}result"></div>
+						 
+								</div>
+								<br>
+							{{- end}}
+						{{- end}}
+					{{- end}}
+				
+			
+			{{- else}}
+			<div>You dont have any accounts</div>
+			{{- end}} 
+			{{- end}}
+			<br>
+			<br>
+			<br>
+			<button type="button" class="btn btn-info" data-toggle="modal" data-target="#myModal">Добавить аккаунт</button>
+
+			<!-- Modal -->
+			<div class="modal fade" id="myModal" role="dialog">
+				<div class="modal-dialog">
+
+					<!-- Modal content-->
+					<div class="modal-content">
+						<div class="modal-header">
+							<button type="button" class="close" data-dismiss="modal">&times;</button>
+							<h4 class="modal-title">Добавить аккаунт источников данных</h4>
+						</div>
+						<form>
+							<div class="form-group">
+								<label for="sourcename">Источник данных</label>
+								<select id="sourcename" class="form-control">
+									<option>Яндекс Директ</option>
+									<option>Вконтакте</option>
+									<option>Youtube</option>
+
+								</select>
+							</div>
+							<div class="form-group">
+								<label for="accountlogin">Ваш логин в системе источника данных</label>
+								<input type="login" class="form-control" id="accountlogin" placeholder="Логин"></input>>
+							</div>
+						</form>
+						<div id="ajaxResults">
+							<br>
+						</div>
+						<div class="modal-footer">
+							<button type="button" id="submitaccountinfobut" class="btn btn-info">Submit</button>
+							<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+						</div>
+					</div>
+
+				</div>
+			</div>
+
+		</div>
+		{{- else}}
+
+		<p style="font-size:18px">Hello! You are not logged in</p>
+
+		Login:
+		<input type="text" name="Login" id="userName" />
+		<br> Password:
+		<input type="text" name="Password" id="password" />
+		<br>
+		<button type="Submit" value="Submit" id="loginbutton"> Submit </button>
+
+		<br>
+		<div id="loginresult"></div>
+		<br>
+		{{- end }}
+		<br>
+
+
+		<!-- <button id="gotologin" style="margin-left:100px; width:150px; height:80px; font-size:20px">Go to Login</button> -->
+		<hr>
+		<!-- 
+		<div id="ajaxResults">
+			<br>
+			<br>
+			<br>
+ -->
+	</div>
+
+	</div>
+</body>
+
+</html>

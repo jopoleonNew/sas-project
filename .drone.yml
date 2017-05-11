@@ -1,0 +1,49 @@
+workspace:
+  base: /go
+  path: src/gogs.itcloud.pro/SAS-project/sas
+
+pipeline:
+  build:
+    image: golang:alpine
+    commands:
+      - go build
+      # - go test
+      
+  publish:
+    image: plugins/docker
+    email: git@itcloud.pro
+    repo: registry.itcloud.pro/sas-project/sas
+    registry: registry.itcloud.pro
+    username: docker
+    password: 88C7W5AX6Yd34yzFzMFD
+    tags: latest
+    when:
+      status: [ success ]
+
+  deploy:
+    image: appleboy/drone-ssh
+    host: docker00.itcloud.pro
+    username: deploy
+    password: 3DdbvBebf5ZCYSNsm6VP
+    port: 22
+    script:
+      - docker login -u docker -p 88C7W5AX6Yd34yzFzMFD https://registry.itcloud.pro
+      - docker pull registry.itcloud.pro/sas-project/sas:latest
+      - sudo /bin/systemctl restart compose@sas-dev.service
+
+  notify:
+    image: drillster/drone-email
+    host: smtp.yandex.ru
+    username: git@itcloud.pro
+    password: cisgWDuGC2ARgfurNz7Z
+    from: git@itcloud.pro
+    recipients: [ dkononov@itcloud.pro ]
+    recipients_only: true
+    when:
+      status: [ success ]
+
+# services:
+#   sas-mongo-dev:
+#     image: mongo
+
+branches: refactoring

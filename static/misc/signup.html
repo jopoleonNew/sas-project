@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<script src="../static/js/jquery-3.1.1.min.js"></script>
+	<script src="../static/js/signup.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+	<title>Registration</title>
+</head>
+
+<body>
+	<br>
+	<div style="text-align: center;margin: 0 auto">
+		<h1>Регистрация в сервисе SSA</h1>
+		<h3>Логин<strong style="color:red">*</strong></h3>
+		<input style="border-radius: 8px; border: solid 1px ; color: #1F95D1; height: 30px; width: 25%; font-size: 18px " type="text" name="userName" id="userName">
+		<h3>Пароль<strong style="color:red">*</strong></h3>
+		<input style="border-radius: 8px; border: solid 1px ; color: #1F95D1; height: 30px; width: 25%; font-size: 18px " type="password" name="password" id="password">
+		<h3>Электронная почта<strong style="color:red">*</strong></h3>
+		<input style="border-radius: 8px; border: solid 1px ; color: #1F95D1; height: 30px; width: 25% ; font-size: 18px" type="text" name="email" id="email">
+		<h3>Ваше Имя</h3>
+		<input style="border-radius: 8px; border: solid 1px ; color: #1F95D1; height: 30px; width: 25%; font-size: 18px " type="text" name="name" id="name">
+		<h3>Организация</h3>
+		<input style="border-radius: 8px; border: solid 1px ; color: #1F95D1; height: 30px; width: 25%; font-size: 18px " type="text" name="organisation" id="organisation">
+		<br>
+		<br>
+  Поля помеченные <strong style="color:red">*</strong> обязательны для заполнения.
+    <hr>
+     	<br>
+		<button  class="btn btn-success" id="signupbutton">Зарегистрироваться</button>
+		<br>
+		<div id="signupresults"></div>
+	</div>
+</body>
+
+</html>
