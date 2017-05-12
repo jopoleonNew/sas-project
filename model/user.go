@@ -48,6 +48,7 @@ func (u *UserInfo) Update() error {
 	}
 	u.Username = strings.ToLower(u.Username)
 	u.Salt = string(hashedPassword)
+	//u.collName = "usersList"
 	changeInfo, err := c.Upsert(bson.M{"username": u.Username}, u)
 	if err != nil {
 		log.Println("AddUserToDB usersListCollecton.Insert error: ", err)
@@ -130,6 +131,72 @@ func (u *UserInfo) IsPasswordValid(password string) (bool, error) {
 	} else {
 		return true, nil
 	}
+}
+
+func (u *UserInfo) AdvanceUpdate() error {
+
+	log.Println("User.AdvanceUpdate() used with ", u)
+	if u.Username == "" {
+		return errors.New("UserInfo.AdvanceUpdate() username field can't be empty")
+	}
+	var changeParams = []bson.DocElem{}
+
+	if u.Password != "" {
+		changeParams = append(changeParams, bson.DocElem{"password", u.Password})
+	}
+	if u.Salt != "" {
+		changeParams = append(changeParams, bson.DocElem{"salt", u.Salt})
+	}
+	if u.Email != "" {
+		changeParams = append(changeParams, bson.DocElem{"email", u.Email})
+	}
+	if u.Name != "" {
+		changeParams = append(changeParams, bson.DocElem{"role", u.Role})
+	}
+	if u.Organization != "" {
+		changeParams = append(changeParams, bson.DocElem{"registred", u.Registred})
+	}
+	if u.IsActivated != "" {
+		changeParams = append(changeParams, bson.DocElem{"isActivated", u.IsActivated})
+	}
+	if u.ActivationKey != "" {
+		changeParams = append(changeParams, bson.DocElem{"activationKey", u.ActivationKey})
+	}
+
+	//if len(u.AccountList) != 0 {
+	//	changeParams = append(changeParams,
+	//		bson.DocElem{"$push", bson.M{"accountlist": u.AccountList}})
+	//}
+	s := mainSession.Clone()
+	defer s.Close()
+	c := s.DB(mainDB.Name).C(u.collName)
+	if len(changeParams) != 0 {
+		colQuerier := bson.M{"username": u.Username}
+		change := bson.M{"$set": changeParams}
+		log.Println("UserInfo) AdvanceUpdate() query: ", colQuerier, " and cahnge: ", change)
+		_, err := c.Upsert(colQuerier, change)
+		if err != nil {
+			log.Println("a.AdvanceUpdate() err: ", err)
+			return err
+		}
+	}
+	if len(u.AccountList) != 0 {
+		colQuerier1 := bson.M{"username": u.Username}
+		change1 := bson.M{"$push": bson.M{"accountlist": u.AccountList[0]}}
+		_, err := c.Upsert(colQuerier1, change1)
+		if err != nil {
+			log.Println("a.AdvanceUpdate() err: ", err)
+			return err
+		}
+
+	}
+
+	//	db.students.update(
+	//	{ _id: 1 },
+	//	{ $push: { scores: 89 } }
+	//)
+
+	return nil
 }
 
 //

@@ -38,7 +38,6 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	//log.Println("Debug1")
 	err = yad.SetParams(Config.YandexDirectAppID, Config.YandexDirectAppSecret)
 	if err != nil {

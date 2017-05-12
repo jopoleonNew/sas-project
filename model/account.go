@@ -64,8 +64,6 @@ func (a *Account) IsExist() (bool, error) {
 
 // Update updates Account struct fields in
 // database according to passed account as method receiver.
-// TODO: 1. Check duplication fields of inserting json's. (???)
-// TODO: 2. Check for already deleted Yandex campaigns but yet saved in DB. (DONE_???)
 func (a *Account) Update() error {
 	log.Println("account.Update used")
 	s := mainSession.Clone()

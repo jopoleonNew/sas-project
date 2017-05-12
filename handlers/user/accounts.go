@@ -113,14 +113,14 @@ func AddAccountHandler(w http.ResponseWriter, r *http.Request) {
 	user.Username = username
 	userinfo, err := user.GetInfo()
 	if err != nil {
-		log.Println("AccountsHandler user.GetInfo() error: ", err)
+		log.Println("AddAccountHandler user.GetInfo() error: ", err)
 		return
 	}
 	//func (ctl *Controller) IsAccountUnique(username, accountlogin string) (bool, error)
 
 	exists, err := acc.IsExist()
 	if err != nil && err != model.ErrAccNotFound {
-		log.Println("AccountsHandler acc.IsExist() error: ", err)
+		log.Println("AddAccountHandler acc.IsExist() error: ", err)
 		//w.Write([]byte("Аккаунт у этого пользователя с таким именем уже существует"))
 		return
 	}
@@ -133,13 +133,20 @@ func AddAccountHandler(w http.ResponseWriter, r *http.Request) {
 		acc.Status = "notactive"
 		acc.SsaAppYandexID = Config.YandexDirectAppID
 		acc.SsaAppYandexSecret = Config.YandexDirectAppSecret
+		user.AccountList = append(user.AccountList, acc.Accountlogin)
+		err = user.AdvanceUpdate()
+		if err != nil {
+			log.Println("AddAccountHandler user.AdvanceUpdate() error ", err)
+			w.Write([]byte("AddAccountHandler user.AdvanceUpdate() error " + err.Error()))
+			return
+		}
 		err := acc.AdvanceUpdate()
 		if err != nil {
-			log.Println("AddAccountToDB error ", err)
-			w.Write([]byte("AddAccountToDB error " + err.Error()))
+			log.Println("AddAccountHandler acc.AdvanceUpdate error ", err)
+			w.Write([]byte("AddAccountHandler acc.AdvanceUpdate error " + err.Error()))
 			return
-
 		}
+
 	}
 	w.Write([]byte("Succsess. Аккаунт добавлен."))
 }
