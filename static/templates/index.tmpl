@@ -34,30 +34,12 @@
 			<!-- <button><a href="/logoutsubmit?={{.CurrentUser}}">Logout from {{.CurrentUser}}</a></button>
 			<a href="http://google.com" class="button">Go to Google</a> -->
 	</div>
+
 	{{- else}}
-	
-	<p style="font-size:18px">Здравствуйте! Вы не залогинены.</p>
-		<div id="formcontainer">
-   			 Логин:    <input style="border-radius: 8px; border: solid 1px ; color: #40b91c; height: 30px;font-size: 18px " type="text" name="Login" id="userName"/><br>
-   			 <br>
-   			 Пароль: <input style="border-radius: 8px; border: solid 1px ; color: #40b91c; height: 30px;font-size: 18px " type="password" name="Password" id="password"/><br>
-   			 <br>
-	</div>
-   			  <button class="btn btn-success" type="Submit" value="Submit" id="loginbutton"> Войти </button>
-	
-	<br>
-	<div id="loginresult"></div>
-	<br>
-	<div style="border-radius: 8px; border: solid 1px ; color: #5BC0DE; width: 30%; text-align: center; margin: 0 auto;">
-		<p style="color: black">Или если вы еще не присоденились к нам:</p>
- 
-	<button class="btn btn-info" id="gotosignup" style="font-size:12px; margin: 10px">Зарегистироваться</button>
-	<br>
-	</div>
-	
-	<br>
-	
+	{{ template "login.tmpl" .}}
 	{{- end }}
+	
+
 	<br>
 	<br>
 	

@@ -19,8 +19,10 @@ func AccountsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	username, err := utils.GetUsernamefromRequestSession(r)
 	if err != nil {
-		log.Println(err)
-
+		log.Println("AccountsHandler GetUsernamefromRequestSession err: ", err)
+		//w.Write([]byte("AccountsHandler GetUsernamefromRequestSession err: " + err.Error()))
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
 	}
 	log.Println("AccountsHandler used with username: ", username)
 	if session.Values["loggedin"].(string) == "false" {
@@ -105,7 +107,7 @@ func AddAccountHandler(w http.ResponseWriter, r *http.Request) {
 	acc.Accountlogin = r.FormValue("accountlogin")
 	acc.Source = r.FormValue("sourcename")
 	acc.YandexRole = r.FormValue("accrole")
-	log.Println("AddAccountHandler: ", acc.Accountlogin, acc.Source)
+	log.Println("AddAccountHandler: ", acc.Accountlogin, acc.Source, acc.YandexRole)
 
 	user := model.NewUser()
 	user.Username = username

@@ -5,7 +5,7 @@ $(document).ready(function () {
 
 
 
-	$(".refreshstatistic").each(function RerfreshStat() {
+	$(".refreshstatistic").each(function () {
 
 		$(this).click(function () {
 			$("#yandextable").empty();
@@ -23,9 +23,6 @@ $(document).ready(function () {
 			console.log(startdate)
 			console.log(enddate)
 			//$(".refreshstatistic").hide(200)
-
-
-
 			$.ajax({
 				data: {
 					"startdate": startdate,
@@ -46,54 +43,17 @@ $(document).ready(function () {
 						console.log("Recieved data IS NULL")
 						$(".ajaxloader").fadeOut(0);
 						$("#yandextable").append("<p style='text-align: center; padding: 2px; font-size: 24px;'>В Яндексе нет данных за эти даты</p>");
-
 						return
 					}
-						// data.forEach(function (i) {
-						// 	//	var size = Object.keys(accindex).length
-						// 							//var objsd = objsd3.Object
-						// 	//console.log("Account object Data :", objsd)
-						// 	//var objsd = data.Object
-						// 	//console.log("The object: ", accData)
-						// 	//console.log(typeof objsd)
-						// 	//console.log(data[0].Data[0])
-						// 	for (field in i) {
-						//
-						// 		//console.log("Objsd: ",objsd)
-						// 		//console.log("Field in objsd", field)
-						// 		//console.log("value of objsd.field in objsd", objsd[field])
-						// 		//console.log("type of objsd.field in objsd", typeof objsd[field])
-						// 		//if (objsd[field] == "null" || "undefined" === typeof objsd.field) {
-						// 		if (null == i[field]) {
-						// 			i[field] = 0.0;
-						// 			//console.log("objsd.field inside loop", i[field])
-						// 		}
-						// 	}
-						// 	});
-                    for (accindex in data) {
-						//console.log('Recieved data type: ', typeof data)
-						//console.log("First loop (accindex in data) accindex = ", accindex)
-						//console.log('Type of that accindex: ', typeof accindex)
-						//var size = Object.keys(accindex).length
+					for (accindex in data) {
+						var objsd = data[accindex]
+						for (field in objsd) {
 
-							var objsd = data[accindex]
-							//var objsd = objsd3.Object
-							//console.log("Account object Data :", objsd)
-							//var objsd = data.Object
-							//console.log("The object: ", accData)
-							//console.log(typeof objsd)
-							//console.log(data[0].Data[0])
-							for (field in objsd) {
-								//console.log("Objsd: ",objsd)
-								//console.log("Field in objsd", field)
-								//console.log("value of objsd.field in objsd", objsd[field])
-								//console.log("type of objsd.field in objsd", typeof objsd[field])
-								//if (objsd[field] == "null" || "undefined" === typeof objsd.field) {
-								if (null === objsd[field] || objsd[field] == undefined ||objsd[field] == "" ) {
-									objsd[field] = 0;
-									//console.log("objsd.field inside loop", objsd[field])
-								}
+							if (null === objsd[field] || objsd[field] == undefined || objsd[field] == "") {
+								objsd[field] = 0;
+								//console.log("objsd.field inside loop", objsd[field])
 							}
+						}
 					}
 					console.log('Type of that data: ', typeof data)
 					var size = Object.keys(data).length
@@ -101,22 +61,22 @@ $(document).ready(function () {
 					var table = new KingTable({
 						element: document.getElementById("yandextable"),
 						data: data, // if we were loading from server side --> url: "/api/colors"
-//						prepareData: function (data) {
-//						
-//						},
+						//						prepareData: function (data) {
+						//						
+						//						},
 						columnDefault: {
-                            CampaignID: "ID РК",         // display name of column
-                            type: "text",     // type of data
-                            sortable: true,   // whether to allow sort by this column
-                            allowSearch: true,// whether to allow text search by this column
+							CampaignID: "ID РК", // display name of column
+							type: "text", // type of data
+							sortable: true, // whether to allow sort by this column
+							allowSearch: true, // whether to allow text search by this column
 
-                        }
+						}
 
 					});
 
 					table.render();
-                    console.log('All data : ',data)
-						$(".ajaxloader").fadeOut();
+					console.log('All data : ', data)
+					$(".ajaxloader").fadeOut();
 				},
 				error: function (req, status, err) {
 					//console.log(req.responseText)
@@ -133,11 +93,6 @@ $(document).ready(function () {
 			});
 		});
 	})
-
-	//RerfreshStat()
-
-
-
 });
 
 //	$(".refreshstatistic").each(function RerfreshStat() {

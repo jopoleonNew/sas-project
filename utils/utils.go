@@ -12,7 +12,7 @@ import (
 
 //var store = sessions.NewCookieStore([]byte("secret"))
 
-var ErrorEmptySessionUsername = errors.New("GetUsernamefromSession error: session.Values['username'] is empty")
+var ErrorEmptySessionUsername = errors.New("GetUsernamefromRequestSession error: session.Values['username'] is empty")
 
 // IsUserLoggedIn checking gorilla session user is logged or not
 func IsUserLoggedIn(r *http.Request) bool {

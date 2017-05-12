@@ -8,8 +8,6 @@ import (
 	"sort"
 	"time"
 
-	"sync"
-
 	"gogs.itcloud.pro/SAS-project/sas/model"
 	"gogs.itcloud.pro/SAS-project/sas/utils"
 	"gogs.itcloud.pro/SAS-project/sas/yandexDirectAPI"
@@ -56,21 +54,28 @@ func GetStatSliceHandler(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("GetStatSliceHandler error: " + err.Error()))
 		return
 	}
+	//log.Println("GetStatSliceHandlerGetStatSliceHandler acclist ", acclist)
 	var statsslice yad.CampaignStatSlice
-	//TODO: Add concurrency for every account in loop
-	wg := sync.WaitGroup{}
-	wg.Add(len(acclist))
-	for _, camp := range acclist {
 
+	//DONETODO: Add concurrency for every account in loop
+	//wg := sync.WaitGroup{}
+	for _, camp := range acclist {
+		if camp.YandexRole == "agency" {
+			continue
+		}
 		if camp.Source == "Яндекс Директ" {
 			var idslice []int
 			for _, id := range camp.CampaignsInfo {
 				idslice = append(idslice, id.ID)
-
 			}
+
+			//wg.Add(1)
+			//go func() {
+			//wg.Wait()
 			account := yad.NewAccount()
 			account.Login = camp.Accountlogin
 			account.OAuthToken = camp.OauthToken
+			log.Println("GetStatSliceHandlerGetStatSliceHandler id slice ", idslice)
 			statres, err := account.GetStatisticsConc(idslice, sttime, endtime)
 			if err != nil {
 				log.Println("GetStatSliceHandlerGetStatSliceHandler GetCampaingsSliceStatistic", err)
@@ -78,11 +83,14 @@ func GetStatSliceHandler(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			statsslice = append(statsslice, statres...)
-			wg.Done()
+			//	wg.Done()
+			//}()
+
 		}
 	}
-	wg.Wait()
+	//wg.Wait()
 	sort.Sort(statsslice)
+	//log.Println("GetStatSliceHandler result stat: ", statsslice)
 	reqbytes, err := json.Marshal(statsslice)
 	if err != nil {
 		log.Println("GetStatSliceHandler json.Marshal error: ", err)

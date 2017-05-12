@@ -5,8 +5,6 @@ import (
 	"log"
 	"net/http"
 
-	"sync"
-
 	"gogs.itcloud.pro/SAS-project/sas/model"
 	"gogs.itcloud.pro/SAS-project/sas/utils"
 	yad "gogs.itcloud.pro/SAS-project/sas/yandexDirectAPI"
@@ -49,7 +47,9 @@ func SubmitConfirmationYandexCode(w http.ResponseWriter, r *http.Request) {
 	acc.Username = username
 	acc.Source = "Яндекс Директ"
 	acc.OauthToken = oauthresp.AccessToken
-	acc.AdvanceUpdate()
+
+	//log.Println("..................//////////Hello agency ", oauthresp.AccessToken)
+
 	//log.Println("SubmitConfirmationYandexCode: ", string(data))
 	accinfo, err := acc.GetInfo()
 	if err != nil {
@@ -61,21 +61,33 @@ func SubmitConfirmationYandexCode(w http.ResponseWriter, r *http.Request) {
 
 	if accinfo.YandexRole == "agency" {
 		log.Println("..................//////////Hello agency ", oauthresp.AccessToken)
+
+		// if account who submiting code is agency,
+		// we must obtain all agency clients info(their login, email, etc.)
 		account := yad.NewAccount()
-		account.Login = accinfo.Accountlogin
+		account.Login = accountlogin
 		account.OAuthToken = oauthresp.AccessToken
-		log.Println("..................//////////Hello agency ", oauthresp.AccessToken)
 		agencystruct, err := account.GetAgencyLogins()
 		if err != nil {
 			log.Println("SubmitConfirmationYandexCode GetAgencyLogins error: ", err)
 			return
 		}
+		// adding client's logins of agency to DB
+		agencylogins := make([]string, len(agencystruct))
+		for i, client := range agencystruct {
+			agencylogins[i] = client.Login
+		}
+		acc.AgencyClients = agencylogins
+		acc.AdvanceUpdate()
+
 		log.Println("SubmitConfirmationYandexCode GetAccountInfo: ", accinfo)
 		log.Println("SubmitConfirmationYandexCode account.GetAgencyLogins(): ", agencystruct)
+		//acc.AgencyClients = agencystruct
+		//DONETODO: add concurrency to getting campaign list for every agency account login
 
-		//TODO: add concurrency to getting campaign list for every agency account login
-		wg := sync.WaitGroup{}
-		wg.Add(len(agencystruct))
+
+		// inside this loop we get campaigns for all agency clients
+		// and create for every of them account in DB with
 		for _, agClient := range agencystruct {
 
 			agencyacc := model.NewAccount()
@@ -88,7 +100,7 @@ func SubmitConfirmationYandexCode(w http.ResponseWriter, r *http.Request) {
 			//var campjson model.CampaingsGetResult
 			account := yad.NewAccount()
 			account.Login = agClient.Login
-			account.OAuthToken = accinfo.OauthToken
+			account.OAuthToken = oauthresp.AccessToken
 			yadcamps, err := account.GetCampaignList()
 			if err != nil {
 				log.Fatal("SubmitConfirmationYandexCode GetAgencyLogins GetCampaignList: ", err)
@@ -108,10 +120,12 @@ func SubmitConfirmationYandexCode(w http.ResponseWriter, r *http.Request) {
 				log.Fatal("SubmitConfirmationYandexCode agencyacc.Update() error: ", err)
 				return
 			}
-			wg.Done()
+
 			//log.Printf("\n %+v", campjson)
+
 		}
-		wg.Wait()
+
+		return
 		//log.Printf("\n %+v", campjson)
 	}
 	yadacc := yad.NewAccount()

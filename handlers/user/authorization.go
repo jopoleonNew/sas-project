@@ -2,11 +2,10 @@ package user
 
 import (
 	"log"
+	"net/http"
 
 	"gogs.itcloud.pro/SAS-project/sas/model"
 	"gogs.itcloud.pro/SAS-project/sas/utils"
-
-	"net/http"
 )
 
 func LoginSubmitHandler(w http.ResponseWriter, r *http.Request) {

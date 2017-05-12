@@ -4,12 +4,10 @@ import (
 	"fmt"
 	"html/template"
 	"log"
+	"net/http"
 
 	"gogs.itcloud.pro/SAS-project/sas/model"
 	"gogs.itcloud.pro/SAS-project/sas/utils"
-	//"model"
-	"net/http"
-	//"utils"
 )
 
 func ReportTemplateHandler(w http.ResponseWriter, r *http.Request) {

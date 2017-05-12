@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -147,7 +148,7 @@ func (a *Account) GetStatistics(ids []int, start, end string) ([]CampaignStat, e
 		return nil, errors.New("GetStatistics http.NewRequest error: " + err.Error())
 	}
 	r.Header.Add("Content-Type", "application/json; charset=utf-8")
-	log.Println("GetStatistics body Request: ", r)
+	//log.Println("GetStatistics body Request: ", r)
 	resp, err := client.Do(r)
 	if err != nil {
 		return nil, errors.New("GetStatistics http.Request.Do error: " + err.Error())
@@ -168,133 +169,6 @@ func (a *Account) GetStatistics(ids []int, start, end string) ([]CampaignStat, e
 	return result.Data, nil
 }
 
-func (a *Account) GetStatisticsNew(ids []int, start, end time.Time) ([]CampaignStat, error) {
-	url := apiURL + "/v4/json"
-	fomrmatstart := start.Format(ctLayout)
-	formatend := end.Format(ctLayout)
-	StartGetStatisticsNew := time.Now()
-	// Checking yandex conditions:
-	// The number of strings in the method response should not exceed 1000
-	// Number of Campaigns IDs * Days in statistic request < YandexStatThreshold = ~1000
-	delta := end.Sub(start)
-	days := delta.Hours() / 24
-	log.Println(days)
-	//respChan := make(chan ResultV4CampStat)
-	if int(days)*len(ids) >= YandexStatThreshold {
-		log.Println("Recieved amount of days: ", int(days), " and length of campaign ID slice: ", len(ids))
-		log.Println("The number of string: ", int(days)*len(ids))
-		sort.Ints(ids)
-		//log.Printf("%#v", ids)
-		var NewIds []int
-		var statsslice []CampaignStat
-		idThreshold := (YandexStatThreshold / int(days))
-		amountOfIterations := (len(ids) / (900 / 31)) + 1
-		for j := 0; j < amountOfIterations; j++ {
-			var reqIds []int
-			for i := idThreshold * j; i < idThreshold*(j+1) && i < (len(ids)); i++ {
-				reqIds = append(reqIds, ids[i])
-				//fmt.Print("Id:=", ids[i], ", i:=", i)
-				NewIds = append(NewIds, ids[i])
-
-			}
-
-			log.Printf("%#v\n\n", reqIds, "THE J VALUE >>>>>>>>>>", j)
-			req := &RequestV4{
-				Method: "GetSummaryStat",
-				Token:  a.OAuthToken,
-				ParamV4: &ParamV4{
-					CampaignIDS: reqIds,
-					StartDate:   fomrmatstart,
-					EndDate:     formatend,
-				},
-			}
-
-			reqbytes, err := json.Marshal(req)
-			if err != nil {
-				return nil, errors.New("GetStatistics json.Marshal error: " + err.Error())
-			}
-
-			client := http.Client{}
-			r, err := http.NewRequest("POST", url, bytes.NewBuffer(reqbytes))
-			if err != nil {
-				return nil, errors.New("GetStatistics http.NewRequest error: " + err.Error())
-			}
-			r.Header.Add("Content-Type", "application/json; charset=utf-8")
-			log.Println("GetStatistics body Request: ", r)
-			sentreq := time.Now()
-			resp, err := client.Do(r)
-			if err != nil {
-				return nil, errors.New("GetStatistics http.Request.Do error: " + err.Error())
-			}
-			body, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				return nil, errors.New("GetStatistics ioutil.ReadAll error: " + err.Error())
-			}
-			getreq := time.Since(sentreq)
-			log.Println("\n\n\n\n ........$$$$$  TIME YANDEX REQEST : ", getreq.Seconds())
-			result := new(ResultV4CampStat)
-			err = json.Unmarshal(body, &result)
-			//log.Println("GetStatistics body response: ", string(body))
-			if err != nil {
-				return nil, errors.New("GetStatistics json.Unmarshal error: " + err.Error())
-			}
-			statsslice = append(statsslice, result.Data...)
-			//sort.Sort(statsslice)
-
-			//log.Println(reqIds)
-			//log.Println(checkEq(ids, NewIds))
-			//log
-		}
-		log.Println("Returning statsslice time: ", time.Since(StartGetStatisticsNew))
-		return statsslice, nil
-		//return nil, errors.New(">>>>>>>>>The number of strings in the method response should not exceed 1000")
-
-	}
-
-	req := &RequestV4{
-		Method: "GetSummaryStat",
-		Token:  a.OAuthToken,
-		ParamV4: &ParamV4{
-			CampaignIDS: ids,
-			StartDate:   fomrmatstart,
-			EndDate:     formatend,
-		},
-	}
-
-	reqbytes, err := json.Marshal(req)
-	if err != nil {
-		return nil, errors.New("GetStatistics json.Marshal error: " + err.Error())
-	}
-
-	client := http.Client{}
-	r, err := http.NewRequest("POST", url, bytes.NewBuffer(reqbytes))
-	if err != nil {
-		return nil, errors.New("GetStatistics http.NewRequest error: " + err.Error())
-	}
-	r.Header.Add("Content-Type", "application/json; charset=utf-8")
-	log.Println("GetStatistics body Request: ", r)
-	sentreq := time.Now()
-	resp, err := client.Do(r)
-	if err != nil {
-		return nil, errors.New("GetStatistics http.Request.Do error: " + err.Error())
-	}
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, errors.New("GetStatistics ioutil.ReadAll error: " + err.Error())
-	}
-	getreq := sentreq.Sub(sentreq)
-	log.Printf("\n\n\n\n ........$$$$$  TIME YANDEX REQEST : ", getreq.Seconds())
-	result := new(ResultV4CampStat)
-	err = json.Unmarshal(body, &result)
-	//log.Println("GetStatistics body response: ", string(body))
-	if err != nil {
-		return nil, errors.New("GetStatistics json.Unmarshal error: " + err.Error())
-	}
-	//log.Printf("GetStatistics body response: %+v", result)
-
-	return result.Data, nil
-}
-
 func (a *Account) GetStatisticsConc(ids []int, start, end time.Time) ([]CampaignStat, error) {
 	url := apiURL + "/v4/json"
 	fomrmatstart := start.Format(ctLayout)
@@ -306,7 +180,16 @@ func (a *Account) GetStatisticsConc(ids []int, start, end time.Time) ([]Campaign
 	delta := end.Sub(start)
 	days := delta.Hours() / 24
 	log.Println(days)
-	respChan := make(chan *ResultV4CampStat)
+	//respChan := make(chan *ResultV4CampStat)
+	log.Println("The number of string: ", int(days)*len(ids))
+	log.Println("The fomrmatstart ", fomrmatstart)
+	log.Println("The formatend ", formatend)
+	log.Println("The ids slice ", ids)
+	//numStrings := int(days) * len(ids)
+	if int(days)*len(ids) <= 0 {
+		return nil, errors.New("GetStatisticsConc The number of string is zero")
+	}
+	// check do we need to split int(days)*len(ids)) to parts less then YandexStatThreshold
 	if int(days)*len(ids) >= YandexStatThreshold {
 		log.Println("Recieved amount of days: ", int(days), " and length of campaign ID slice: ", len(ids))
 		log.Println("The number of string: ", int(days)*len(ids))
@@ -315,21 +198,31 @@ func (a *Account) GetStatisticsConc(ids []int, start, end time.Time) ([]Campaign
 		var BigErr error
 		var NewIds []int
 		var statsslice []CampaignStat
+		// super advanced splitting algorithm
 		idThreshold := (YandexStatThreshold / int(days))
-		itersAmount := (len(ids) / (900 / 31)) + 1
+		itersAmount := (len(ids) / (YandexStatThreshold / 31)) + 1
 		wg := sync.WaitGroup{}
-		wg.Add(itersAmount)
+		//wg.Add(itersAmount)
+		sema := make(chan struct{}, 5)
+
 		for j := 0; j < itersAmount; j++ {
 			var reqIds []int
 			for i := idThreshold * j; i < idThreshold*(j+1) && i < (len(ids)); i++ {
 				reqIds = append(reqIds, ids[i])
 				//fmt.Print("Id:=", ids[i], ", i:=", i)
 				NewIds = append(NewIds, ids[i])
-
 			}
+
+			// because of YandexDirectAPI limitation on simultaneous connections
+			// make add only 5 goroutines:
+			// Технические ограничения
+			// Допускается не более пяти (5) одновременных запросов к API от лица одного пользователя.
+
+			wg.Add(1)
 			go func() {
 				defer wg.Done()
-
+				sema <- struct{}{}
+				defer func() { <-sema }()
 				log.Println("\n", reqIds, "THE J VALUE >>>>>>>>>>", j)
 				req := &RequestV4{
 					Method: "GetSummaryStat",
@@ -343,55 +236,66 @@ func (a *Account) GetStatisticsConc(ids []int, start, end time.Time) ([]Campaign
 
 				reqbytes, err := json.Marshal(req)
 				if err != nil {
-					BigErr = errors.New("GetStatistics json.Marshal error: " + err.Error())
+					BigErr = errors.New("GetStatisticsConc json.Marshal error: " + err.Error())
+					return
 				}
 
 				client := http.Client{}
 				r, err := http.NewRequest("POST", url, bytes.NewBuffer(reqbytes))
 				if err != nil {
-					BigErr = errors.New("GetStatistics http.NewRequest error: " + err.Error())
+					BigErr = errors.New("GetStatisticsConc http.NewRequest error: " + err.Error())
+					return
 				}
 				r.Header.Add("Content-Type", "application/json; charset=utf-8")
-				log.Println("GetStatistics body Request: ", r)
+
+				//log.Println("GetStatistics body Request: ", r)
+
 				sentreq := time.Now()
 				resp, err := client.Do(r)
 				if err != nil {
-					BigErr = errors.New("GetStatistics http.Request.Do error: " + err.Error())
+					BigErr = errors.New("GetStatisticsConc http.Request.Do error: " + err.Error())
+					return
 				}
 				body, err := ioutil.ReadAll(resp.Body)
 				if err != nil {
-					BigErr = errors.New("GetStatistics ioutil.ReadAll error: " + err.Error())
+					BigErr = errors.New("GetStatisticsConc ioutil.ReadAll error: " + err.Error())
+					return
+				}
+				if string(body) == "" {
+					BigErr = errors.New("GetStatisticsConc body response is empty")
+					return
+				}
+				if strings.Contains(string(body), "error") {
+					var errresult = YandexV4Error{}
+					err := json.Unmarshal(body, &errresult)
+					if err != nil {
+						BigErr = errors.New("GetStatisticsConc json.Unmarshal error:  " + err.Error())
+						return
+					}
+					//ErrorCode, _ := strconv.Atoi(errresult.ErrorCode)
+					BigErr = errors.New("GetStatistics Yandex Direct API error: " + strconv.Itoa(errresult.ErrorCode) + " " + errresult.ErrorDescription + errresult.ErrorDetail)
+					return
 				}
 				getreq := time.Since(sentreq)
+
 				log.Println("\n\n  TIME YANDEX REQEST : ", getreq.Seconds())
+
 				result := new(ResultV4CampStat)
 				err = json.Unmarshal(body, &result)
-				//log.Println("GetStatistics body response: ", string(body))
 				if err != nil {
 					BigErr = errors.New("GetStatistics json.Unmarshal error: " + err.Error())
+					return
 				}
-
-				//sort.Sort(statsslice)
-
-				//log.Println(reqIds)
-				//log.Println(checkEq(ids, NewIds))
-				//log
-				//respChan <- result
 				statsslice = append(statsslice, result.Data...)
-				//return statsslice, nil
 			}()
-
 		}
-		//for inRes := range respChan {
-
-		//}
 		wg.Wait()
-		//inRes := <-respChan
-		close(respChan)
+		//close(respChan)
 		if BigErr != nil {
 			return nil, BigErr
 		}
 		log.Println("Returning statsslice time (StartGetStatisticsConc):\n ", time.Since(StartGetStatisticsConc))
+
 		return statsslice, nil
 		//return nil, errors.New(">>>>>>>>>The number of strings in the method response should not exceed 1000")
 
@@ -409,33 +313,52 @@ func (a *Account) GetStatisticsConc(ids []int, start, end time.Time) ([]Campaign
 
 	reqbytes, err := json.Marshal(req)
 	if err != nil {
-		return nil, errors.New("GetStatistics json.Marshal error: " + err.Error())
+		return nil, errors.New("GetStatisticsConc json.Marshal error: " + err.Error())
 	}
 
 	client := http.Client{}
 	r, err := http.NewRequest("POST", url, bytes.NewBuffer(reqbytes))
 	if err != nil {
-		return nil, errors.New("GetStatistics http.NewRequest error: " + err.Error())
+		return nil, errors.New("GetStatisticsConc http.NewRequest error: " + err.Error())
 	}
 	r.Header.Add("Content-Type", "application/json; charset=utf-8")
-	log.Println("GetStatistics body Request: ", r)
-	sentreq := time.Now()
+	//log.Println("GetStatisticsConc body Request: ", r)
+	//sentreq := time.Now()
+	//log.Println("GetStatisticsConc client.Do request body ", r)
 	resp, err := client.Do(r)
 	if err != nil {
-		return nil, errors.New("GetStatistics http.Request.Do error: " + err.Error())
+		return nil, errors.New("GetStatisticsConc http.Request.Do error: " + err.Error())
 	}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, errors.New("GetStatistics ioutil.ReadAll error: " + err.Error())
+		return nil, errors.New("GetStatisticsConc ioutil.ReadAll error: " + err.Error())
 	}
-	getreq := sentreq.Sub(sentreq)
-	log.Printf("\n\n\n\n ........$$$$$  TIME YANDEX REQEST : ", getreq.Seconds())
+	if string(body) == "" {
+		return nil, errors.New("GetStatisticsConc body response is empty")
+	}
+	if strings.Contains(string(body), "error") {
+		var errresult = YandexV4Error{}
+		err := json.Unmarshal(body, &errresult)
+		if err != nil {
+			return nil, errors.New("GetStatisticsConc json.Unmarshal error:  " + err.Error())
+		}
+		//ErrorCode, _ := strconv.Atoi(errresult.ErrorCode)
+		return nil, errors.New("GetStatistics Yandex Direct API error: " + strconv.Itoa(errresult.ErrorCode) + " " + errresult.ErrorDescription + errresult.ErrorDetail)
+	}
+	//log.Println("GetStatisticsConc client.Do body response ", string(body))
+
+	//getreq := sentreq.Sub(sentreq)
+	//log.Println("\n\n$$$$  TIME YANDEX REQEST : ", time.Since(sentreq))
+	log.Println("Returning statsslice time without concurrenc :\n ", time.Since(StartGetStatisticsConc))
 	result := new(ResultV4CampStat)
 	err = json.Unmarshal(body, &result)
 	//log.Println("GetStatistics body response: ", string(body))
 	if err != nil {
-		return nil, errors.New("GetStatistics json.Unmarshal error: " + err.Error())
+		return nil, errors.New("GetStatisticsConc json.Unmarshal error: " + err.Error())
 	}
+
+	//log.Println("statsslice without concurrenc ", result)
+
 	//log.Printf("GetStatistics body response: %+v", result)
 
 	return result.Data, nil
@@ -467,3 +390,131 @@ func checkEq(a, b []int) bool {
 
 	return true
 }
+
+//
+//func (a *Account) GetStatisticsNew(ids []int, start, end time.Time) ([]CampaignStat, error) {
+//	url := apiURL + "/v4/json"
+//	fomrmatstart := start.Format(ctLayout)
+//	formatend := end.Format(ctLayout)
+//	StartGetStatisticsNew := time.Now()
+//	// Checking yandex conditions:
+//	// The number of strings in the method response should not exceed 1000
+//	// Number of Campaigns IDs * Days in statistic request < YandexStatThreshold = ~1000
+//	delta := end.Sub(start)
+//	days := delta.Hours() / 24
+//	log.Println(days)
+//	//respChan := make(chan ResultV4CampStat)
+//	if int(days)*len(ids) >= YandexStatThreshold {
+//		log.Println("Recieved amount of days: ", int(days), " and length of campaign ID slice: ", len(ids))
+//		log.Println("The number of string: ", int(days)*len(ids))
+//		sort.Ints(ids)
+//		//log.Printf("%#v", ids)
+//		var NewIds []int
+//		var statsslice []CampaignStat
+//		idThreshold := (YandexStatThreshold / int(days))
+//		amountOfIterations := (len(ids) / (900 / 31)) + 1
+//		for j := 0; j < amountOfIterations; j++ {
+//			var reqIds []int
+//			for i := idThreshold * j; i < idThreshold*(j+1) && i < (len(ids)); i++ {
+//				reqIds = append(reqIds, ids[i])
+//				//fmt.Print("Id:=", ids[i], ", i:=", i)
+//				NewIds = append(NewIds, ids[i])
+//
+//			}
+//
+//			log.Printf("%#v\n\n", reqIds, "THE J VALUE >>>>>>>>>>", j)
+//			req := &RequestV4{
+//				Method: "GetSummaryStat",
+//				Token:  a.OAuthToken,
+//				ParamV4: &ParamV4{
+//					CampaignIDS: reqIds,
+//					StartDate:   fomrmatstart,
+//					EndDate:     formatend,
+//				},
+//			}
+//
+//			reqbytes, err := json.Marshal(req)
+//			if err != nil {
+//				return nil, errors.New("GetStatistics json.Marshal error: " + err.Error())
+//			}
+//
+//			client := http.Client{}
+//			r, err := http.NewRequest("POST", url, bytes.NewBuffer(reqbytes))
+//			if err != nil {
+//				return nil, errors.New("GetStatistics http.NewRequest error: " + err.Error())
+//			}
+//			r.Header.Add("Content-Type", "application/json; charset=utf-8")
+//			log.Println("GetStatistics body Request: ", r)
+//			sentreq := time.Now()
+//			resp, err := client.Do(r)
+//			if err != nil {
+//				return nil, errors.New("GetStatistics http.Request.Do error: " + err.Error())
+//			}
+//			body, err := ioutil.ReadAll(resp.Body)
+//			if err != nil {
+//				return nil, errors.New("GetStatistics ioutil.ReadAll error: " + err.Error())
+//			}
+//			getreq := time.Since(sentreq)
+//			log.Println("\n\n\n\n ........$$$$$  TIME YANDEX REQEST : ", getreq.Seconds())
+//			result := new(ResultV4CampStat)
+//			err = json.Unmarshal(body, &result)
+//			//log.Println("GetStatistics body response: ", string(body))
+//			if err != nil {
+//				return nil, errors.New("GetStatistics json.Unmarshal error: " + err.Error())
+//			}
+//			statsslice = append(statsslice, result.Data...)
+//			//sort.Sort(statsslice)
+//
+//			//log.Println(reqIds)
+//			//log.Println(checkEq(ids, NewIds))
+//			//log
+//		}
+//		log.Println("Returning statsslice time: ", time.Since(StartGetStatisticsNew))
+//		return statsslice, nil
+//		//return nil, errors.New(">>>>>>>>>The number of strings in the method response should not exceed 1000")
+//
+//	}
+//
+//	req := &RequestV4{
+//		Method: "GetSummaryStat",
+//		Token:  a.OAuthToken,
+//		ParamV4: &ParamV4{
+//			CampaignIDS: ids,
+//			StartDate:   fomrmatstart,
+//			EndDate:     formatend,
+//		},
+//	}
+//
+//	reqbytes, err := json.Marshal(req)
+//	if err != nil {
+//		return nil, errors.New("GetStatistics json.Marshal error: " + err.Error())
+//	}
+//
+//	client := http.Client{}
+//	r, err := http.NewRequest("POST", url, bytes.NewBuffer(reqbytes))
+//	if err != nil {
+//		return nil, errors.New("GetStatistics http.NewRequest error: " + err.Error())
+//	}
+//	r.Header.Add("Content-Type", "application/json; charset=utf-8")
+//	log.Println("GetStatistics body Request: ", r)
+//	sentreq := time.Now()
+//	resp, err := client.Do(r)
+//	if err != nil {
+//		return nil, errors.New("GetStatistics http.Request.Do error: " + err.Error())
+//	}
+//	body, err := ioutil.ReadAll(resp.Body)
+//	if err != nil {
+//		return nil, errors.New("GetStatistics ioutil.ReadAll error: " + err.Error())
+//	}
+//	getreq := sentreq.Sub(sentreq)
+//	log.Printf("\n\n\n\n ........$$$$$  TIME YANDEX REQEST : ", getreq.Seconds())
+//	result := new(ResultV4CampStat)
+//	err = json.Unmarshal(body, &result)
+//	//log.Println("GetStatistics body response: ", string(body))
+//	if err != nil {
+//		return nil, errors.New("GetStatistics json.Unmarshal error: " + err.Error())
+//	}
+//	//log.Printf("GetStatistics body response: %+v", result)
+//
+//	return result.Data, nil
+//}

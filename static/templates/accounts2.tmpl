@@ -58,9 +58,10 @@
 								</div>
 							</div>
 							<p id="yandexlogin" class="{{$acc.Accountlogin }}"> Ваш логин в Яндекс.Директ: 
-							<span style="font-size: 22px; color: brown">{{$acc.Accountlogin }}</span> </p>{{ if eq $acc.YandexRole "agency" -}}
-							<p style="font-weight: bold;">Вы рекламное агенство <img src="../static/img/agencylogo.png" style="width: 30px; height: 30px"></img></p>
-							{{- end}}
+							<span style="font-size: 22px; color: brown">{{$acc.Accountlogin }}</span> </p>
+								{{ if eq $acc.YandexRole "agency" -}}
+								<p style="font-weight: bold;">Вы рекламное агенство <img src="../static/img/agencylogo.png" style="width: 30px; height: 30px"></img></p>
+								{{- end}}
 								Источник: {{$acc.Source }} 
 							{{ if eq $acc.Status "notactive" -}}
 							<p style="font-size: 14px; color: red">Аккаунт на активирован</p>

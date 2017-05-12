@@ -109,11 +109,8 @@ func (a *Account) SetStatusAndToken() error {
 }
 
 func (a *Account) AdvanceUpdate() error {
-	//type DocElem struct {
-	//	Name  string
-	//	Value interface{}
-	//}
-	//bson.D{{"a", 1}, {"b", true}}
+
+	log.Println("Account.AdvanceUpdate() used with ", a)
 	err := a.checkMainFields()
 	if err != nil {
 		return err
@@ -144,6 +141,9 @@ func (a *Account) AdvanceUpdate() error {
 	}
 	if a.OauthToken != "" {
 		changeParams = append(changeParams, bson.DocElem{"oauthtoken", a.OauthToken})
+	}
+	if a.YandexRole != "" {
+		changeParams = append(changeParams, bson.DocElem{"yandexrole", a.YandexRole})
 	}
 	if len(a.AgencyClients) != 0 {
 		changeParams = append(changeParams, bson.DocElem{"agencyclients", a.AgencyClients})

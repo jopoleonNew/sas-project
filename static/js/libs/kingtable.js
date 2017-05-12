@@ -63,7 +63,7 @@
 			var t = e.match(/[-+~]?([0-9]{1,3}(?:[,\s\.]{1}[0-9]{3})*(?:[\.|\,]{1}[0-9]+)?)/g);
 			if (t && 1 == t.length) {
 				if (/(#[0-9a-fA-F]{3}|#[0-9a-fA-F]{6}|#[0-9a-fA-F]{8})$/.test(e)) return !1;
-				//if (e.match(/[^0-9\.\,\s]/g).length > 6) return !1;
+				if (e.match(/[^0-9\.\,\s]/g).length > 6) return !1;
 				return a(t[0])
 			}
 			return !1
@@ -98,6 +98,12 @@
 						return [n, f.default.startsWith(r, "asc", !0) ? 1 : -1]
 					})
 				}
+			},
+			humanSortBy: function (e, t) {
+				return e && e.length ? u.default.map(e, function (e) {
+					var n = e[0];
+					return 1 === e[1] ? t ? n + " asc" : n : n + " desc"
+				}).join(", ") : ""
 			},
 			getSortCriteria: function (e) {
 				var t, n = this,
@@ -503,6 +509,9 @@
 					n = e.getMinutes(),
 					r = e.getSeconds();
 				return !!(t || n || r)
+			},
+			toIso8601: function (e) {
+				return this.format(e, "YYYY-MM-DD") + "T" + this.format(e, "hh:mm:ss") + "." + this.format(e, "fff") + "Z"
 			}
 		}
 	}, {
@@ -790,6 +799,25 @@
 		u.default.isString;
 		n.default = {
 			normalize: f.default,
+			replaceAt: function (e, t, n) {
+				return e ? e.substr(0, t) + n + e.substr(t + n.length) : e
+			},
+			findDiacritics: function (e) {
+				if (!e) return e;
+				for (var t, n = /[^\u0000-\u007E]/gm, r = []; t = n.exec(e);) r.push({
+					i: t.index,
+					v: t[0]
+				});
+				return r
+			},
+			restoreDiacritics: function (e, t, n) {
+				if (!e) return e;
+				var r = t.length;
+				if (!r) return e;
+				void 0 === n && (n = 0);
+				for (var i, a = n + e.length - 1, s = 0; s < r && (i = t[s], !(i.i > a)); s++) e = this.replaceAt(e, i.i - n, i.v);
+				return e
+			},
 			snakeCase: function (e) {
 				return e ? this.removeMultipleSpaces(e.trim())[c](/[^a-zA-Z0-9]/g, "_")[c](/([a-z])[\s\-]?([A-Z])/g, function (e, t, n) {
 					return t + "_" + i(n)
@@ -1169,83 +1197,100 @@
 				default: e
 			}
 		}
+
+		function i(e) {
+			return e.indexOf("json") > -1 && e != l ? l : e
+		}
 		Object.defineProperty(n, "__esModule", {
 			value: !0
 		});
-		var i = e("../../scripts/utils"),
-			a = r(i),
-			s = e("../../scripts/data/json"),
-			u = r(s),
-			l = {
+		var a = e("../../scripts/utils"),
+			s = r(a),
+			o = e("../../scripts/data/json"),
+			u = r(o),
+			l = "application/json",
+			f = {
 				type: "POST",
 				headers: {
 					"X-Requested-With": "XMLHttpRequest",
-					"Content-Type": "application/json"
+					"Content-Type": l
 				},
 				json: {
 					parseDates: !0
 				}
 			};
 		n.default = {
-			defaults: l,
+			defaults: f,
 			requestBeforeSend: function (e, t, n) {},
 			setup: function (e) {
-				if (!a.default.isPlainObject(e)) throw new Error("Invalid options for AJAX setup.");
-				return a.default.extend(this.defaults, e), this
+				if (!s.default.isPlainObject(e)) throw new Error("Invalid options for AJAX setup.");
+				return s.default.extend(this.defaults, e), this
 			},
 			converters: {
 				"application/json": function (e, t, n) {
 					return u.default.parse(e, n.json)
 				}
 			},
+			createQs: function (e) {
+				if (!e) return "";
+				var t, n, r = [];
+				for (t in e) n = e[t], s.default.isNullOrEmptyString(n) || r.push([t, n]);
+				return r.sort(function (e, t) {
+					return e > t ? 1 : e < t ? -1 : 0
+				}), s.default.map(r, function (e) {
+					return encodeURIComponent(e[0]) + "=" + encodeURIComponent(e[1])
+				}).join("&")
+			},
 			shot: function (e) {
 				if (e || (e = {}), e.headers) {
 					e.headers
 				}
-				var t = a.default.extend({}, this.defaults, e);
-				e.headers && (t.headers = a.default.extend({}, this.defaults.headers, e.headers));
+				var t = s.default.extend({}, s.default.clone(this.defaults), e);
+				e.headers && (t.headers = s.default.extend({}, this.defaults.headers, e.headers));
 				var n = t.url;
-				if (!n) throw new Error("missing url for XMLHttpRequest");
+				if (!n) throw new Error("missing `url` for XMLHttpRequest");
 				var r = this,
-					i = r.converters;
-				return new Promise(function (s, o) {
-					var l = new XMLHttpRequest;
-					l.open(t.type, n);
-					var f = t.headers;
-					if (f) {
-						var c;
-						for (c in f) l.setRequestHeader(c, f[c])
-					}
-					var d = f["Content-Type"];
-					l.onload = function () {
-						if (200 == l.status) {
-							var e = l.response,
-								n = i[d];
-							a.default.isFunction(n) && (e = n(e, l, t)), s(e, l.status, l)
-						} else o(Error(l.statusText))
-					}, l.onerror = function () {
-						o(l, null, Error("Network Error"))
-					};
-					var p = t.data;
+					a = r.converters,
+					o = t.type;
+				if (!o) throw new Error("missing `type` for XMLHttpRequest");
+				var l = "GET" == o,
+					f = t.data;
+				if (l && f) {
+					var c = this.createQs(f),
+						d = -1 != n.indexOf("?");
+					n += (d ? "&" : "?") + c, delete t.headers["Content-Type"]
+				}
+				return new Promise(function (f, c) {
+					var d = new XMLHttpRequest;
+					d.open(o, n);
+					var p = t.headers;
 					if (p) {
-						if (!(d.indexOf("/json") > -1)) throw "application/x-www-form-urlencoded; charset=UTF-8" == d ? "Not implemented" : "invalid or not implemented content type: " + d;
-						p = u.default.compose(p), r.requestBeforeSend(l, t, e), l.send(p)
-					} else r.requestBeforeSend(l, t, e), l.send()
+						var h;
+						for (h in p) d.setRequestHeader(h, p[h])
+					}
+					d.onload = function () {
+						if (200 == d.status) {
+							var e = d.response,
+								n = i(d.getResponseHeader("Content-Type") || ""),
+								r = a[n];
+							s.default.isFunction(r) && (e = r(e, d, t)), f(e, d.status, d)
+						} else c(Error(d.statusText))
+					}, d.onerror = function () {
+						c(d, null, Error("Network Error"))
+					};
+					var m = t.data;
+					if (m && !l) {
+						var g = t.headers["Content-Type"];
+						if (!(g.indexOf("/json") > -1)) throw "application/x-www-form-urlencoded; charset=UTF-8" == g ? "Not implemented" : "invalid or not implemented content type: " + g;
+						m = u.default.compose(m), r.requestBeforeSend(d, t, e), d.send(m)
+					} else r.requestBeforeSend(d, t, e), d.send()
 				})
 			},
-			get: function (e) {
-				var t = this;
-				return new Promise(function (n, r) {
-					var i = new XMLHttpRequest;
-					i.open("GET", e), i.onload = function () {
-						200 == i.status ? n(i.response) : r(i, i.status, Error(i.statusText))
-					}, i.onerror = function () {
-						r(i, null, Error("Network Error"))
-					}, t.requestBeforeSend(i, o, options), i.send()
-				})
+			get: function (e, t) {
+				return t = t || {}, t.url = e, t.type = "GET", this.shot(t)
 			},
 			post: function (e, t) {
-				a.default.extend(this.defaults, t || {})
+				return t = t || {}, t.url = e, t.type = "POST", this.shot(t)
 			}
 		}
 	}, {
@@ -1555,6 +1600,7 @@
 		}
 
 		function i(e) {
+			if (s.default.isObject(e)) return e;
 			switch (e) {
 				case 1:
 					return localStorage;
@@ -1659,6 +1705,14 @@
 		});
 		var r = {};
 		n.default = {
+			items: function () {
+				return r
+			},
+			length: function () {
+				var e, t = 0;
+				for (e in r) t++;
+				return t
+			},
 			getItem: function (e) {
 				return r[e]
 			},
@@ -1667,6 +1721,10 @@
 			},
 			removeItem: function (e) {
 				delete r[e]
+			},
+			clear: function () {
+				var e;
+				for (e in r) delete r[e]
 			}
 		}
 	}, {}],
@@ -2824,10 +2882,12 @@
 			}(),
 			u = e("../../scripts/utils"),
 			l = r(u),
-			f = e("../../scripts/data/html"),
-			c = e("../../scripts/tables/kingtable.builder"),
-			d = r(c),
-			p = function (e) {
+			f = e("../../scripts/components/string"),
+			c = r(f),
+			d = e("../../scripts/data/html"),
+			p = e("../../scripts/tables/kingtable.builder"),
+			h = r(p),
+			m = function (e) {
 				function t() {
 					return i(this, t), a(this, (t.__proto__ || Object.getPrototypeOf(t)).apply(this, arguments))
 				}
@@ -2855,25 +2915,29 @@
 								t = n.searchText ? n.filters.getRuleByKey("search").value : null;
 							if (!t) return e
 						}
-						var r = [];
-						e.replace(t, function (e) {
+						var r, i = c.default.findDiacritics(e),
+							a = i.length;
+						r = a ? c.default.normalize(e) : e;
+						var s = [];
+						r.replace(t, function (e) {
 							var t = arguments[arguments.length - 2];
-							r.push({
+							s.push({
 								i: t,
-								val: e
+								val: a ? c.default.restoreDiacritics(e, i, t) : e
 							})
 						});
-						for (var i, a, s = "", o = 0, u = 0, l = r.length; u < l; u++) {
-							i = r[u], a = i.val;
-							var c = e.substring(o, i.i);
-							s += (0, f.escapeHtml)(c), o = i.i + a.length, s += '<span class="kt-search-highlight">' + (0, f.escapeHtml)(a) + "</span>"
+						for (var o, u, l = "", f = 0, p = 0, h = s.length; p < h; p++) {
+							o = s[p], u = o.val;
+							var m = e.substring(f, o.i);
+							l += (0, d.escapeHtml)(m), f = o.i + u.length, l += '<span class="kt-search-highlight">' + (0, d.escapeHtml)(u) + "</span>"
 						}
-						return o < e.length && (s += e.substr(o)), s
+						return f < e.length && (l += (0, d.escapeHtml)(e.substr(f))), l
 					}
 				}]), t
-			}(d.default);
-		n.default = p
+			}(h.default);
+		n.default = m
 	}, {
+		"../../scripts/components/string": 7,
 		"../../scripts/data/html": 12,
 		"../../scripts/tables/kingtable.builder": 27,
 		"../../scripts/utils": 34
@@ -3053,12 +3117,12 @@
 								for (var r, f, c = [], p = 0, m = e.length; p < m; p++)
 									if (f = e[p], r = f.name, !f.hidden && !f.secret) {
 										var g, v = r + a,
-											y = t[v] || t[r];
+											y = h.default.has(t, v) ? t[v] : t[r];
 										if (f.html) {
 											h.default.isFunction(f.html) || (0, d.default)(24, "Invalid 'html' option for property, it must be a function.");
 											var b = f.html.call(i, t, y);
 											g = new u.VHtmlFragment(b || "")
-										} else g = s && o && h.default.isString(y) ? new u.VHtmlFragment(i.highlight(y, s)) : new u.VTextElement(y);
+										} else g = null === y || void 0 === y || "" === y ? new u.VTextElement("") : s && o && h.default.isString(y) ? new u.VHtmlFragment(i.highlight(y, s)) : new u.VTextElement(y);
 										c.push(new u.VHtmlElement("td", f ? {
 											class: f.css || f.name
 										} : {}, g))
@@ -3268,16 +3332,16 @@
 			R = r(L),
 			B = e("../../scripts/components/date"),
 			z = r(B),
-			q = e("../../scripts/components/array"),
-			U = r(q),
+			U = e("../../scripts/components/array"),
+			q = r(U),
 			W = e("../../scripts/data/csv"),
 			$ = r(W),
 			K = e("../../scripts/data/json"),
-			Z = r(K),
-			J = e("../../scripts/data/xml"),
-			X = r(J),
-			Y = e("../../scripts/data/file"),
-			G = r(Y),
+			Y = r(K),
+			Z = e("../../scripts/data/xml"),
+			J = r(Z),
+			X = e("../../scripts/data/file"),
+			G = r(X),
 			Q = e("../../scripts/data/lru"),
 			ee = r(Q),
 			te = e("../../scripts/data/memstore"),
@@ -3294,6 +3358,7 @@
 					allowSearch: !0,
 					hidden: !1
 				},
+				httpMethod: "GET",
 				allowSearch: !0,
 				minSearchChars: 3,
 				page: 1,
@@ -3301,6 +3366,7 @@
 				formattedSuffix: "_(formatted)",
 				fixed: void 0,
 				search: "",
+				sortByFormatter: q.default.humanSortBy,
 				searchMode: "FullString",
 				exportFormats: [{
 					name: "Csv",
@@ -3329,7 +3395,8 @@
 				collectionName: "data",
 				searchSortingRules: !0,
 				idProperty: null,
-				autoHighlightSearchProperties: !0
+				autoHighlightSearchProperties: !0,
+				emptyValue: ""
 			},
 			ae = {
 				text: f.default,
@@ -3353,12 +3420,12 @@
 					D.default.has(e, t) && (s[t] = e[t], delete e[t])
 				});
 				var o = e.sortBy;
-				return D.default.isString(o) && (s.sortCriteria = U.default.getSortCriteria(o)), e = s.options = D.default.extend({}, t.defaults, e), s.loading = !1, s.init(e, n), r
+				return D.default.isString(o) && (s.sortCriteria = q.default.getSortCriteria(o)), e = s.options = D.default.extend({}, t.defaults, e), s.loading = !1, s.init(e, n), r
 			}
 			return s(t, e), o(t, [{
 				key: "baseProperties",
 				value: function () {
-					return ["id", "onInit", "element", "context", "fixed", "prepareData", "getExtraFilters", "getTableData", "afterRender", "beforeRender"]
+					return ["id", "onInit", "element", "context", "fixed", "prepareData", "getExtraFilters", "getTableData", "afterRender", "beforeRender", "numberFilterFormatter", "dateFilterFormatter"]
 				}
 			}, {
 				key: "init",
@@ -3368,7 +3435,7 @@
 						context: t
 					});
 					var n = e.data;
-					return n && (D.default.isArray(n) || (0, M.default)(3, "Data is not an array"), n = Z.default.clone(n), t.setFixedData(n)), t.loadSettings(), t.setPagination(), t.fixed || (t.filters.searchDisabled = !0), t.setBuilder(e.builder).onInit(), t
+					return n && (D.default.isArray(n) || (0, M.default)(3, "Data is not an array"), n = Y.default.clone(n), t.setFixedData(n)), t.loadSettings(), t.setPagination(), t.fixed || (t.filters.searchDisabled = !0), t.setBuilder(e.builder).onInit(), t
 				}
 			}, {
 				key: "getReg",
@@ -3528,7 +3595,7 @@
 			}, {
 				key: "getFiltersStore",
 				value: function () {
-					return sessionStorage
+					return localStorage
 				}
 			}, {
 				key: "getDataStore",
@@ -3551,7 +3618,7 @@
 						i = n.getItem(r);
 					if (!i) return e;
 					try {
-						var a = Z.default.parse(i),
+						var a = Y.default.parse(i),
 							s = "page size sortBy search timestamp".split(" ");
 						e.trigger("restore:filters", a), D.default.each(s, function (n) {
 							"search" == n ? e.validateForSeach(a[n]) && e.setSearchFilter(a[n], !0) : "sortBy" == n ? e.sortCriteria = a[n] : "size" == n ? t.resultsPerPage = a[n] : t[n] = a[n]
@@ -3584,7 +3651,7 @@
 						n = e.getFiltersStore();
 					if (n) {
 						var r = e.getMemoryKey("filters");
-						e.trigger("store:filters", t), n.setItem(r, Z.default.compose(t))
+						e.trigger("store:filters", t), n.setItem(r, Y.default.compose(t))
 					}
 					return t
 				}
@@ -3626,15 +3693,16 @@
 			}, {
 				key: "formatValues",
 				value: function (e) {
-					var t = this;
+					var t = this,
+						n = t.options;
 					e || (e = t.data);
-					var n, r = t.options.formattedSuffix,
-						i = D.default.where(t.columns, function (e) {
+					var r, i, a = t.options.formattedSuffix,
+						s = D.default.where(t.columns, function (e) {
 							return D.default.isFunction(e.format)
 						});
 					return D.default.each(e, function (e) {
-						D.default.each(i, function (t) {
-							n = t.name + r, e[n] = t.format(e[t.name], e) || ""
+						D.default.each(s, function (t) {
+							r = t.name + a, i = e[t.name], e[r] = D.default.isUnd(i) || null === i || "" === i ? n.emptyValue : t.format(i, e) || n.emptyValue
 						})
 					}), t
 				}
@@ -3656,7 +3724,7 @@
 					});
 					return D.default.each(o, function (e) {
 						t++, e.position = t
-					}), U.default.sortBy(n, "position"), this.storeColumnsData().render(), this
+					}), q.default.sortBy(n, "position"), this.storeColumnsData().render(), this
 				}
 			}, {
 				key: "toggleColumns",
@@ -3711,7 +3779,7 @@
 						t = this.getMemoryKey("columns:data"),
 						n = this.options,
 						r = this.columns;
-					return e && n.storeTableData && e.setItem(t, Z.default.compose(r)), this
+					return e && n.storeTableData && e.setItem(t, Y.default.compose(r)), this
 				}
 			}, {
 				key: "getCachedColumnsData",
@@ -3722,7 +3790,7 @@
 					if (e && n.storeTableData) {
 						var r = e.getItem(t);
 						if (r) try {
-							return Z.default.parse(r)
+							return Y.default.parse(r)
 						} catch (n) {
 							e.removeItem(t)
 						}
@@ -3812,7 +3880,7 @@
 					var t = this.getDataStore(),
 						n = this.getMemoryKey("table:data"),
 						r = this.options;
-					return t && r.storeTableData && t.setItem(n, Z.default.compose(e)), this
+					return t && r.storeTableData && t.setItem(n, Y.default.compose(e)), this
 				}
 			}, {
 				key: "restoreTableData",
@@ -3825,7 +3893,7 @@
 						var i = t.getItem(n);
 						if (i) {
 							try {
-								i = Z.default.parse(i)
+								i = Y.default.parse(i)
 							} catch (e) {
 								t.removeItem(n)
 							}
@@ -3952,18 +4020,18 @@
 						a = n.getDataStore(),
 						s = !(!i || !a);
 					if (s) {
-						var o = Z.default.parse(Z.default.compose(e)),
+						var o = Y.default.parse(Y.default.compose(e)),
 							u = n.getMemoryKey("catalogs"),
 							l = ee.default.get(u, function (e) {
 								return D.default.equal(o, e.filters)
-							}, !0);
+							}, a, !0);
 						if (l) {
 							if (!t.clearDataCache) return n.anchorTime = new Date(l.data.anchorTime), n.dataFetchTime = new Date(l.ts), new Promise(function (e, t) {
 								setTimeout(function () {
 									e(l.data.data)
 								}, 0)
 							});
-							ee.default.remove(u)
+							ee.default.remove(u, void 0, a)
 						}
 					}
 					return new Promise(function (t, i) {
@@ -3972,7 +4040,7 @@
 								data: i,
 								filters: e,
 								anchorTime: n.anchorTime.getTime()
-							}, r.lruCacheSize, r.lruCacheMaxAge), n.dataFetchTime = new Date, n.loading = !1, n.emit("fetched:data"), t(i)
+							}, r.lruCacheSize, r.lruCacheMaxAge, a), n.dataFetchTime = new Date, n.loading = !1, n.emit("fetched:data"), t(i)
 						}, function () {
 							n.loading = !1, i()
 						})
@@ -3981,16 +4049,44 @@
 			}, {
 				key: "getFetchPromise",
 				value: function (e) {
-					var t = this.options.url;
-					return t || (0, M.default)(5, "Missing url option, to fetch data"), V.default.shot({
-						url: t,
+					var t = this.options,
+						n = t.url;
+					n || (0, M.default)(5, "Missing url option, to fetch data");
+					var r = t.httpMethod;
+					return e = this.formatFetchData(e), V.default.shot({
+						type: r,
+						url: n,
 						data: e
 					})
 				}
 			}, {
+				key: "numberFilterFormatter",
+				value: function (e, t) {
+					return t
+				}
+			}, {
+				key: "dateFilterFormatter",
+				value: function (e, t) {
+					return z.default.toIso8601(t)
+				}
+			}, {
+				key: "formatFetchData",
+				value: function (e) {
+					var t = this.options,
+						n = t.sortByFormatter;
+					e.sortBy && D.default.isFunction(n) && (e.sortBy = n(e.sortBy));
+					var r;
+					for (r in e) {
+						var i = e[r];
+						i instanceof Date && (e[r] = this.dateFilterFormatter(r, i)), i instanceof Number && (e[r] = this.numberFilterFormatter(r, i))
+					}
+					return e
+				}
+			}, {
 				key: "mixinFetchData",
 				value: function () {
-					return D.default.extend(this.getFiltersSetCache(), this.options.postData || {})
+					var e = this.options.fetchData;
+					return D.default.isFunction(e) && (e = e.call(this)), D.default.extend(this.getFiltersSetCache(), e || {})
 				}
 			}, {
 				key: "normalizeCollection",
@@ -4046,17 +4142,17 @@
 					var r = n.length;
 					if (n = e.filters.skim(n), n.length != r && e.updatePagination(n.length), !e.searchText || !t.searchSortingRules) {
 						var i = e.sortCriteria;
-						D.default.isEmpty(i) || U.default.sortBy(n, i)
+						D.default.isEmpty(i) || q.default.sortBy(n, i)
 					}
 					return e.getSubSet(n)
 				}
 			}, {
 				key: "sortBy",
 				value: function () {
-					var e = U.default.getSortCriteria(arguments);
+					var e = q.default.getSortCriteria(arguments);
 					if (!e || !e.length) return this.unsetSortBy();
 					var t = this;
-					return t.sortCriteria = e, t.hasData() ? (U.default.sortBy(t.data, e), t.render()) : t.getFiltersSetCache(), t
+					return t.sortCriteria = e, t.hasData() ? (q.default.sortBy(t.data, e), t.render()) : t.getFiltersSetCache(), t
 				}
 			}, {
 				key: "progressSortBy",
@@ -4186,7 +4282,7 @@
 							s = $.default.serialize(o, n.csvOptions);
 							break;
 						case "json":
-							s = Z.default.compose(a, 2, 2);
+							s = Y.default.compose(a, 2, 2);
 							break;
 						case "xml":
 							s = t.dataToXml(a);
@@ -4213,7 +4309,7 @@
 						s.appendChild(l)
 					}
 					var g = a.serializeToString(s);
-					return r.prettyXml ? X.default.pretty(g) : X.default.normal(g)
+					return r.prettyXml ? J.default.pretty(g) : J.default.normal(g)
 				}
 			}, {
 				key: "disposeOf",
@@ -4257,7 +4353,7 @@
 			}, {
 				key: "ArrayUtils",
 				get: function () {
-					return U.default
+					return q.default
 				}
 			}, {
 				key: "DateUtils",
@@ -4267,7 +4363,7 @@
 			}, {
 				key: "json",
 				get: function () {
-					return Z.default
+					return Y.default
 				}
 			}, {
 				key: "Paginator",
@@ -4341,7 +4437,7 @@
 					secret: !0
 				}
 			}
-		}, "undefined" !== ("undefined" == typeof window ? "undefined" : u(window)) && (window.KingTable = oe), n.default = oe
+		}, oe.Ajax = V.default, "undefined" !== ("undefined" == typeof window ? "undefined" : u(window)) && (window.KingTable = oe), n.default = oe
 	}, {
 		"../../scripts/components/array": 1,
 		"../../scripts/components/date": 2,
@@ -4534,12 +4630,12 @@
 								for (var n, u, l = [], f = 0, d = t.length; f < d; f++)
 									if (u = t[f], n = u.name, !u.hidden && !u.secret) {
 										var p, h = n + i,
-											m = e[h] || e[n];
+											m = x.default.has(e, h) ? e[h] : e[n];
 										if (u.html) {
 											x.default.isFunction(u.html) || (0, w.default)(24, "Invalid 'html' option for property");
 											var g = u.html.call(r, e, m);
 											p = new c.VHtmlFragment(g || "")
-										} else p = a && s && x.default.isString(m) ? new c.VHtmlFragment(r.highlight(m, a)) : new c.VTextElement(m);
+										} else p = null === m || void 0 === m || "" === m ? new c.VTextElement("") : a && s && x.default.isString(m) ? new c.VHtmlFragment(r.highlight(m, a)) : new c.VTextElement(m);
 										l.push(new c.VHtmlElement("ε_row" == u.name ? "strong" : "span", u ? {
 											class: u.css || u.name,
 											title: u.displayName
@@ -4578,6 +4674,10 @@
 						if (!r || !r.element) return n;
 						n.listenTo(r, {
 							"change:pagination": function () {
+								if (!e.rootElement) return !0;
+								n.updatePagination()
+							},
+							"get-list:failed": function () {
 								if (!e.rootElement) return !0;
 								n.updatePagination()
 							}
@@ -5752,7 +5852,7 @@
 		}
 
 		function p(e) {
-			return (void 0 === e ? "undefined" : C(e)) == O && e.constructor == Object
+			return (void 0 === e ? "undefined" : C(e)) == O && null !== e && e.constructor == Object
 		}
 
 		function h(e) {
@@ -5832,25 +5932,30 @@
 
 		function _(e) {
 			var t, n;
-			if (l(e))
-				if (f(e)) {
-					n = [];
-					for (var r = 0, i = e.length; r < i; r++) n[r] = _(e[r])
-				} else {
-					n = {};
-					var a;
-					for (t in e)
-						if (a = e[t], l(a))
-							if (c(a)) n[t] = new Date(a.getTime());
-							else if (d(a)) n[t] = new RegExp(a.source, a.flags);
-					else if (f(a)) {
-						n[t] = [];
-						for (var r = 0, i = a.length; r < i; r++) n[t][r] = _(a[r])
-					} else n[t] = _(a);
-					else n[t] = a
-				}
-			else n = e;
-			return n
+			if (null === e) return null;
+			if (void 0 !== e) {
+				if (l(e))
+					if (f(e)) {
+						n = [];
+						for (var r = 0, i = e.length; r < i; r++) n[r] = _(e[r])
+					} else {
+						n = {};
+						var a;
+						for (t in e)
+							if (null !== (a = e[t]) && void 0 !== a)
+								if (l(a))
+									if (c(a)) n[t] = new Date(a.getTime());
+									else if (d(a)) n[t] = new RegExp(a.source, a.flags);
+						else if (f(a)) {
+							n[t] = [];
+							for (var r = 0, i = a.length; r < i; r++) n[t][r] = _(a[r])
+						} else n[t] = _(a);
+						else n[t] = a;
+						else n[t] = a
+					}
+				else n = e;
+				return n
+			}
 		}
 		Object.defineProperty(n, "__esModule", {
 			value: !0
@@ -5906,6 +6011,9 @@
 			isEmpty: h,
 			isFunction: u,
 			has: m,
+			isNullOrEmptyString: function (e) {
+				return null === e || void 0 === e || "" === e
+			},
 			lower: v,
 			upper: g,
 			clone: _,

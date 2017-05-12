@@ -16,6 +16,7 @@ type UserInfo struct {
 	Password      string        `json:"password" bson:"password"`
 	Salt          string        `json:"salt" bson:"salt"`
 	Email         string        `json:"email" bson:"email"`
+	AccountList   []string      `json:"accountlist" bson:"accountlist"`
 	Name          string        `json:"name" bson:"name"`
 	Role          string        `json:"role" bson:"role"`
 	Organization  string        `json:"organisation" bson:"organisation"`
@@ -60,7 +61,6 @@ func (u *UserInfo) Update() error {
 //IsExist checks is user with given username or email exist in DB already.
 func (u *UserInfo) IsExist() (bool, error) {
 
-
 	u.Username = strings.ToLower(u.Username)
 
 	log.Println("IsExists user used for: ", u.Username)
@@ -70,7 +70,7 @@ func (u *UserInfo) IsExist() (bool, error) {
 	c := s.DB(mainDB.Name).C(u.collName)
 	u.Username = strings.ToLower(u.Username)
 	log.Println("IsExists user used for: ", u.Username)
-	// TODO: ensure that such notation for pipeline is correct
+	// DONETODO: ensure that such notation for pipeline is correct
 	pipeline := bson.M{
 		"$or": []interface{}{
 			bson.M{"email": u.Email},

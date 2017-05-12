@@ -16,10 +16,12 @@ type YandexV5Error struct {
 	ErrorString      string `json:"error_string"`
 	RequsetID        string `json:"request_id"`
 }
+
+//"error_str":"Authorization error","error_code":53,"error_detail":""
 type YandexV4Error struct {
 	ErrorDescription string `json:"error_str"`
 	ErrorDetail      string `json:"error_detail"`
-	ErrorCode        string `json:"error_code"`
+	ErrorCode        int    `json:"error_code"`
 }
 
 //YandexDirectAPI V5 Error
