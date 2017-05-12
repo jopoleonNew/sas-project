@@ -63,7 +63,7 @@
 			var t = e.match(/[-+~]?([0-9]{1,3}(?:[,\s\.]{1}[0-9]{3})*(?:[\.|\,]{1}[0-9]+)?)/g);
 			if (t && 1 == t.length) {
 				if (/(#[0-9a-fA-F]{3}|#[0-9a-fA-F]{6}|#[0-9a-fA-F]{8})$/.test(e)) return !1;
-				if (e.match(/[^0-9\.\,\s]/g).length > 6) return !1;
+				//if (e.match(/[^0-9\.\,\s]/g).length > 6) return !1;
 				return a(t[0])
 			}
 			return !1
