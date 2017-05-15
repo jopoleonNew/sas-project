@@ -41,8 +41,8 @@
 				//console.log($(this).attr("id"))
 				console.log("accountloginyandex: ",$("#accountloginyandex").val())
                 console.log("accountroleyandex: ",$("#accountroleyandex").val())
-				console.log($("#accountloginyoutube").val())
-				console.log($("#accountloginvk").val())
+				//console.log($("#accountloginyoutube").val())
+				//console.log($("#accountloginvk").val())
 
 				//console.log("sourcename: ", $(this).attr("id"))
 				//window.sourcename = $(this).attr("id");
