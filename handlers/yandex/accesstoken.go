@@ -19,9 +19,20 @@ func GetYandexAccessToken(w http.ResponseWriter, r *http.Request) {
 	log.Println("GetYandexAccessToken used")
 	query := r.URL.Query()
 	log.Println("GetYandexAccessToken income URL query: ", r.URL.Query())
+
 	s := query["code"]
+	if s == nil || len(s) == 0 {
+		log.Println("Request from YandexOuath received without code")
+		w.Write([]byte("Request from YandexOuath received without code"))
+		return
+	}
 	// "state" is the Yandex account login sent with GetAuthCodeYandexHandler()
 	al := query["state"]
+	if al == nil || len(al) == 0 {
+		log.Println("Request from YandexOuath received without state")
+		w.Write([]byte("Request from YandexOuath received without state"))
+		return
+	}
 	accountlogin := al[0]
 	code := s[0]
 	log.Println("Token: ", code, "Accountlogin: ", accountlogin)

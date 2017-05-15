@@ -33,13 +33,13 @@
 					window.accountlogin = $("#accountloginvk").val()
 				};
 
-				console.log($(this).attr("id"))
+				//console.log($(this).attr("id"))
 				console.log($("#accountloginyandex").val())
 				console.log($("#accountloginyoutube").val())
 				console.log($("#accountloginvk").val())
 				console.log($("#accountroleyandex").val())
-				console.log("sourcename: ", $(this).attr("id"))
-				window.sourcename = $(this).attr("id");
+				//console.log("sourcename: ", $(this).attr("id"))
+				//window.sourcename = $(this).attr("id");
 
 				$.ajax({
 					data: {
@@ -53,8 +53,8 @@
 					url: currentUrl.replace("accounts", "addaccount"),
 					success: function (data) {
 						console.log("Data get from server: ", data)
-                        accountlogin = $(this).attr("name");
-                        appendid = $(this).attr("result")
+                        //accountlogin = $(this).attr("name");
+                       // appendid = $(this).attr("result")
 
                         console.log("accountlogin: ", accountlogin)
                         $.ajax({
@@ -68,26 +68,26 @@
                             success: function (data) {
                                 $("#" + appendid).empty();
                                 console.log("Data recieved: ", data)
-                                //$('#getauthcodeyandexresult').empty()
-                                //$('#getauthcodeyandexresult').append(data);
-                                //console.log("Data sent: ", data)
-                                window.open(
-                                	//data = w.Write([]byte(Config.YandexDirectAppID + "&state=" + accountlogin))
-                                    "https://oauth.yandex.ru/authorize?response_type=code&client_id=" + data+"&login_hint="+ window.accountlogin+"&force_confirm=yes",
-                                    '_blank' // <- This is what makes it open in a new window.
-                                )
-//					var sendcodeUrl = window.location.protocol + "//" + window.location.hostname +":"+window.location.port + "/submityandexcode"
-//					console.log("hello there: ", sendcodeUrl)
+                                var page =
+                                    "https://oauth.yandex.ru/authorize?response_type=code&client_id=" + data+"&login_hint="+window.accountlogin+"&force_confirm=yes"
+                                var $dialog = $('<div></div>')
+                                    .html('<iframe style="border: 0px; " src="' + page + '" width="100%" height="100%"></iframe>')
+                                    .dialog({
+                                        autoOpen: false,
+                                        modal: true,
+                                        height: 800,
+                                        width: 1000,
+                                        title: "Yandex"
+                                    });
+                                $dialog.dialog('open');
                                 console.log("Id of append obj: ", appendid)
 
                             },
                             error: function (req, status, err) {
                                 //console.log(req.responseText)
                                 console.log(req)
-
                                 console.log('Something went wrong', status, err);
                                 console.log(err)
-
                             }
                         });
 						//location.reload()
