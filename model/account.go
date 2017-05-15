@@ -38,9 +38,7 @@ var ErrAccNotFound = errors.New("Account is not exist.")
 // IsExist checks user's AccountList for existing account with given account login.
 func (a *Account) IsExist() (bool, error) {
 	log.Println("IsExist used")
-	//if a.Username == "" {
-	//	return false, errors.New("IsExist Account's Username field can't be blank.")
-	//}
+
 	if a.Accountlogin == "" {
 		return false, errors.New("IsExist Account's Accountlogin field can't be blank.")
 	}
@@ -114,7 +112,7 @@ func (a *Account) SetStatusAndToken() error {
 // given values.
 func (a *Account) AdvanceUpdate() error {
 
-	log.Println("Account.AdvanceUpdate() used with ", a)
+	log.Printf("Account.AdvanceUpdate() used with %+v", a)
 	err := a.checkMainFields()
 	if err != nil {
 		return err

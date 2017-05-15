@@ -1,7 +1,6 @@
 package yandex
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
 	"sync"
@@ -146,10 +145,11 @@ func GetYandexAccessToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	//log.Println("SubmitConfirmationYandexCode account change info: ", chInfo)
-	campsbyte, err := json.Marshal(yadcamps)
-	if err != nil {
-		log.Println("SubmitConfirmationYandexCode json.Marshal error: ", err)
-		return
-	}
-	w.Write(campsbyte)
+	//campsbyte, err := json.Marshal(yadcamps)
+	//if err != nil {
+	//	log.Println("SubmitConfirmationYandexCode json.Marshal error: ", err)
+	//	return
+	//}
+	http.Redirect(w, r, "/accounts", http.StatusSeeOther)
+	return
 }
