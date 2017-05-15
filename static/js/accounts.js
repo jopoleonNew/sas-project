@@ -21,16 +21,23 @@
 				var yandexlog = $("#accountloginyandex").val();
 				var youtubelog = $("#accountloginyoutube").val();
 				var vklog = $("#accountloginvk").val();
+                if (time < 10) {
+                    greeting = "Good morning";
+                } else if (time < 20) {
+                    greeting = "Good day";
+                } else {
+                    greeting = "Good evening";
+                }
 
 				if (yandexlog) {
 					window.accountlogin = $("#accountloginyandex").val()
 					window.accrole = $("#accountroleyandex").val()
-				} esle if (window.accrole) {
+				} else if (window.accrole === 0) {
                     	console.log("Some of important valuse are empty:");
 						console.log("accountloginyandex: ", $("#accountloginyandex").val());
 						console.log("accountroleyandex: ", $("#accountroleyandex").val());
-						return
-					};
+						return;
+				}
 				if (youtubelog) {
 					window.accountlogin = $("#accountloginyoutube").val()
 				};
