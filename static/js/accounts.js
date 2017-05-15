@@ -53,6 +53,42 @@
 					url: currentUrl.replace("accounts", "addaccount"),
 					success: function (data) {
 						console.log("Data get from server: ", data)
+                        accountlogin = $(this).attr("name");
+                        appendid = $(this).attr("result")
+
+                        console.log("accountlogin: ", accountlogin)
+                        $.ajax({
+                            data: {
+                                "username": window.currentUser,
+                                "accountlogin": window.accountlogin,
+                            },
+                            //dataType: "json",
+                            type: "POST",
+                            url: currentUrl.replace("accounts", "getauthcodeyandex"),
+                            success: function (data) {
+                                $("#" + appendid).empty();
+                                console.log("Data recieved: ", data)
+                                //$('#getauthcodeyandexresult').empty()
+                                //$('#getauthcodeyandexresult').append(data);
+                                //console.log("Data sent: ", data)
+                                window.open(
+                                    "https://oauth.yandex.ru/authorize?response_type=code&client_id=" + data+"&login_hint="+ window.accountlogin+"&force_confirm=yes",
+                                    '_blank' // <- This is what makes it open in a new window.
+                                )
+//					var sendcodeUrl = window.location.protocol + "//" + window.location.hostname +":"+window.location.port + "/submityandexcode"
+//					console.log("hello there: ", sendcodeUrl)
+                                console.log("Id of append obj: ", appendid)
+
+                            },
+                            error: function (req, status, err) {
+                                //console.log(req.responseText)
+                                console.log(req)
+
+                                console.log('Something went wrong', status, err);
+                                console.log(err)
+
+                            }
+                        });
 						//location.reload()
 					},
 					error: function (req, status, err) {

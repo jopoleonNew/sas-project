@@ -28,6 +28,9 @@ $(document).ready(function () {
 					//$('#getauthcodeyandexresult').empty()
 					$("#"+appendid).append(data);
 						//console.log("Data sent: ", data)
+
+
+
 				},
 				error: function (req, status, err) {
 					//console.log(req.responseText)
