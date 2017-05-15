@@ -12,9 +12,9 @@
 		//console.log(currentUrl.replace("login", "signup"))
 		//console.log(currentUrl.replace("signup", ""))
 		//console.log(String(currentUrl) - "/signup")
-		console.log($("#accountloginyandex").val())
-		console.log($("#accountloginyoutube").val())
-		console.log($("#accountloginvk").val())
+		//console.log($("#accountloginyandex").val())
+		//console.log($("#accountloginyoutube").val())
+		//console.log($("#accountloginvk").val())
 
 		$(".addaccountmodal").each(function () {
 			$(this).click(function () {
@@ -25,7 +25,13 @@
 				if (yandexlog) {
 					window.accountlogin = $("#accountloginyandex").val()
 					window.accrole = $("#accountroleyandex").val()
-				};
+				} esle
+					if (window.accrole) {
+                    	console.log("Some of important valuse are empty:");
+						console.log("accountloginyandex: ", $("#accountloginyandex").val());
+						console.log("accountroleyandex: ", $("#accountroleyandex").val());
+						return
+					};
 				if (youtubelog) {
 					window.accountlogin = $("#accountloginyoutube").val()
 				};
@@ -34,10 +40,11 @@
 				};
 
 				//console.log($(this).attr("id"))
-				console.log($("#accountloginyandex").val())
+				console.log("accountloginyandex: ",$("#accountloginyandex").val())
+                console.log("accountroleyandex: ",$("#accountroleyandex").val())
 				console.log($("#accountloginyoutube").val())
 				console.log($("#accountloginvk").val())
-				console.log($("#accountroleyandex").val())
+
 				//console.log("sourcename: ", $(this).attr("id"))
 				//window.sourcename = $(this).attr("id");
 
@@ -66,8 +73,8 @@
                             type: "POST",
                             url: currentUrl.replace("accounts", "getauthcodeyandex"),
                             success: function (data) {
-                                $("#" + appendid).empty();
-                                console.log("Data recieved: ", data)
+                                //$("#" + appendid).empty();
+                                console.log("Data recieved from \\getauthcodeyandex: ", data)
                                 var page =
                                     "https://oauth.yandex.ru/authorize?response_type=code&client_id=" + data+"&login_hint="+window.accountlogin+"&force_confirm=yes"
                                 var $dialog = $('<div></div>')
@@ -80,7 +87,8 @@
                                         title: "Yandex"
                                     });
                                 $dialog.dialog('open');
-                                console.log("Id of append obj: ", appendid)
+                               // console.log("Id of append obj: ", appendid)
+                                console.log("Url to yandex oauth:  ", page)
 
                             },
                             error: function (req, status, err) {
