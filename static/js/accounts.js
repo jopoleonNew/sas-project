@@ -25,8 +25,7 @@
 				if (yandexlog) {
 					window.accountlogin = $("#accountloginyandex").val()
 					window.accrole = $("#accountroleyandex").val()
-				} esle
-					if (window.accrole) {
+				} esle if (window.accrole) {
                     	console.log("Some of important valuse are empty:");
 						console.log("accountloginyandex: ", $("#accountloginyandex").val());
 						console.log("accountroleyandex: ", $("#accountroleyandex").val());
