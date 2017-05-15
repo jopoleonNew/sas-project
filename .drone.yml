@@ -2,14 +2,50 @@ workspace:
   base: /go
   path: src/gogs.itcloud.pro/SAS-project/sas
 
+# services:
+#   sas-mongo-dev:
+#     image: mongo
+
+### DEVELOP ###
+
 pipeline:
   build:
     image: golang:alpine
     commands:
       - go build
-      # - go test
       
   publish:
+    when:
+      branch: [ master ]
+      status: [ success ]
+    image: plugins/docker
+    email: git@itcloud.pro
+    repo: registry.itcloud.pro/sas-project/sas-dev
+    registry: registry.itcloud.pro
+    username: docker
+    password: 88C7W5AX6Yd34yzFzMFD
+    tags: latest
+
+  deploy:
+    when:
+      branch: [ master ]
+      status: [ success ]
+    image: appleboy/drone-ssh
+    host: docker00.itcloud.pro
+    username: deploy
+    password: 3DdbvBebf5ZCYSNsm6VP
+    port: 22
+    script:
+      - docker login -u docker -p 88C7W5AX6Yd34yzFzMFD https://registry.itcloud.pro
+      - docker pull registry.itcloud.pro/sas-project/sas-dev:latest
+      - sudo /bin/systemctl restart compose@sas-dev.service
+      
+### PRODUCTION ###
+
+  publish:
+    when:
+      branch: release/*
+      status: [ success ]
     image: plugins/docker
     email: git@itcloud.pro
     repo: registry.itcloud.pro/sas-project/sas
@@ -17,10 +53,11 @@ pipeline:
     username: docker
     password: 88C7W5AX6Yd34yzFzMFD
     tags: latest
-    when:
-      status: [ success ]
 
   deploy:
+    when:
+      branch: release/*
+      status: [ success ]
     image: appleboy/drone-ssh
     host: docker00.itcloud.pro
     username: deploy
@@ -29,17 +66,11 @@ pipeline:
     script:
       - docker login -u docker -p 88C7W5AX6Yd34yzFzMFD https://registry.itcloud.pro
       - docker pull registry.itcloud.pro/sas-project/sas:latest
-      - sudo /bin/systemctl restart compose@sas-dev.service
-    when:
-      status: [ success ]
-  
+      - sudo /bin/systemctl restart compose@sas.service
+
+### NOTIFY ###
+
   telegram:
     image: appleboy/drone-telegram
     token: 308131828:AAFJg0FiiAGRNGKiJ_zye5tYOgkOxyDq8-8
     to: [2498943, 264704572]
-
-# services:
-#   sas-mongo-dev:
-#     image: mongo
-
-branches: master
