@@ -21,13 +21,6 @@
 				var yandexlog = $("#accountloginyandex").val();
 				var youtubelog = $("#accountloginyoutube").val();
 				var vklog = $("#accountloginvk").val();
-                if (time < 10) {
-                    greeting = "Good morning";
-                } else if (time < 20) {
-                    greeting = "Good day";
-                } else {
-                    greeting = "Good evening";
-                }
 
 				if (yandexlog) {
 					window.accountlogin = $("#accountloginyandex").val()
