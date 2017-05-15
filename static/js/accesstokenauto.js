@@ -38,10 +38,22 @@ $(document).ready(function () {
 					//$('#getauthcodeyandexresult').empty()
 						//$('#getauthcodeyandexresult').append(data);
 						//console.log("Data sent: ", data)
-					window.open(
-					"https://oauth.yandex.ru/authorize?response_type=code&client_id=" + data+"&login_hint="+accountlogin+"&force_confirm=yes",
-						'_blank' // <- This is what makes it open in a new window.
-					)
+					var page =
+                            "https://oauth.yandex.ru/authorize?response_type=code&client_id=" + data+"&login_hint="+accountlogin+"&force_confirm=yes"
+                    var $dialog = $('<div></div>')
+                        .html('<iframe style="border: 0px; " src="' + page + '" width="100%" height="100%"></iframe>')
+                        .dialog({
+                            autoOpen: false,
+                            modal: true,
+                            height: 800,
+                            width: 1000,
+                            title: "Yandex"
+                        });
+                    $dialog.dialog('open');
+					// window.open(
+					// "https://oauth.yandex.ru/authorize?response_type=code&client_id=" + data+"&login_hint="+accountlogin+"&force_confirm=yes",
+					// 	'_blank' // <- This is what makes it open in a new window.
+					// )
 //					var sendcodeUrl = window.location.protocol + "//" + window.location.hostname +":"+window.location.port + "/submityandexcode"
 //					console.log("hello there: ", sendcodeUrl)
 					console.log("Id of append obj: ", appendid)

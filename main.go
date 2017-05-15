@@ -64,10 +64,12 @@ func main() {
 	http.HandleFunc("/addaccount", userhandlers.AddAccountHandler)
 	http.HandleFunc("/deleteaccount", userhandlers.DeleteAccountHandler)
 
+	//TODO: join this two endpoints in one, to make possible autoadding of accounts.
 	http.HandleFunc("/getauthcodeyandex", yandexhandlers.GetAuthCodeYandexHandler)
 	http.HandleFunc("/submityandexcode", yandexhandlers.SubmitConfirmationYandexCode)
 
 	http.HandleFunc("/getyandexaccesstoken", yandexhandlers.GetYandexAccessToken)
+
 	http.HandleFunc("/getcampaingstats", yandexhandlers.GetCampaingStatsHandler) //POST
 
 	http.HandleFunc("/refreshdbcampaign", yandexhandlers.RefreshCampaignsListHandler)

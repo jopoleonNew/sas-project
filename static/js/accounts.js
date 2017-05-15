@@ -72,6 +72,7 @@
                                 //$('#getauthcodeyandexresult').append(data);
                                 //console.log("Data sent: ", data)
                                 window.open(
+                                	//data = w.Write([]byte(Config.YandexDirectAppID + "&state=" + accountlogin))
                                     "https://oauth.yandex.ru/authorize?response_type=code&client_id=" + data+"&login_hint="+ window.accountlogin+"&force_confirm=yes",
                                     '_blank' // <- This is what makes it open in a new window.
                                 )

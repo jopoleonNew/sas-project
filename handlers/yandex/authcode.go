@@ -11,6 +11,7 @@ import (
 // where :
 //      "state" is the client's Yandex login
 //      "client_id" is the ID of this app
+// /getauthcodeyandex endpoint
 // TODO: This functions seems to me like a kludge (костыль), so it really needs to be refactored or even embedded in other functions and deleted
 
 func GetAuthCodeYandexHandler(w http.ResponseWriter, r *http.Request) {
