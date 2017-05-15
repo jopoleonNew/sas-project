@@ -29,9 +29,11 @@ func ReportTemplateHandler(w http.ResponseWriter, r *http.Request) {
 
 	var data model.TemplateInfoStruct
 	data.CurrentUser = username
-	acc := model.NewAccount()
-	acc.Username = username
-	acclist, err := acc.GetInfoList()
+	//acc := model.NewAccount()
+	//acc.Username = username
+	user := model.NewUser()
+	user.Username = username
+	acclist, err := user.GetAccountList()
 	if err != nil {
 		log.Println("ReportTemplateHandler acc.GetInfoList() error:", err)
 		w.Write([]byte("ReportTemplateHandler error: " + err.Error()))

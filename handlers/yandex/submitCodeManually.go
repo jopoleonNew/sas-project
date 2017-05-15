@@ -85,7 +85,6 @@ func SubmitConfirmationYandexCode(w http.ResponseWriter, r *http.Request) {
 		//acc.AgencyClients = agencystruct
 		//DONETODO: add concurrency to getting campaign list for every agency account login
 
-
 		// inside this loop we get campaigns for all agency clients
 		// and create for every of them account in DB with
 		for _, agClient := range agencystruct {
@@ -120,13 +119,8 @@ func SubmitConfirmationYandexCode(w http.ResponseWriter, r *http.Request) {
 				log.Fatal("SubmitConfirmationYandexCode agencyacc.Update() error: ", err)
 				return
 			}
-
-			//log.Printf("\n %+v", campjson)
-
 		}
-
 		return
-		//log.Printf("\n %+v", campjson)
 	}
 	yadacc := yad.NewAccount()
 	yadacc.Login = accountlogin
@@ -137,8 +131,6 @@ func SubmitConfirmationYandexCode(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("SubmitConfirmationYandexCode GetCampaignsListYandex:" + err.Error()))
 		return
 	}
-
-	//log.Println("\n\n Campaings slice: ", yadcamps)
 	acccamps := make([]model.Campaign, len(yadcamps))
 	for i, camp := range yadcamps {
 		acccamps[i].ID = camp.ID
@@ -146,7 +138,7 @@ func SubmitConfirmationYandexCode(w http.ResponseWriter, r *http.Request) {
 		acccamps[i].Name = camp.Name
 	}
 	acc.CampaignsInfo = acccamps
-	//updating acc status on active
+	//updating account status on active
 	acc.Status = "active"
 	err = acc.AdvanceUpdate()
 	if err != nil {
@@ -161,37 +153,3 @@ func SubmitConfirmationYandexCode(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Write(campsbyte)
 }
-
-//func DoMakeCollConcur(username, acclogin string, camp models.Account, in <-chan models.GetSummaryStatRes) {
-//	for statIn := range in {
-//		err := BDctl.MakeStatisticCollection(camp.Username, camp.Accountlogin, statIn)
-//		if err != nil {
-//			log.Fatal("CampaingStatiscicConcurently error: ", err)
-//		}
-//	}
-//
-//}
-//func DoStatConcur(ids []string, camp models.Account, out chan<- models.GetSummaryStatRes, wg sync.WaitGroup) {
-//
-//	for _, id := range ids {
-//		insidestatChan := make(chan models.GetSummaryStatRes)
-//		go func() {
-//			defer wg.Done()
-//			log.Println("DoAllStuff Inside concur loop", id)
-//			sumstat, _, err := CampaingStatiscicConcurently(id, camp.OauthToken)
-//			if err != nil {
-//				log.Fatal("CampaingStatiscicConcurently error: ", err)
-//			}
-//			Counter += 1
-//			sort.Sort(sumstat)
-//			insidestatChan <- sumstat
-//			close(insidestatChan)
-//
-//		}()
-//		preOut := <-insidestatChan
-//		out <- preOut
-//	}
-//	wg.Wait()
-//	close(out)
-//
-//}

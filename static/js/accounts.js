@@ -18,12 +18,6 @@
 
 		$(".addaccountmodal").each(function () {
 			$(this).click(function () {
-
-				//campaingId = $(this).attr("id");
-				//accountlogin = $(this).attr("name");
-				//appendid = $(this).attr("result")
-				//console.log("Id of append obj: ", appendid)
-				//console.log("campaingId: ", campaingId)
 				var yandexlog = $("#accountloginyandex").val();
 				var youtubelog = $("#accountloginyoutube").val();
 				var vklog = $("#accountloginvk").val();
@@ -58,8 +52,8 @@
 					//http://localhost:3000/accounts?egor/addaccount
 					url: currentUrl.replace("accounts", "addaccount"),
 					success: function (data) {
-						console.log("Data sent: ", data)
-						location.reload()
+						console.log("Data get from server: ", data)
+						//location.reload()
 					},
 					error: function (req, status, err) {
 						//console.log(req.responseText)

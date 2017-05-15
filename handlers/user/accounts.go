@@ -56,12 +56,14 @@ func AccountsHandler(w http.ResponseWriter, r *http.Request) {
 	data.CurrentUser = username
 	acc := model.NewAccount()
 	acc.Username = username
-	acclist, err := acc.GetInfoList()
+	//acclist, err := acc.GetInfoList()
+	acclist, err := user.GetAccountList()
 	if err != nil {
-		log.Println("AccountsHandler acc.GetInfoList() error:", err)
+		log.Println("AccountsHandler user.GetAccountList() error:", err)
 		w.Write([]byte("AccountsHandler error: " + err.Error()))
 		return
 	}
+	log.Println("AccountsHandler user.GetAccountList(): ", acclist)
 	data.AccountList = acclist
 
 	t, err := template.New("accounts2.tmpl").ParseFiles(
@@ -116,6 +118,15 @@ func AddAccountHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println("AddAccountHandler user.GetInfo() error: ", err)
 		return
 	}
+
+	for _, a := range user.AccountList {
+		if acc.Accountlogin == a {
+			//log.Println("Аккаунт с таким именем уже существует у пользователя " + username)
+			w.Write([]byte("Аккаунт с таким именем уже существует у пользователя " + username))
+			return
+		}
+	}
+	//user.AccountListif strings.Contains(acc.Accountlogin, )
 	//func (ctl *Controller) IsAccountUnique(username, accountlogin string) (bool, error)
 
 	exists, err := acc.IsExist()
@@ -126,7 +137,8 @@ func AddAccountHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if exists {
-		w.Write([]byte("Аккаунт с именем " + acc.Accountlogin + " уже есть в базе. "))
+		//w.Write([]byte("Аккаунт с именем " + acc.Accountlogin + " уже есть в базе. "))
+		w.Write([]byte("Succsess. Аккаунт добавлен."))
 		return
 	} else {
 		acc.Email = userinfo.Email
@@ -152,7 +164,7 @@ func AddAccountHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteAccountHandler(w http.ResponseWriter, r *http.Request) {
-
+	log.Println("DeleteAccountHandler used")
 	username, err := utils.GetUsernamefromRequestSession(r)
 	if err != nil {
 		log.Println("DeleteAccountHandler GetUsernamefromRequestSession error: ", err)
@@ -161,10 +173,11 @@ func DeleteAccountHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	r.ParseForm()
 	accountlogin := r.FormValue("accountlogin")
-	acc := model.NewAccount()
-	acc.Username = username
-	acc.Accountlogin = accountlogin
-	err = acc.Remove()
+	user := model.NewUser()
+	//acc := model.NewAccount()
+	user.Username = username
+	user.AccountList = append(user.AccountList, accountlogin)
+	err = user.RemoveAccount()
 	if err != nil {
 		log.Println("DeleteAccountHandler acc.Remove() error: ", err)
 		w.Write([]byte("DeleteAccountHandler acc.Remove() error: " + err.Error()))

@@ -35,7 +35,7 @@ func NewAccount() *Account {
 
 var ErrAccNotFound = errors.New("Account is not exist.")
 
-// IsExist checks DB for existing account with given account login.
+// IsExist checks user's AccountList for existing account with given account login.
 func (a *Account) IsExist() (bool, error) {
 	log.Println("IsExist used")
 	//if a.Username == "" {
@@ -64,6 +64,7 @@ func (a *Account) IsExist() (bool, error) {
 
 // Update updates Account struct fields in
 // database according to passed account as method receiver.
+// Currently DEPRECATED method, use AdvanceUpdate() instead
 func (a *Account) Update() error {
 	log.Println("account.Update used")
 	s := mainSession.Clone()
@@ -86,6 +87,8 @@ func (a *Account) Update() error {
 	return nil
 }
 
+// SetStatusAndToken() sets Status And Token of account in DB.
+// Currently DEPRECATED method, use AdvanceUpdate() instead
 func (a *Account) SetStatusAndToken() error {
 	err := a.checkMainFields()
 	if err != nil {
@@ -106,6 +109,9 @@ func (a *Account) SetStatusAndToken() error {
 	return nil
 }
 
+// AdvanceUpdate() updates account in DB. Upgraded versiof of Update() method.
+// Checks all inbound fields of method receiver and updates document in DB appropriate with
+// given values.
 func (a *Account) AdvanceUpdate() error {
 
 	log.Println("Account.AdvanceUpdate() used with ", a)
@@ -116,15 +122,6 @@ func (a *Account) AdvanceUpdate() error {
 
 	var changeParams = []bson.DocElem{}
 
-	//if a.Username != "" {
-	//	changeParams = append(changeParams, bson.DocElem{"username", a.Username})
-	//}
-	//if a.Accountlogin != "" {
-	//	changeParams = append(changeParams, bson.DocElem{"accountlogin", a.Accountlogin})
-	//}
-	//if a.Source != "" {
-	//	changeParams = append(changeParams, bson.DocElem{"source", a.Source})
-	//}
 	if a.Email != "" {
 		changeParams = append(changeParams, bson.DocElem{"email", a.Email})
 	}
@@ -155,7 +152,7 @@ func (a *Account) AdvanceUpdate() error {
 
 	colQuerier := bson.M{"username": a.Username, "accountlogin": a.Accountlogin, "source": a.Source}
 	change := bson.M{"$set": changeParams}
-	//log.Println("......................................AdvanceUpdate queries :    ", colQuerier, changeParams)
+	//omitting changeInfo value
 	_, err = c.Upsert(colQuerier, change)
 	if err != nil {
 		log.Println("a.AdvanceUpdate() err: ", err)
@@ -163,10 +160,6 @@ func (a *Account) AdvanceUpdate() error {
 	}
 	//changeInfostr := fmt.Sprintf("%+v", changeInfo1)
 	//log.Printf("\n Account %+v Updated in database ", a)
-	return nil
-}
-
-func (a *Account) SetCampaigns() error {
 	return nil
 }
 
@@ -203,6 +196,7 @@ func (a *Account) GetInfoList() ([]Account, error) {
 	collen, _ := c.Count()
 	result := make([]Account, collen)
 	err := c.Find(bson.M{"username": a.Username}).All(&result)
+
 	if err != nil {
 		//log.Println(err, "GetInfoList")
 
@@ -211,7 +205,7 @@ func (a *Account) GetInfoList() ([]Account, error) {
 	return result, nil
 }
 
-//Remove removes given Account from DB
+//Remove() removes given Account from DB
 func (a *Account) Remove() error {
 	log.Println("Remove used: ", a.Username, " ", a.Accountlogin)
 	s := mainSession.Clone()

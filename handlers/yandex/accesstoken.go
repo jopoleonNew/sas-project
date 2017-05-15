@@ -38,7 +38,7 @@ func GetYandexAccessToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// seting accsess token to DB
+	// saving access token to DB: oauthresp.AccessToken
 	acc := model.NewAccount()
 	acc.Accountlogin = accountlogin
 	acc.Username = username

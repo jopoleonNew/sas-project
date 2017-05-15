@@ -110,6 +110,35 @@ func (u *UserInfo) GetInfo() (UserInfo, error) {
 	return result, nil
 }
 
+func (u *UserInfo) GetAccountList() ([]Account, error) {
+	if u.Username == "" {
+		return nil, errors.New("UserInfo.GetAccountList() username field can't be blank.")
+	}
+	log.Println("UserInfo.GetAccountList() by ", u.Username)
+
+	s := mainSession.Clone()
+	defer s.Close()
+	c := s.DB(mainDB.Name).C("accountsList")
+	//u.Username = strings.ToLower(u.Username)
+	result := make([]Account, len(u.AccountList))
+	//db.accountsList.find({ "accountlogin": { $in: [ "123qwe","123sssa" ] }})
+	log.Println("GetAccountList acclist: ", u.AccountList)
+	//var useracclist []string
+	userinfo, err := u.GetInfo()
+	if err != nil {
+		log.Println("GetAccountList u.GetInfo() err: ", err)
+		return nil, err
+	}
+	err = c.Find(bson.M{"accountlogin": bson.M{"$in": userinfo.AccountList}}).All(&result)
+	if err != nil {
+		log.Println("GetAccountList err: ", err)
+		return nil, err
+	}
+	//result := []Account{}
+	//u.AccountList
+	return result, nil
+}
+
 // IsPasswordValid checks is passed password string equals hashed password from DB
 func (u *UserInfo) IsPasswordValid(password string) (bool, error) {
 	u.Username = strings.ToLower(u.Username)
@@ -188,14 +217,29 @@ func (u *UserInfo) AdvanceUpdate() error {
 			log.Println("a.AdvanceUpdate() err: ", err)
 			return err
 		}
-
 	}
+	return nil
+}
 
-	//	db.students.update(
-	//	{ _id: 1 },
-	//	{ $push: { scores: 89 } }
-	//)
-
+// RemoveAccount removes account login from AccountList filed of UserInfo struct
+func (u *UserInfo) RemoveAccount() error {
+	log.Println("User.RemoveAccount() used with ", u)
+	if u.Username == "" {
+		return errors.New("UserInfo.PushAccount() username field can't be empty")
+	}
+	s := mainSession.Clone()
+	defer s.Close()
+	c := s.DB(mainDB.Name).C(u.collName)
+	if len(u.AccountList) != 0 {
+		colQuerier1 := bson.M{"username": u.Username}
+		// using $pull MongoDB operator to remove account
+		change1 := bson.M{"$pull": bson.M{"accountlist": u.AccountList[0]}}
+		_, err := c.Upsert(colQuerier1, change1)
+		if err != nil {
+			log.Println("u.PushAccount() err: ", err)
+			return err
+		}
+	}
 	return nil
 }
 
