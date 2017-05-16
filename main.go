@@ -33,7 +33,7 @@ func init() {
 
 	Config = app.GetConfig()
 
-	log.Println("CONFIG FILE MAIN: ", Config)
+	log.Printf("CONFIG FILE MAIN: %+v", Config)
 	err := model.SetDBParams(Config.Mongourl, Config.DBname)
 	if err != nil {
 		log.Fatal(err)

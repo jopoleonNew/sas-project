@@ -48,7 +48,6 @@ func LoginSubmitHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	session.Values["username"] = username
-	//session.Values["password"] = password
 	session.Values["loggedin"] = "true"
 	session.Save(r, w)
 	w.Write([]byte("Success!"))

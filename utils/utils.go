@@ -15,7 +15,7 @@ import (
 var ErrorEmptySessionUsername = errors.New("GetUsernamefromRequestSession error: session.Values['username'] is empty")
 
 // IsUserLoggedIn checking gorilla session user is logged or not
-func IsUserLoggedIn(r *http.Request) bool {
+func IsUserLoggedIn(r *http.Request) (bool, error) {
 	var store = sessions.NewCookieStore([]byte(app.GetConfig().SessionSecret))
 	session, err := store.Get(r, "sessionSSA")
 	if err != nil {
@@ -24,9 +24,10 @@ func IsUserLoggedIn(r *http.Request) bool {
 	}
 
 	if session.Values["loggedin"] != nil && session.Values["loggedin"].(string) == "true" {
-		return true
+		return true, nil
 	} else {
-		return false
+		log.Println("IsUserLoggedIn: user not loggedin: \n RemoteAddres:", r.RemoteAddr, " \n RequestURI: ", r.RequestURI)
+		return false, nil
 	}
 
 }
