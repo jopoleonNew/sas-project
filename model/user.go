@@ -71,7 +71,6 @@ func (u *UserInfo) IsExist() (bool, error) {
 	c := s.DB(mainDB.Name).C(u.collName)
 	u.Username = strings.ToLower(u.Username)
 	log.Println("IsExists user used for: ", u.Username)
-	// DONETODO: ensure that such notation for pipeline is correct
 	pipeline := bson.M{
 		"$or": []interface{}{
 			bson.M{"email": u.Email},
@@ -139,7 +138,7 @@ func (u *UserInfo) GetAccountList() ([]Account, error) {
 	return result, nil
 }
 
-// IsPasswordValid checks is passed password string equals hashed password from DB
+// IsPasswordValid checks if password string equals hashed password from DB
 func (u *UserInfo) IsPasswordValid(password string) (bool, error) {
 	u.Username = strings.ToLower(u.Username)
 	log.Println("ValidateUserPassword GetInfo used by ", u.Username)
@@ -191,11 +190,6 @@ func (u *UserInfo) AdvanceUpdate() error {
 	if u.ActivationKey != "" {
 		changeParams = append(changeParams, bson.DocElem{"activationKey", u.ActivationKey})
 	}
-
-	//if len(u.AccountList) != 0 {
-	//	changeParams = append(changeParams,
-	//		bson.DocElem{"$push", bson.M{"accountlist": u.AccountList}})
-	//}
 	s := mainSession.Clone()
 	defer s.Close()
 	c := s.DB(mainDB.Name).C(u.collName)
@@ -242,131 +236,3 @@ func (u *UserInfo) RemoveAccount() error {
 	}
 	return nil
 }
-
-//
-//func (ctl *Controller) AddUserToDB(username, pass, email, name, organ string) error {
-//
-//	dbsession := ctl.session.Clone()
-//	defer dbsession.Close()
-//	passbyte := []byte(pass)
-//	hashedPassword, err := bcrypt.GenerateFromPassword(passbyte, bcrypt.DefaultCost)
-//	if err != nil {
-//		log.Println("AddUserToDB bcrypt.GenerateFromPassword error: ", err)
-//		return err
-//	}
-//	usersListCollecton := dbsession.DB(DBname).C("usersList")
-//	err = usersListCollecton.Insert(
-//		&model.UserInfo{
-//			Username:      username,
-//			Password:      pass,
-//			Salt:          string(hashedPassword),
-//			Email:         email,
-//			Name:          name,
-//			Role:          "regular",
-//			Organization:  organ,
-//			Registred:     "true",
-//			IsActivated:   "false",
-//			ActivationKey: "123",
-//		})
-//	if err != nil {
-//		log.Println("AddUserToDB usersListCollecton.Insert error: ", err)
-//		return err
-//	}
-//	log.Println("User ", username, " added to database")
-//
-//	return nil
-//}
-//
-//func (ctl *Controller) GetUserInfo(username string) (model.UserInfo, error) {
-//
-//	log.Println("GetUserIfno used")
-//	log.Println("GetUserIfno used DBname ", DBname)
-//	dbsession := ctl.session.Clone()
-//	defer dbsession.Close()
-//	c := dbsession.DB(DBname).C("usersList")
-//	result := model.UserInfo{}
-//	err := c.Find(bson.M{"username": username}).One(&result)
-//	if err != nil {
-//		log.Println(err, "GetUserIfno")
-//		return result, err
-//	}
-//	return result, nil
-//}
-//
-//func (ctl *Controller) IsUserUnique(username string) (bool, error) {
-//	log.Println("IsUserUnique used")
-//	userinfo, err := ctl.GetUserInfo(username)
-//	if err != nil {
-//		log.Println("IsUserUnique GetUserIfno error: ", err)
-//		return false, err
-//	}
-//	if userinfo.Username != "" {
-//		return false, nil
-//	}
-//	return true, nil
-//}
-//
-//func (ctl *Controller) IsUserRegistered(username string) bool {
-//	//log.Print("IsRegistred username type: ", reflect.TypeOf(username))
-//	dbsession := ctl.session.Clone()
-//	defer dbsession.Close()
-//	c := dbsession.DB(DBname).C("usersList")
-//	result := model.UserInfo{}
-//	err := c.Find(bson.M{"username": username}).One(&result)
-//	if err != nil {
-//		log.Println(err, "IsUserRegistered")
-//		return false
-//	}
-//	if result.Registred == "true" {
-//		return true
-//	} else {
-//		return false
-//	}
-//}
-//
-//func (ctl *Controller) IsUserActivated(username string) bool {
-//	//log.Print("IsActive username type: ", reflect.TypeOf(username))
-//	dbsession := ctl.session.Clone()
-//	defer dbsession.Close()
-//	c := dbsession.DB(DBname).C("usersList")
-//	result := model.UserInfo{}
-//	err := c.Find(bson.M{"username": username}).One(&result)
-//	if err != nil {
-//		log.Println(err, "IsUserActivated")
-//		return false
-//	}
-//	if result.IsActivated == "true" {
-//		return true
-//	} else {
-//		return false
-//	}
-//}
-//
-//func (ctl *Controller) ValidateUserPassword(username, password string) (bool, error) {
-//	dbsession := ctl.session.Clone()
-//	defer dbsession.Close()
-//	c := dbsession.DB(DBname).C("usersList")
-//	result := model.UserInfo{}
-//	err := c.Find(bson.M{"username": username}).One(&result)
-//	if err != nil {
-//		log.Println("ValidateUserPassword IsUserRegistered error: ", err)
-//		return false, err
-//	}
-//	//hash passwrod+result.salt
-//	//хешируем с солью
-//	err = bcrypt.CompareHashAndPassword([]byte(result.Salt), []byte(password))
-//	if err != nil {
-//		return false, err
-//	} else {
-//		return true, nil
-//	}
-//	// if result.Password == password {
-//	// 	return true, nil
-//	// } else {
-//	// 	return false, nil
-//	// }
-//}
-//
-//func (ctl *Controller) ChangeUsersPassword(username, newpassword string) {
-//
-//}
