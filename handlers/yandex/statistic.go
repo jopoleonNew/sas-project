@@ -75,7 +75,7 @@ func GetStatSliceHandler(w http.ResponseWriter, r *http.Request) {
 			account := yad.NewAccount()
 			account.Login = camp.Accountlogin
 			account.OAuthToken = camp.OauthToken
-			log.Println("GetStatSliceHandlerGetStatSliceHandler id slice ", idslice)
+			//log.Println("GetStatSliceHandlerGetStatSliceHandler id slice ", idslice)
 			statres, err := account.GetStatisticsConc(idslice, sttime, endtime)
 			if err != nil {
 				log.Println("GetStatSliceHandlerGetStatSliceHandler GetCampaingsSliceStatistic", err)

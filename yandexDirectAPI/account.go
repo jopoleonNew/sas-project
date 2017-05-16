@@ -200,9 +200,10 @@ func (a *Account) GetStatisticsConc(ids []int, start, end time.Time) ([]Campaign
 		var statsslice []CampaignStat
 		// super advanced splitting algorithm
 		idThreshold := (YandexStatThreshold / int(days))
-		itersAmount := (len(ids) / (YandexStatThreshold / 31)) + 1
+		itersAmount := (len(ids) / idThreshold) + 1
 		wg := sync.WaitGroup{}
 		//wg.Add(itersAmount)
+		// make buffered chanel to control amount of simultaneous goroutines
 		sema := make(chan struct{}, 5)
 
 		for j := 0; j < itersAmount; j++ {
