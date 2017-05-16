@@ -63,13 +63,13 @@ func SignUpSubmitHandler(w http.ResponseWriter, r *http.Request) {
 					w.Write([]byte("Registration server error " + err.Error()))
 					return
 				}
-				session.Values["registered"] = "true"
+				//session.Values["registered"] = "true"
 				session.Values["loggedin"] = "false"
 				session.Values["username"] = username
-				session.Values["password"] = password
-				session.Values["email"] = email
-				session.Values["name"] = name
-				session.Values["organization"] = organization
+				//session.Values["password"] = password
+				//session.Values["email"] = email
+				//session.Values["name"] = name
+				//session.Values["organization"] = organization
 				session.Save(r, w)
 				w.Write([]byte("Registration succsessfull "))
 				return

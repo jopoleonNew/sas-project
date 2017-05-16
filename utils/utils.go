@@ -22,11 +22,14 @@ func IsUserLoggedIn(r *http.Request) (bool, error) {
 		log.Println(err)
 
 	}
+	log.Println("IsUserLoggedIn values: ", session.Values)
 
-	if session.Values["loggedin"] != nil && session.Values["loggedin"].(string) == "true" {
+	if session.Values["loggedin"] != nil &&
+		session.Values["loggedin"].(string) == "true" &&
+		len(session.Values) == 0 {
 		return true, nil
 	} else {
-		log.Println("IsUserLoggedIn: user not loggedin: \n RemoteAddres:", r.RemoteAddr, " \n RequestURI: ", r.RequestURI)
+		//log.Println("IsUserLoggedIn: user not loggedin: \n RemoteAddres:", r.RemoteAddr, " \n RequestURI: ", r.RequestURI)
 		return false, nil
 	}
 

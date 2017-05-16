@@ -13,11 +13,11 @@ import (
 
 func IndexHandler(w http.ResponseWriter, r *http.Request) {
 	//
-	//session, err := store.Get(r, "sessionSSA")
-	//if err != nil {
-	//	log.Println(err)
-	//
-	//}
+	session, err := store.Get(r, "sessionSSA")
+	if err != nil {
+		log.Println(err)
+
+	}
 
 	var data model.TemplateInfoStruct
 
@@ -32,6 +32,24 @@ func IndexHandler(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte("IndexHandler GetUsernamefromRequestSession error" + err.Error()))
 			return
 		}
+	}
+	loggedin, err := utils.IsUserLoggedIn(r)
+	if err != nil {
+		log.Println("IndexHandler IsUserLoggedIn error: ", err)
+		w.Write([]byte("IndexHandler IsUserLoggedIn error" + err.Error()))
+		return
+	} else {
+		if loggedin {
+			data.CurrentUser = name
+		} else {
+			data.CurrentUser = ""
+		}
+	}
+
+	if session.Values["loggedin"] != nil && session.Values["loggedin"].(string) == "true" {
+		data.CurrentUser = name
+	} else {
+		data.CurrentUser = ""
 	}
 
 	//u := model.NewUser()
@@ -52,25 +70,18 @@ func IndexHandler(w http.ResponseWriter, r *http.Request) {
 	// 	http.Redirect(w, r, "/", 302)
 	// 	return
 	// }
-	logged, err := utils.IsUserLoggedIn(r)
-	if err != nil {
-		if logged {
-			data.CurrentUser = name
-		} else {
-
-			data.CurrentUser = ""
-		}
-
-	} else {
-		log.Println("IndexHandler IsUserLoggedIn error: ", err)
-		w.Write([]byte("IndexHandler IsUserLoggedIn error" + err.Error()))
-		return
-	}
-
-	//if session.Values["loggedin"] != nil && session.Values["loggedin"].(string) == "true" {
-	//	data.CurrentUser = name
+	//logged, err := utils.IsUserLoggedIn(r)
+	//if err != nil {
+	//	if logged {
+	//		data.CurrentUser = name
+	//	} else {
+	//
+	//		data.CurrentUser = ""
+	//	}
 	//} else {
-	//	data.CurrentUser = ""
+	//	log.Println("IndexHandler IsUserLoggedIn error: ", err)
+	//	w.Write([]byte("IndexHandler IsUserLoggedIn error" + err.Error()))
+	//	return
 	//}
 
 	t := template.Must(template.New("index.tmpl").ParseFiles(

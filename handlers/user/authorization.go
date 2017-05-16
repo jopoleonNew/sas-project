@@ -81,9 +81,9 @@ func LogoutSubmitHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if exist && session.Values["loggedin"].(string) == "true" {
-		session.Options.MaxAge = -1
+		//session.Options.MaxAge = -1
 		session.Values["username"] = ""
-		session.Values["password"] = ""
+		//session.Values["password"] = ""
 		session.Values["loggedin"] = "false"
 
 	}
