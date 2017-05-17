@@ -5,6 +5,8 @@ import (
 	"errors"
 	"log"
 
+	"strings"
+
 	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -144,6 +146,8 @@ func (a *Account) AdvanceUpdate() error {
 	if len(a.CampaignsInfo) != 0 {
 		changeParams = append(changeParams, bson.DocElem{"campaignsinfo", a.CampaignsInfo})
 	}
+	a.Accountlogin = strings.ToLower(a.Accountlogin)
+	a.Username = strings.ToLower(a.Username)
 	s := mainSession.Clone()
 	defer s.Close()
 	c := s.DB(mainDB.Name).C(a.collName)

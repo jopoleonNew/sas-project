@@ -46,6 +46,12 @@ func LoginSubmitHandler(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Incorrect password"))
 		return
 	}
+	uInfo, err := user.GetInfo()
+	if uInfo.IsActivated == "false" {
+		log.Println("User ", username, " is not activated.")
+		w.Write([]byte("Пользователь " + username + " не активирован. Проверьте свой почтовый ящик, там должно быть активационное письмо."))
+		return
+	}
 
 	session.Values["username"] = username
 	session.Values["loggedin"] = "true"

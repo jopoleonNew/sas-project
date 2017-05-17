@@ -56,6 +56,7 @@ func main() {
 
 	http.HandleFunc("/signup", userhandlers.SignUpHandler)             // GET
 	http.HandleFunc("/signupsubmit", userhandlers.SignUpSubmitHandler) // POST
+	http.HandleFunc("/activateuser", userhandlers.ActivateUserHandler) // POST
 
 	http.HandleFunc("/loginsubmit", userhandlers.LoginSubmitHandler)
 	http.HandleFunc("/logoutsubmit", userhandlers.LogoutSubmitHandler)

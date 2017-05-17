@@ -36,7 +36,10 @@ func NewUser() *UserInfo {
 func (u *UserInfo) Update() error {
 	// We store only lowercase username
 	u.Username = strings.ToLower(u.Username)
-
+	//log.Println("User.AdvanceUpdate() used with ", u)
+	if u.Username == "" {
+		return errors.New("UserInfo.Update() username field can't be empty")
+	}
 	s := mainSession.Clone()
 	defer s.Close()
 	c := s.DB(mainDB.Name).C(u.collName)

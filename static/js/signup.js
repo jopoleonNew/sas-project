@@ -39,11 +39,11 @@ $(document).ready(function () {
 				console.log("Data sent: ", data)
 				
 				
-				if (data.indexOf("Registration succsessfull") >= 0) {
+				if (data.indexOf("Registration is successful. Check your email for activation letter.") >= 0) {
 						console.log("Inside index Of")
 					setTimeout(function () {
 						window.location = currentUrl.replace("signup", "/");
-					}, 1000);
+					}, 2000);
 						$("#signupresults").append(data);
 				}else {
 					$('#signupresults').append(

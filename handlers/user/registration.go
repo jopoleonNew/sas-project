@@ -39,7 +39,9 @@ func SignUpSubmitHandler(w http.ResponseWriter, r *http.Request) {
 	email := r.FormValue("email")
 	name := r.FormValue("name")
 	organization := r.FormValue("organization")
-
+	//log.Println("SignUpHandler check r.RemoteAddr: ", r.RemoteAddr)
+	//log.Println("SignUpHandler check r.Host: ", r.Host)
+	//log.Println("SignUpHandler check r.RequestURI: ", r.RequestURI)
 	u := model.NewUser()
 	u.Username = username
 	//u.Username = username
@@ -47,6 +49,7 @@ func SignUpSubmitHandler(w http.ResponseWriter, r *http.Request) {
 	u.Email = email
 	u.Name = name
 	u.Organization = organization
+	u.IsActivated = "false"
 
 	if username != "" && password != "" && email != "" {
 		if model.ValidateEmail(email) {
@@ -57,6 +60,9 @@ func SignUpSubmitHandler(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			if !yes {
+				akey := model.RandStringBytes(32)
+				u.ActivationKey = akey
+
 				err := u.Update()
 				if err != nil {
 					log.Println("SignUpSubmitHandler u.Update() error: ", err)
@@ -71,7 +77,17 @@ func SignUpSubmitHandler(w http.ResponseWriter, r *http.Request) {
 				//session.Values["name"] = name
 				//session.Values["organization"] = organization
 				session.Save(r, w)
-				w.Write([]byte("Registration succsessfull "))
+				err = model.SendEmailwithKey(username, akey, email, r.Host)
+				if err != nil {
+					log.Println("SignUpSubmitHandler SendEmailwithKey error: ", err)
+					w.Write([]byte("Registration server error " + err.Error()))
+					return
+				}
+				//
+				//TODO: Sending email with activation code to user's email
+
+				//
+				w.Write([]byte("Registration is successful. Check your email for activation letter."))
 				return
 			}
 			w.Write([]byte("User with such login or email already exists"))
