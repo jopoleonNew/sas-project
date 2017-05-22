@@ -95,7 +95,7 @@ func RestorePasswordHadler(w http.ResponseWriter, r *http.Request) {
 				w.Write([]byte("Пароль и подтверждение паролья не одинаковы"))
 				return
 			}
-			if len(pass1) < 6 || len(pass2) < 6 {
+			if len(pass1) < 6 {
 				w.Write([]byte("Пароль не может быть короче 6 символов"))
 				return
 			}
@@ -115,7 +115,7 @@ func RestorePasswordHadler(w http.ResponseWriter, r *http.Request) {
 				log.Println("RestorePasswordHadler user.AdvanceUpdate() error: ", err)
 				w.Write([]byte("RestorePasswordHadler user.AdvanceUpdate() error: " + err.Error()))
 			}
-			w.Write([]byte("Пароли получены, и успешно примененны"))
+			w.Write([]byte("Пароль успешно изменен"))
 			return
 		} else {
 			w.Write([]byte("Неправильный код в ссылке, либо прошло больше 5 часов после его выдачи вам. Попробуйте еще раз получить письмо с новым кодом"))
