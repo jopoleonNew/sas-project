@@ -33,7 +33,7 @@ func SendEmailwithKey(username, key, emailaddr, requestHost string) error {
 }
 func SendEmailRestorePass(linkkey, emailaddr, requestHost string) error {
 
-	link := requestHost + "/restorepass?secretkey=" + linkkey
+	link := "https://" + requestHost + "/restorepass?secretkey=" + linkkey
 	//linkTag := "<a href='" + link + "'>" + link + "</a>"
 
 	msg := []byte("To: " + emailaddr + "\r\n" +
