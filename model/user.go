@@ -33,7 +33,7 @@ func NewUser() *UserInfo {
 	return u
 }
 
-func (u *UserInfo) Update() error {
+func (u *UserInfo) Create() error {
 	// We store only lowercase username
 	u.Username = strings.ToLower(u.Username)
 	//log.Println("User.AdvanceUpdate() used with ", u)
@@ -46,7 +46,7 @@ func (u *UserInfo) Update() error {
 	passbyte := []byte(u.Password)
 	hashedPassword, err := bcrypt.GenerateFromPassword(passbyte, bcrypt.DefaultCost)
 	if err != nil {
-		log.Println("db user.go Update bcrypt.GenerateFromPassword error: ", err)
+		log.Println("UserInfo.Create() bcrypt.GenerateFromPassword error: ", err)
 		return err
 	}
 	u.Username = strings.ToLower(u.Username)
@@ -167,8 +167,8 @@ func (u *UserInfo) IsPasswordValid(password string) (bool, error) {
 func (u *UserInfo) AdvanceUpdate() error {
 
 	log.Println("User.AdvanceUpdate() used with ", u)
-	if u.Username == "" {
-		return errors.New("UserInfo.AdvanceUpdate() username field can't be empty")
+	if u.Username == "" && u.Email == "" {
+		return errors.New("UserInfo.AdvanceUpdate() username and email field can't be empty simultaneously")
 	}
 	var changeParams = []bson.DocElem{}
 
@@ -197,7 +197,12 @@ func (u *UserInfo) AdvanceUpdate() error {
 	defer s.Close()
 	c := s.DB(mainDB.Name).C(u.collName)
 	if len(changeParams) != 0 {
-		colQuerier := bson.M{"username": u.Username}
+		colQuerier := bson.M{
+			"$or": []interface{}{
+				bson.M{"email": u.Email},
+				bson.M{"username": u.Username},
+			},
+		}
 		change := bson.M{"$set": changeParams}
 		log.Println("UserInfo) AdvanceUpdate() query: ", colQuerier, " and cahnge: ", change)
 		_, err := c.Upsert(colQuerier, change)

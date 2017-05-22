@@ -4,10 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <script src="../static/js/jquery-3.1.1.min.js"></script>
-    <script src="../static/js/forgetpass.js"></script>
+    <script src="../static/js/restorepass.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-    <title>Forget Password</title>
+    <title>Restore Password</title>
 </head>
 
 <body>
@@ -15,27 +15,30 @@
 <div style="text-align: center;margin: 0 auto">
     <h1>Вы забыли пароль от своей учетной записи в сервисе SSA</h1>
     <div id="regforms">
-        Введите свой почтовый ящик электройнной почты (email), чтобы мы смогли прислать Вам письмо с дальнейшими инструкциями по восстановлению пароля.
-        <h3>Адрес Вашей почты<strong style="color:red">*</strong></h3>
-        <input style="border-radius: 8px; border: solid 1px ; color: #1F95D1; height: 30px; width: 25%; font-size: 18px;text-align: center " type="text" name="email" id="email">
+        Введите новый пароль и подтвердите его:
+        <h2><strong style="color:red">*</strong>Новый пароль: </h2><input style="border-radius: 8px; border: solid 1px ; color: #1F95D1; height: 30px; width: 300px; font-size: 18px;text-align: center " type="text" name="password" id="password1">
+        <h2><strong style="color:red">*</strong>Подтвердите пароль: </h2><input style="border-radius: 8px; border: solid 1px ; color: #1F95D1; height: 30px; width: 300px; font-size: 18px;text-align: center " type="text" name="password" id="password2">
     </div>
+
     <br>
+    <div id="passerror"></div>
     <br> Поля помеченные <strong style="color:red">*</strong> обязательны для заполнения.
     <hr>
     <br>
-    <button class="btn btn-success" id="emailsubmit">Получить письмо</button>
+    <button class="btn btn-success" id="passsubmit">Сменить пароль</button>
     <br>
     <script>
         $(document).ready(function() {
             $('#regforms').keypress(function(e) {
                 if (e.keyCode == 13)
-                    $('#signupbutton').click();
+                    $('#passsubmit').click();
             });
         });
 
+
     </script>
 
-    <div id="emailsubmitresults"></div>
+    <div id="restorepassresults"></div>
 </div>
 </body>
 

@@ -54,9 +54,12 @@ func main() {
 	log.Println("............main() Main.go")
 	http.HandleFunc("/", userhandlers.IndexHandler) // GET
 
-	http.HandleFunc("/signup", userhandlers.SignUpHandler)             // GET
-	http.HandleFunc("/signupsubmit", userhandlers.SignUpSubmitHandler) // POST
-	http.HandleFunc("/activateuser", userhandlers.ActivateUserHandler) // POST
+	http.HandleFunc("/signup", userhandlers.SignUpHandler)              // GET
+	http.HandleFunc("/signupsubmit", userhandlers.SignUpSubmitHandler)  // POST
+	http.HandleFunc("/activateuser", userhandlers.ActivateUserHandler)  // POST
+	http.HandleFunc("/forgetpass", userhandlers.ForgetPassHandler)      // POST
+	http.HandleFunc("/restorepass", userhandlers.RestorePasswordHadler) // POST
+	//http.HandleFunc("/changepass", userhandlers.ChangePasswordHandler)  // POST
 
 	http.HandleFunc("/loginsubmit", userhandlers.LoginSubmitHandler)
 	http.HandleFunc("/logoutsubmit", userhandlers.LogoutSubmitHandler)

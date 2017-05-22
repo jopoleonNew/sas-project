@@ -63,7 +63,7 @@ func SignUpSubmitHandler(w http.ResponseWriter, r *http.Request) {
 				akey := model.RandStringBytes(32)
 				u.ActivationKey = akey
 
-				err := u.Update()
+				err := u.Create()
 				if err != nil {
 					log.Println("SignUpSubmitHandler u.Update() error: ", err)
 					w.Write([]byte("Registration server error " + err.Error()))
