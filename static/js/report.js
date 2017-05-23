@@ -48,43 +48,72 @@ $(document).ready(function () {
 					for (accindex in data) {
 						var objsd = data[accindex]
 						for (field in objsd) {
-
 							if (null === objsd[field] || objsd[field] == undefined || objsd[field] == "") {
 								objsd[field] = 0;
-								//console.log("objsd.field inside loop", objsd[field])
 							}
 						}
 					}
-					console.log('Type of that data: ', typeof data)
-					var size = Object.keys(data).length
-					//console.log('Object.keys(data).length: ', Object.keys(data).length)
+					console.log('Type of that data: ', typeof data);
+					var size = Object.keys(data).length;
 					var table = new KingTable({
 						element: document.getElementById("yandextable"),
-						data: data, // if we were loading from server side --> url: "/api/colors"
-						//						prepareData: function (data) {
-						//						
-						//						},
-						columnDefault: {
-							CampaignID: "ID РК", // display name of column
-							type: "text", // type of data
-							sortable: true, // whether to allow sort by this column
-							allowSearch: true, // whether to allow text search by this column
-
-						}
-
+						data: data,
+                        columns: {
+                            CampaignID: "ID РК",
+                            ClicksContext:"Количество кликов в РСЯ",
+                            ClicksSearch:"Количество кликов на поиске",
+                            SumSearch:"Количество кликов на поиске",
+                            SessionDepthContext:"Глубина просмотра. РСЯ",
+                            SessionDepthSearch:"Стоимость клика на поиске",
+                            ShowsContext:"Количество показов в РСЯ",
+                            ShowsSearch:"Глубина просмотра. Поиск",
+                            StatDate:"Дата",
+                            SumContext:"Количество показов на поиске",
+                            GoalConversionSearch:"% целевых визитов. Поиск",
+                            GoalConversionContext:"Стоимость клика в РСЯ",
+							GoalCostSearch:"Стоимость ЛИДа. Поиск",
+                            GoalCostContext:"% целевых визитов. РСЯ"
+                        }
+// 						"<th>ID РК</th>" +
+//						"<th>Количество кликов в РСЯ</th>" +
+//						"<th>Количество кликов на поиске</th>" +
+//						"<th>Стоимость клика на поиске</th>" +
+//						"<th>Глубина просмотра. РСЯ</th>" +
+//						"<th>Глубина просмотра. Поиск</th>" +
+//						"<th>Количество показов в РСЯ</th>" +
+//						"<th>Количество показов на поиске</th>" +
+//						"<th>Дата</th>" +
+//						"<th>Стоимость клика в РСЯ</th>" +
+//						"<th>% целевых визитов. Поиск</th>" +
+//						"<th>% целевых визитов. РСЯ</th>" +
+//						"<th>Стоимость ЛИДа. Поиск</th>" +
+//						"<th>Стоимость ЛИДа. РСЯ</th>" +
+//						"</tr></thead><tbody>"
+//                         "<td>" + objsd.CampaignID + "</td>" +
+//								"<td>" + objsd.ClicksContext + "</td>" +
+//								"<td>" + objsd.ClicksSearch + "</td>" +
+//								"<td>" + objsd.SumSearch + "</td>" +
+//								"<td>" + objsd.SessionDepthContext + "</td>" +
+//								"<td>" + objsd.SessionDepthSearch + "</td>" +
+//								"<td>" + objsd.ShowsContext + "</td>" +
+//								"<td>" + objsd.ShowsSearch + "</td>" +
+//								"<td>" + objsd.StatDate + "</td>" +
+//								"<td>" + objsd.SumContext + "</td>" +
+//								"<td>" + objsd.GoalConversionSearch + "</td>" +
+//								"<td>" + objsd.GoalConversionContext + "</p>" +
+//								"<td>" + objsd.GoalCostSearch + "</td>" +
+//								"<td>" + objsd.GoalCostContext + "</td>" + "</tr>")
 					});
-
 					table.render();
 					console.log('All data : ', data)
 					$(".ajaxloader").fadeOut();
 				},
 				error: function (req, status, err) {
 					//console.log(req.responseText)
-					console.log(req)
-					console.log("json ", req.responseText)
-
+					console.log(req);
+					console.log("json ", req.responseText);
 					console.log('Something went wrong', status, err);
-					console.log(err)
+					console.log(err);
 					$(".refreshstatistic").prop('disabled', false);
 					$(".refreshstatistic").fadeIn(200)
 					$(".ajaxloader").fadeOut();
