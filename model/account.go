@@ -34,6 +34,11 @@ func NewAccount() *Account {
 	a.collName = "accountsList"
 	return a
 }
+func NewTestAccount() *Account {
+	a := new(Account)
+	a.collName = "testIndexSearch"
+	return a
+}
 
 var ErrAccNotFound = errors.New("Account is not exist.")
 
@@ -60,53 +65,6 @@ func (a *Account) IsExist() (bool, error) {
 	}
 
 	return true, nil
-}
-
-// Update updates Account struct fields in
-// database according to passed account as method receiver.
-// Currently DEPRECATED method, use AdvanceUpdate() instead
-func (a *Account) Update() error {
-	log.Println("account.Update used")
-	s := mainSession.Clone()
-	defer s.Close()
-	c := s.DB(mainDB.Name).C(a.collName)
-	err := a.checkMainFields()
-	if err != nil {
-		//log.Println("a.Update checkFields() err: ", err)
-		return err
-	}
-
-	changeInfo, err := c.Upsert(bson.M{"username": a.Username, "accountlogin": a.Accountlogin}, a)
-	if err != nil {
-		log.Println("a.Update Update() err: ", err)
-		return err
-	}
-
-	log.Printf("\n Account ", a, " Upserted in database: %+v ", changeInfo)
-
-	return nil
-}
-
-// SetStatusAndToken() sets Status And Token of account in DB.
-// Currently DEPRECATED method, use AdvanceUpdate() instead
-func (a *Account) SetStatusAndToken() error {
-	err := a.checkMainFields()
-	if err != nil {
-		return err
-	}
-	s := mainSession.Clone()
-	defer s.Close()
-	c := s.DB(mainDB.Name).C(a.collName)
-
-	colQuerier := bson.M{"username": a.Username, "accountlogin": a.Accountlogin, "source": "Яндекс Директ"}
-	change := bson.M{"$set": bson.M{"status": "active", "oauthtoken": a.OauthToken}}
-	err = c.Update(colQuerier, change)
-	if err != nil {
-		log.Println("a.SetStatusAndToken() Update() err: ", err)
-		return err
-	}
-	log.Printf("\n Account ", a, " Upserted in database: %+v ")
-	return nil
 }
 
 // AdvanceUpdate() updates account in DB. Upgraded versiof of Update() method.
@@ -146,6 +104,10 @@ func (a *Account) AdvanceUpdate() error {
 	if len(a.CampaignsInfo) != 0 {
 		changeParams = append(changeParams, bson.DocElem{"campaignsinfo", a.CampaignsInfo})
 	}
+
+	if len(changeParams) == 0 {
+		return errors.New("Account.AdvanceUpdate() error: Nothing to update")
+	}
 	a.Accountlogin = strings.ToLower(a.Accountlogin)
 	a.Username = strings.ToLower(a.Username)
 	s := mainSession.Clone()
@@ -153,6 +115,7 @@ func (a *Account) AdvanceUpdate() error {
 	c := s.DB(mainDB.Name).C(a.collName)
 
 	colQuerier := bson.M{"username": a.Username, "accountlogin": a.Accountlogin, "source": a.Source}
+
 	change := bson.M{"$set": changeParams}
 	//omitting changeInfo value
 	_, err = c.Upsert(colQuerier, change)
@@ -169,40 +132,18 @@ func (a *Account) AdvanceUpdate() error {
 func (a *Account) GetInfo() (Account, error) {
 
 	log.Println("GetInfo used by ", a.Username, " ", a.Accountlogin)
+	if a.Username == "" || a.Accountlogin == "" {
+		return Account{}, errors.New("GetInfo() error: Some field in Account are empty")
+	}
 	s := mainSession.Clone()
 	defer s.Close()
 	c := s.DB(mainDB.Name).C(a.collName)
-	// err := a.checkMainFields()
-	// if err != nil {
-	// 	log.Println("GetInfo checkMainFields err: ", err)
-	// 	return nil, err
-	// }
-	if a.Username == "" || a.Accountlogin == "" {
-		return Account{}, errors.New("Some field in Account are empty")
-	}
+
 	result := Account{}
 	err := c.Find(bson.M{"username": a.Username, "accountlogin": a.Accountlogin}).One(&result)
 	if err != nil {
 		log.Println("GetAccountIfno err: ", err)
 		return Account{}, err
-	}
-	return result, nil
-}
-
-//GetInfoList returns slice of Account model with info about accounts from db by username.
-func (a *Account) GetInfoList() ([]Account, error) {
-	log.Println("GetInfoList used by ", a.Username, " ", a.Accountlogin)
-	s := mainSession.Clone()
-	defer s.Close()
-	c := s.DB(mainDB.Name).C(a.collName)
-	collen, _ := c.Count()
-	result := make([]Account, collen)
-	err := c.Find(bson.M{"username": a.Username}).All(&result)
-
-	if err != nil {
-		//log.Println(err, "GetInfoList")
-
-		return result, errors.New("Some field in Account are empty")
 	}
 	return result, nil
 }
@@ -249,128 +190,67 @@ func (a *Account) checkMainFields() error {
 	return nil
 }
 
-/////////////////////////////****************//////////////////////
-/////////////////////////////****************//////////////////////
-/////////////////////////////****************//////////////////////
-/////////////////////////////****************//////////////////////
-
-//GetAccountInfo returns info about account with given username and account login.
-//func (ctl *Controller) GetAccountInfo(username, accountlogin string) (model.Account, error) {
-//
-//	log.Println("GetAccountIfno used. Recieved info: ", username, accountlogin)
-//	dbsession := ctl.session.Clone()
-//	defer dbsession.Close()
-//	c := dbsession.DB(DBname).C("accountsList")
-//	result := model.Account{}
-//	err := c.Find(bson.M{"username": username, "accountlogin": accountlogin}).One(&result)
+//// Update updates Account struct fields in
+//// database according to passed account as method receiver.
+//// Currently DEPRECATED method, use AdvanceUpdate() instead
+//func (a *Account) Update() error {
+//	log.Println("account.Update used")
+//	s := mainSession.Clone()
+//	defer s.Close()
+//	c := s.DB(mainDB.Name).C(a.collName)
+//	err := a.checkMainFields()
 //	if err != nil {
-//		log.Println("GetAccountIfno err: ", err)
-//		return result, err
+//		//log.Println("a.Update checkFields() err: ", err)
+//		return err
+//	}
+//
+//	changeInfo, err := c.Upsert(bson.M{"username": a.Username, "accountlogin": a.Accountlogin}, a)
+//	if err != nil {
+//		log.Println("a.Update Update() err: ", err)
+//		return err
+//	}
+//
+//	log.Printf("\n Account ", a, " Upserted in database: %+v ", changeInfo)
+//
+//	return nil
+//}
+//
+//// SetStatusAndToken() sets Status And Token of account in DB.
+//// Currently DEPRECATED method, use AdvanceUpdate() instead
+//func (a *Account) SetStatusAndToken() error {
+//	err := a.checkMainFields()
+//	if err != nil {
+//		return err
+//	}
+//	s := mainSession.Clone()
+//	defer s.Close()
+//	c := s.DB(mainDB.Name).C(a.collName)
+//
+//	colQuerier := bson.M{"username": a.Username, "accountlogin": a.Accountlogin, "source": "Яндекс Директ"}
+//	change := bson.M{"$set": bson.M{"status": "active", "oauthtoken": a.OauthToken}}
+//	err = c.Update(colQuerier, change)
+//	if err != nil {
+//		log.Println("a.SetStatusAndToken() Update() err: ", err)
+//		return err
+//	}
+//	log.Printf("\n Account ", a, " Upserted in database: %+v ")
+//	return nil
+//}
+//GetInfoList returns slice of Account model with info about accounts from db by username.
+// Currently DEPRECATED method, use User.GetAccountList() instead
+//func (a *Account) GetInfoList() ([]Account, error) {
+//	log.Println("GetInfoList used by ", a.Username, " ", a.Accountlogin)
+//	s := mainSession.Clone()
+//	defer s.Close()
+//	c := s.DB(mainDB.Name).C(a.collName)
+//	collen, _ := c.Count()
+//	result := make([]Account, collen)
+//	err := c.Find(bson.M{"username": a.Username}).All(&result)
+//
+//	if err != nil {
+//		//log.Println(err, "GetInfoList")
+//
+//		return result, errors.New("Some field in Account are empty")
 //	}
 //	return result, nil
-//}
-//
-//func (ctl *Controller) AddAccountToDB(username, source, accountlogin, email, accrole string) error {
-//	log.Println("AddAccountToDB used")
-//	dbsession := ctl.session.Clone()
-//	defer dbsession.Close()
-//
-//	accountsListCollecton := dbsession.DB(DBname).C("accountsList")
-//	err := accountsListCollecton.Insert(
-//		&Account{
-//			Username:           username,
-//			Source:             source,
-//			Accountlogin:       accountlogin,
-//			Email:              email,
-//			SsaAppYandexID:     YandexDirectAppID,
-//			SsaAppYandexSecret: YandexDirectAppSecret,
-//			YandexRole:         accrole,
-//			Status:             "notactive",
-//			OauthToken:         "",
-//		})
-//	if err != nil {
-//		log.Println(err)
-//		return err
-//	}
-//	log.Println("Account of user ", username, " with organization ", source, " added to database.")
-//
-//	return nil
-//
-//}
-//
-//func (ctl *Controller) GetAcctountsList(username string) ([]model.Account, error) {
-//	log.Println("GetAcctountsList used")
-//	dbsession := ctl.session.Clone()
-//	defer dbsession.Close()
-//	c := dbsession.DB(DBname).C("accountsList")
-//	len, _ := c.Count()
-//	result := make([]model.Account, len)
-//	err := c.Find(bson.M{"username": username}).All(&result)
-//	if err != nil {
-//		log.Println(err, "GetAcctountsList")
-//		return result, err
-//	}
-//	return result, nil
-//}
-//
-//// IsAccountUnique checks uniqueness of combination username + accountlogin
-//// Is there account with given username and account? returns true if no, false if yes
-//
-//// SetAccountTokenandStatusActive setts Status and YANDEX Accsess Token
-//// by account login and username
-//func (ctl *Controller) SetAccountTokenandStatusActive(username, accountlogin, token string) error {
-//	log.Println("SetAccountTokenandStatusActive used : ", username, token)
-//	dbsession := ctl.session.Clone()
-//	defer dbsession.Close()
-//	c := dbsession.DB(DBname).C("accountsList")
-//
-//	colQuerier := bson.M{"username": username, "accountlogin": accountlogin, "source": "Яндекс Директ"}
-//	change := bson.M{"$set": bson.M{"status": "active", "oauthtoken": token}}
-//	err := c.Update(colQuerier, change)
-//	if err != nil {
-//		log.Println("SetAccountStatus err: ", err)
-//		return err
-//	}
-//	return nil
-//}
-//
-//func (ctl *Controller) DeleteAccountfromDB(username, accountlogin string) error {
-//	dbsession := ctl.session.Clone()
-//	defer dbsession.Close()
-//	accountsListCollecton := dbsession.DB(DBname).C("accountsList")
-//	err := accountsListCollecton.Remove(bson.M{"username": username, "accountlogin": accountlogin})
-//	if err != nil {
-//		log.Println("DeleteAccountfromDB", err)
-//		return err
-//	}
-//	return nil
-//}
-//
-//func (ctl *Controller) AddCampaingsToAccount(username, accountlogin string, campingsstruct []*yad.Campaign) error {
-//	dbsession := ctl.session.Clone()
-//	defer dbsession.Close()
-//
-//	var yadcs []model.YadCampaign
-//	for _, v := range campingsstruct {
-//		yadcs = append(yadcs, model.YadCampaign{
-//			ID:     v.ID,
-//			Name:   v.Name,
-//			Status: v.Status,
-//		})
-//	}
-//
-//	accountsListCollecton := dbsession.DB(DBname).C("accountsList")
-//	colQuerier := bson.M{"username": username, "accountlogin": accountlogin, "source": "Яндекс Директ"}
-//	change := bson.M{"$set": bson.M{"campaignsinfo": &yadcs}}
-//	err := accountsListCollecton.Update(colQuerier, change)
-//	if err != nil {
-//		log.Println("AddCampaingsToAccount err: ", err)
-//		return err
-//	}
-//	return nil
-//
-//}
-//
-//func (ctl *Controller) AddOrganizationToDB(login, pass, email, name, organ string) error {
-//	return nil
 //}

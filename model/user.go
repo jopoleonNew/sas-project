@@ -62,108 +62,6 @@ func (u *UserInfo) Create() error {
 	return nil
 }
 
-//IsExist checks is user with given username or email exist in DB already.
-func (u *UserInfo) IsExist() (bool, error) {
-
-	u.Username = strings.ToLower(u.Username)
-
-	log.Println("IsExists user used for: ", u.Username)
-
-	s := mainSession.Clone()
-	defer s.Close()
-	c := s.DB(mainDB.Name).C(u.collName)
-	u.Username = strings.ToLower(u.Username)
-	log.Println("IsExists user used for: ", u.Username)
-	pipeline := bson.M{
-		"$or": []interface{}{
-			bson.M{"email": u.Email},
-			bson.M{"username": u.Username},
-		},
-	}
-	err := c.Find(pipeline).One(nil)
-	if err != nil {
-		if err == mgo.ErrNotFound {
-			return false, nil
-		} else {
-			log.Println("a.IsExist err: ", err)
-			return false, err
-		}
-	}
-
-	return true, nil
-}
-
-func (u *UserInfo) GetInfo() (UserInfo, error) {
-	log.Println("UserInfo GetInfo used by ", u.Username)
-	s := mainSession.Clone()
-	defer s.Close()
-	c := s.DB(mainDB.Name).C(u.collName)
-	u.Username = strings.ToLower(u.Username)
-	if u.Username == "" {
-		return UserInfo{}, errors.New("Some field in UserInfo are empty")
-	}
-	result := UserInfo{}
-	u.Username = strings.ToLower(u.Username)
-	err := c.Find(bson.M{"username": u.Username}).One(&result)
-	if err != nil {
-		log.Println("GetInfo err: ", err)
-		return UserInfo{}, err
-	}
-	return result, nil
-}
-
-func (u *UserInfo) GetAccountList() ([]Account, error) {
-	if u.Username == "" {
-		return nil, errors.New("UserInfo.GetAccountList() username field can't be blank.")
-	}
-	log.Println("UserInfo.GetAccountList() by ", u.Username)
-
-	s := mainSession.Clone()
-	defer s.Close()
-	c := s.DB(mainDB.Name).C("accountsList")
-	//u.Username = strings.ToLower(u.Username)
-	result := make([]Account, len(u.AccountList))
-	//db.accountsList.find({ "accountlogin": { $in: [ "123qwe","123sssa" ] }})
-	log.Println("GetAccountList acclist: ", u.AccountList)
-	//var useracclist []string
-	userinfo, err := u.GetInfo()
-	if err != nil {
-		log.Println("GetAccountList u.GetInfo() err: ", err)
-		return nil, err
-	}
-	err = c.Find(bson.M{"accountlogin": bson.M{"$in": userinfo.AccountList}}).All(&result)
-	if err != nil {
-		log.Println("GetAccountList err: ", err)
-		return nil, err
-	}
-	//result := []Account{}
-	//u.AccountList
-	return result, nil
-}
-
-// IsPasswordValid checks if password string equals hashed password from DB
-func (u *UserInfo) IsPasswordValid(password string) (bool, error) {
-	u.Username = strings.ToLower(u.Username)
-	log.Println("ValidateUserPassword GetInfo used by ", u.Username)
-	s := mainSession.Clone()
-	defer s.Close()
-	c := s.DB(mainDB.Name).C(u.collName)
-	result := UserInfo{}
-	u.Username = strings.ToLower(u.Username)
-	err := c.Find(bson.M{"username": u.Username}).One(&result)
-	if err != nil {
-		log.Println("IsPasswordValid c.Find error: ", err)
-		return false, err
-	}
-	err = bcrypt.CompareHashAndPassword([]byte(result.Salt), []byte(password))
-
-	if err != nil {
-		return false, err
-	} else {
-		return true, nil
-	}
-}
-
 func (u *UserInfo) AdvanceUpdate() error {
 
 	log.Println("User.AdvanceUpdate() used with ", u)
@@ -213,7 +111,7 @@ func (u *UserInfo) AdvanceUpdate() error {
 	}
 	if len(u.AccountList) != 0 {
 		colQuerier1 := bson.M{"username": u.Username}
-		change1 := bson.M{"$push": bson.M{"accountlist": u.AccountList[0]}}
+		change1 := bson.M{"$push": bson.M{"accountlist": u.AccountList}}
 		_, err := c.Upsert(colQuerier1, change1)
 		if err != nil {
 			log.Println("a.AdvanceUpdate() err: ", err)
@@ -244,3 +142,169 @@ func (u *UserInfo) RemoveAccount() error {
 	}
 	return nil
 }
+
+//IsExist checks is user with given username or email exist in DB already.
+func (u *UserInfo) IsExist() (bool, error) {
+
+	u.Username = strings.ToLower(u.Username)
+
+	log.Println("IsExists user used for: ", u.Username)
+
+	s := mainSession.Clone()
+	defer s.Close()
+	c := s.DB(mainDB.Name).C(u.collName)
+	u.Username = strings.ToLower(u.Username)
+	log.Println("IsExists user used for: ", u.Username)
+	pipeline := bson.M{
+		"$or": []interface{}{
+			bson.M{"email": u.Email},
+			bson.M{"username": u.Username},
+		},
+	}
+	err := c.Find(pipeline).One(nil)
+	if err != nil {
+		if err == mgo.ErrNotFound {
+			return false, nil
+		} else {
+			log.Println("a.IsExist err: ", err)
+			return false, err
+		}
+	}
+
+	return true, nil
+}
+
+func (u *UserInfo) GetInfo() (UserInfo, error) {
+	//log.Println("UserInfo GetInfo used by ", u.Username)
+	s := mainSession.Clone()
+	defer s.Close()
+	c := s.DB(mainDB.Name).C(u.collName)
+	u.Username = strings.ToLower(u.Username)
+	if u.Username == "" {
+		return UserInfo{}, errors.New("Some field in UserInfo are empty")
+	}
+	result := UserInfo{}
+	u.Username = strings.ToLower(u.Username)
+	err := c.Find(bson.M{"username": u.Username}).One(&result)
+	if err != nil {
+		log.Println("GetInfo err: ", err)
+		return UserInfo{}, err
+	}
+	return result, nil
+}
+
+func (u *UserInfo) GetAccountList() ([]Account, error) {
+	if u.Username == "" {
+		return nil, errors.New("UserInfo.GetAccountList() username field can't be blank.")
+	}
+	//log.Println("UserInfo.GetAccountList() by ", u.Username)
+
+	s := mainSession.Clone()
+	defer s.Close()
+	c := s.DB(mainDB.Name).C("testIndexSearch")
+	//u.Username = strings.ToLower(u.Username)
+	result := make([]Account, len(u.AccountList))
+	//db.accountsList.find({ "accountlogin": { $in: [ "123qwe","123sssa" ] }})
+	//log.Println("GetAccountList acclist: ", u.AccountList)
+	//var useracclist []string
+	userinfo, err := u.GetInfo()
+	if err != nil {
+		log.Println("GetAccountList u.GetInfo() err: ", err)
+		return nil, err
+	}
+	err = c.Find(bson.M{"accountlogin": bson.M{"$in": userinfo.AccountList}}).All(&result)
+	if err != nil {
+		log.Println("GetAccountList err: ", err)
+		return nil, err
+	}
+	//result := []Account{}
+	//u.AccountList
+	return result, nil
+}
+
+// IsPasswordValid checks if password string equals hashed password from DB
+func (u *UserInfo) IsPasswordValid(password string) (bool, error) {
+	u.Username = strings.ToLower(u.Username)
+	log.Println("ValidateUserPassword GetInfo used by ", u.Username)
+	s := mainSession.Clone()
+	defer s.Close()
+	c := s.DB(mainDB.Name).C(u.collName)
+	result := UserInfo{}
+	u.Username = strings.ToLower(u.Username)
+	err := c.Find(bson.M{"username": u.Username}).One(&result)
+	if err != nil {
+		log.Println("IsPasswordValid c.Find error: ", err)
+		return false, err
+	}
+	err = bcrypt.CompareHashAndPassword([]byte(result.Salt), []byte(password))
+
+	if err != nil {
+		return false, nil
+	} else {
+		return true, nil
+	}
+}
+
+//
+//func (u *UserInfo) GetAccountListV2() ([]Account, error) {
+//	if u.Username == "" {
+//		return nil, errors.New("UserInfo.GetAccountList() username field can't be blank.")
+//	}
+//	//log.Println("UserInfo.GetAccountList() by ", u.Username)
+//
+//	s := mainSession.Clone()
+//	defer s.Close()
+//	c := s.DB(mainDB.Name).C("testIndexSearch")
+//	result := make([]Account, len(u.AccountList))
+//	//db.accountsList.find({ "accountlogin": { $in: [ "123qwe","123sssa" ] }})
+//	//log.Println("GetAccountList acclist: ", u.AccountList)
+//	userinfo, err := u.GetInfo()
+//	if err != nil {
+//		log.Println("GetAccountList u.GetInfo() err: ", err)
+//		return nil, err
+//	}
+//	//db.testIndexSearch.find({$or:[{"accountlogin" :"tgtab"}, {"accountlogin" :"tcrtr"}]})
+//	//append(changeParams, bson.DocElem{"accountlogin", acclog})
+//	var orSlice = []bson.M{}
+//	for acclog := range userinfo.AccountList {
+//		orSlice = append(orSlice, bson.M{"accountlogin": acclog})
+//	}
+//	colQuerier := bson.M{"$or": orSlice}
+//	//log.Println("UserInfo) AdvanceUpdate() query: ", colQuerier, " and cahnge: ", change)
+//	err = c.Find(colQuerier).All(&result)
+//	if err != nil {
+//		log.Println("user.GetAccountListV2() err: ", err)
+//		return nil, err
+//	}
+//	return result, nil
+//}
+//func (u *UserInfo) GetAccountListV3() ([]Account, error) {
+//	if u.Username == "" {
+//		return nil, errors.New("UserInfo.GetAccountList() username field can't be blank.")
+//	}
+//	//log.Println("UserInfo.GetAccountList() by ", u.Username)
+//
+//	s := mainSession.Clone()
+//	defer s.Close()
+//	c := s.DB(mainDB.Name).C("testIndexSearch")
+//	result := make([]Account, len(u.AccountList))
+//	//db.accountsList.find({ "accountlogin": { $in: [ "123qwe","123sssa" ] }})
+//	//log.Println("GetAccountList acclist: ", u.AccountList)
+//	userinfo, err := u.GetInfo()
+//	if err != nil {
+//		log.Println("GetAccountList u.GetInfo() err: ", err)
+//		return nil, err
+//	}
+//	//db.testIndexSearch.find({$or:[{"accountlogin" :"tgtab"}, {"accountlogin" :"tcrtr"}]})
+//	//append(changeParams, bson.DocElem{"accountlogin", acclog})
+//	//var orSlice = []bson.M{}
+//	for acclog := range userinfo.AccountList {
+//		err = c.Find(bson.M{"accountlogin": acclog}).All(&result)
+//		if err != nil {
+//			log.Println("user.GetAccountListV2() err: ", err)
+//			return nil, err
+//		}
+//	}
+//
+//	return result, nil
+//}
