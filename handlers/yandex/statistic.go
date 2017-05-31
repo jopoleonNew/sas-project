@@ -46,9 +46,13 @@ func GetStatSliceHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	var data model.TemplateInfoStruct
 	data.CurrentUser = username
-	acc := model.NewAccount()
-	acc.Username = username
-	acclist, err := acc.GetInfoList()
+	//acc := model.NewAccount()
+	//acc.Username = username
+	user := model.NewUser()
+	user.Username = username
+
+	//acclist, err := acc.GetInfoList()
+	acclist, err := user.GetAccountList()
 	if err != nil {
 		log.Println("GetStatSliceHandler acc.GetInfoList() error:", err)
 		w.Write([]byte("GetStatSliceHandler error: " + err.Error()))

@@ -201,7 +201,7 @@ func (u *UserInfo) GetAccountList() ([]Account, error) {
 
 	s := mainSession.Clone()
 	defer s.Close()
-	c := s.DB(mainDB.Name).C("testIndexSearch")
+	c := s.DB(mainDB.Name).C("accountsList")
 	//u.Username = strings.ToLower(u.Username)
 	result := make([]Account, len(u.AccountList))
 	//db.accountsList.find({ "accountlogin": { $in: [ "123qwe","123sssa" ] }})
