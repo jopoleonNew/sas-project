@@ -71,7 +71,7 @@ pipeline:
 ### NOTIFY ###
   notify:
     image: drillster/drone-email
-    host: smtp.yandex.ru:465
+    host: smtp.yandex.ru
     username: drone@itcloud.pro
     password: 2YkwXUeDao4TqsFNMRVY
     from: drone@itcloud.pro
