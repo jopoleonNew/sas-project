@@ -94,6 +94,15 @@ func (u *UserInfo) AdvanceUpdate() error {
 	s := mainSession.Clone()
 	defer s.Close()
 	c := s.DB(mainDB.Name).C(u.collName)
+	if len(u.AccountList) != 0 {
+		colQuerier1 := bson.M{"username": u.Username}
+		change1 := bson.M{"$push": bson.M{"accountlist": u.AccountList}}
+		_, err := c.Upsert(colQuerier1, change1)
+		if err != nil {
+			log.Println("a.AdvanceUpdate() err: ", err)
+			return err
+		}
+	}
 	if len(changeParams) != 0 {
 		colQuerier := bson.M{
 			"$or": []interface{}{
@@ -109,15 +118,7 @@ func (u *UserInfo) AdvanceUpdate() error {
 			return err
 		}
 	}
-	if len(u.AccountList) != 0 {
-		colQuerier1 := bson.M{"username": u.Username}
-		change1 := bson.M{"$push": bson.M{"accountlist": u.AccountList}}
-		_, err := c.Upsert(colQuerier1, change1)
-		if err != nil {
-			log.Println("a.AdvanceUpdate() err: ", err)
-			return err
-		}
-	}
+
 	return nil
 }
 
