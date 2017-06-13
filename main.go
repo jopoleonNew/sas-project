@@ -1,19 +1,19 @@
 package main
 
 import (
+	"flag"
+	"log"
+	"net/http"
+
 	"gogs.itcloud.pro/SAS-project/sas/app"
 	userhandlers "gogs.itcloud.pro/SAS-project/sas/handlers/user"
 	yandexhandlers "gogs.itcloud.pro/SAS-project/sas/handlers/yandex"
 	"gogs.itcloud.pro/SAS-project/sas/model"
 	yad "gogs.itcloud.pro/SAS-project/sas/yandexDirectAPI"
-	//"model"
-	"flag"
-	"log"
-	"net/http"
+
+	_ "net/http/pprof"
 
 	"github.com/gorilla/context"
-	//"old_userhandlers"
-	_ "net/http/pprof"
 )
 
 var (
@@ -24,7 +24,7 @@ var (
 func init() {
 	var configFileName string
 
-	flag.StringVar(&configFileName, "config", "configuration.json",
+	flag.StringVar(&configFileName, "config", "conf-docker.json",
 		"Specify configuration file name to use. File should be in folder you starting the application")
 
 	flag.Parse()
@@ -75,7 +75,6 @@ func main() {
 	http.HandleFunc("/getyandexaccesstoken", yandexhandlers.GetYandexAccessToken)
 
 	http.HandleFunc("/getcampaingstats", yandexhandlers.GetCampaingStatsHandler) //POST
-
 	http.HandleFunc("/refreshdbcampaign", yandexhandlers.RefreshCampaignsListHandler)
 	http.HandleFunc("/getreport", yandexhandlers.GetStatSliceHandler)
 	http.HandleFunc("/report", yandexhandlers.ReportTemplateHandler)

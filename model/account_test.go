@@ -17,6 +17,7 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 }
 func TestNewAccount(t *testing.T) {
 	acc := NewAccount()

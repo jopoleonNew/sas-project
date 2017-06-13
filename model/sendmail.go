@@ -17,13 +17,13 @@ type EmailUser struct {
 // adress: sasmailserver@gmail.com
 // password: SendSASKey2017
 func SendEmailwithKey(username, key, emailaddr, requestHost string) error {
-	link := requestHost + "/activateuser?username=" + username + "&activationkey=" + key
+	link := "https://" + requestHost + "/activateuser?username=" + username + "&activationkey=" + key
 	//linkTag := "<a href='" + link + "'>" + link + "</a>"
-	body := "<a target='blank' href='" + link + "'>" + link + "/>"
+	//body := "<a target='blank' href='" + link + "'>" + link + "/>"
 	msg := []byte("To: " + emailaddr + "\r\n" +
 		"Subject: Activation letter from SASmailServer\r\n" +
 		"\r\n" +
-		"This is your activation link: \r\n\n" + body)
+		"This is your activation link: \r\n" + link)
 	err := SendEmail(emailaddr, msg)
 	if err != nil {
 		log.Println("model.SendEmailwithKey SendEmail error: ", err)

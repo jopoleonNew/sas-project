@@ -121,7 +121,7 @@ func AddAccountHandler(w http.ResponseWriter, r *http.Request) {
 
 	for _, a := range user.AccountList {
 		if acc.Accountlogin == a {
-			//log.Println("Аккаунт с таким именем уже существует у пользователя " + username)
+			log.Println("Аккаунт с таким именем уже существует у пользователя " + username)
 			w.Write([]byte("Аккаунт с таким именем уже существует у пользователя " + username))
 			return
 		}

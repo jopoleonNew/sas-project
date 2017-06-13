@@ -65,20 +65,19 @@ func GetYandexAccessToken(w http.ResponseWriter, r *http.Request) {
 	log.Println("SubmitConfirmationYandexCode GetAccountInfo: ", accinfo)
 
 	if accinfo.YandexRole == "agency" {
-		log.Println("..................//////////Hello agency ", oauthresp.AccessToken)
+		log.Println("..................//////////Hello agency ", acc.Username, oauthresp.AccessToken)
 		account := yad.NewAccount()
 		account.Login = accinfo.Accountlogin
 		account.OAuthToken = oauthresp.AccessToken
-		log.Println("..................//////////Hello agency ", oauthresp.AccessToken)
+		//log.Println("..................//////////Hello agency ", oauthresp.AccessToken)
 		agencystruct, err := account.GetAgencyLogins()
 		if err != nil {
 			log.Println("SubmitConfirmationYandexCode GetAgencyLogins error: ", err)
 			return
 		}
-		log.Println("SubmitConfirmationYandexCode GetAccountInfo: ", accinfo)
+		//log.Println("SubmitConfirmationYandexCode GetAccountInfo: ", accinfo)
 		log.Println("SubmitConfirmationYandexCode account.GetAgencyLogins(): ", agencystruct)
 
-		//DONETODO: add concurrency to getting campaign list for every agency account login
 		wg := sync.WaitGroup{}
 		wg.Add(len(agencystruct))
 		for _, agClient := range agencystruct {
