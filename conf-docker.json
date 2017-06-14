@@ -1,0 +1,9 @@
+{
+	"mongourl": "localhost",
+	"bdname": "ssa",
+	"yandexappid": "83c11ef883e84b9a827b306a5e6e2a4a",
+	"yandexappsecret": "a753b0e476344758898dd9fb46284615",
+	"yandexapiurl": "https://api.direct.yandex.ru",
+	"sessionsecret": "secret",
+	"serverport": "3000"
+}
