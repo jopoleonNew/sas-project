@@ -38,7 +38,7 @@ func (a *Account) GetCampaignList() ([]Campaign, error) {
 	if err != nil {
 		return nil, errors.New("GetCampaignList " + err.Error())
 	}
-	log.Println("GetCampaignList body from a.makeV5GetRequest: ", string(body))
+	//log.Println("GetCampaignList body from a.makeV5GetRequest: ", string(body))
 	if err := json.Unmarshal(body, result); err != nil {
 		return nil, errors.New("Respond unmarshal error: " + err.Error())
 	}
@@ -101,7 +101,6 @@ func (a *Account) makeV5GetRequest(url string, fieldNames []string) ([]byte, err
 	if err != nil {
 		return nil, errors.New("http.Request.Do error: " + err.Error())
 	}
-
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, errors.New("ioutil.ReadAll error: " + err.Error())
@@ -160,7 +159,7 @@ func (a *Account) GetStatistics(ids []int, start, end string) ([]CampaignStat, e
 
 	result := new(ResultV4CampStat)
 	err = json.Unmarshal(body, &result)
-	log.Println("GetStatistics body response: ", string(body))
+	//log.Println("GetStatistics body response: ", string(body))
 	if err != nil {
 		return nil, errors.New("GetStatistics json.Unmarshal error: " + err.Error())
 	}

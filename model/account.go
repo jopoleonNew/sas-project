@@ -72,7 +72,7 @@ func (a *Account) IsExist() (bool, error) {
 // given values.
 func (a *Account) AdvanceUpdate() error {
 
-	log.Printf("Account.AdvanceUpdate() used with %+v", a)
+	//log.Printf("Account.AdvanceUpdate() used with %+v", a)
 	err := a.checkMainFields()
 	if err != nil {
 		return err
