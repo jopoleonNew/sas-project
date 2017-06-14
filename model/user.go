@@ -143,6 +143,25 @@ func (u *UserInfo) RemoveAccount() error {
 	}
 	return nil
 }
+func (u *UserInfo) IsAccountExist(accountlogin string) (bool, error) {
+	u.Username = strings.ToLower(u.Username)
+	log.Println("UserInfo.IsAccountExist used for: ", u.Username)
+	userinfo, err := u.GetInfo()
+	if err != nil {
+		log.Println("UserInfo.IsAccountExist u.GetInfo() err: ", err)
+		return false, err
+	}
+	return contains(userinfo.AccountList, accountlogin), nil
+}
+
+func contains(s []string, e string) bool {
+	for _, a := range s {
+		if a == e {
+			return true
+		}
+	}
+	return false
+}
 
 //IsExist checks is user with given username or email exist in DB already.
 func (u *UserInfo) IsExist() (bool, error) {
@@ -216,7 +235,7 @@ func (u *UserInfo) GetAccountList() ([]Account, error) {
 		return nil, err
 	}
 	log.Println("userinfo, err := u.GetInfo() : ", userinfo)
-	err = c.Find(bson.M{"accountlogin": bson.M{"$in": userinfo.AccountList}}).All(&result)
+	err = c.Find(bson.M{"username": u.Username, "accountlogin": bson.M{"$in": userinfo.AccountList}}).All(&result)
 	if err != nil {
 		log.Println("GetAccountList err: ", err)
 		return nil, err

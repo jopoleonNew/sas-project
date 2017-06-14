@@ -6,6 +6,8 @@ import (
 	"log"
 	"net/http"
 
+	"strings"
+
 	"gogs.itcloud.pro/SAS-project/sas/app"
 	"gogs.itcloud.pro/SAS-project/sas/model"
 	"gogs.itcloud.pro/SAS-project/sas/utils"
@@ -106,7 +108,7 @@ func AddAccountHandler(w http.ResponseWriter, r *http.Request) {
 
 	acc := model.NewAccount()
 	acc.Username = username
-	acc.Accountlogin = r.FormValue("accountlogin")
+	acc.Accountlogin = strings.ToLower(r.FormValue("accountlogin"))
 	acc.Source = r.FormValue("sourcename")
 	acc.YandexRole = r.FormValue("accrole")
 	log.Println("AddAccountHandler: ", acc.Accountlogin, acc.Source, acc.YandexRole)
@@ -122,45 +124,57 @@ func AddAccountHandler(w http.ResponseWriter, r *http.Request) {
 	for _, a := range user.AccountList {
 		if acc.Accountlogin == a {
 			log.Println("Аккаунт с таким именем уже существует у пользователя " + username)
-			w.Write([]byte("Аккаунт с таким именем уже существует у пользователя " + username))
+			w.Write([]byte("Аккаунт с именем " + acc.Accountlogin + " уже существует у пользователя " + username))
 			return
 		}
 	}
 	//user.AccountListif strings.Contains(acc.Accountlogin, )
 	//func (ctl *Controller) IsAccountUnique(username, accountlogin string) (bool, error)
 
-	exists, err := acc.IsExist()
-	if err != nil && err != model.ErrAccNotFound {
-		log.Println("AddAccountHandler acc.IsExist() error: ", err)
-		w.Write([]byte("Аккаунт у этого пользователя с таким именем уже существует"))
+	//exists, err := acc.IsExist()
+	//if err != nil && err != model.ErrAccNotFound {
+	//	log.Println("AddAccountHandler acc.IsExist() error: ", err)
+	//	w.Write([]byte("AddAccountHandler acc.IsExist() error: " + err.Error()))
+	//	return
+	//}
+	//if exists {
+	//	//w.Write([]byte("Аккаунт с именем " + acc.Accountlogin + " уже есть в базе. "))
+	//	log.Println("Аккаунт у этого пользователя с таким именем уже существует")
+	//	w.Write([]byte("Аккаунт у этого пользователя с таким именем уже существует"))
+	//	return
+	//}
+	//accExist, err := user.IsAccountExist(acc.Accountlogin)
+	//if err != nil && err != model.ErrAccNotFound {
+	//	log.Println("AddAccountHandler user.IsAccountExist(acc.Accountlogin) error: ", err)
+	//	w.Write([]byte("AddAccountHandler user.IsAccountExist(acc.Accountlogin) error: " + err.Error()))
+	//	return
+	//}
+	//if accExist {
+	//	log.Println("Аккаунт у этого пользователя с таким именем уже существует")
+	//	w.Write([]byte("Аккаунт у этого пользователя с таким именем уже существует"))
+	//	return
+	//}
+
+	//} else {
+	acc.Email = userinfo.Email
+	acc.Status = "notactive"
+	acc.SsaAppYandexID = Config.YandexDirectAppID
+	acc.SsaAppYandexSecret = Config.YandexDirectAppSecret
+	user.AccountList = append(user.AccountList, acc.Accountlogin)
+	err = user.AdvanceUpdate()
+	if err != nil {
+		log.Println("AddAccountHandler user.AdvanceUpdate() error ", err)
+		w.Write([]byte("AddAccountHandler user.AdvanceUpdate() error " + err.Error()))
+		return
+	}
+	err = acc.AdvanceUpdate()
+	if err != nil {
+		log.Println("AddAccountHandler acc.AdvanceUpdate error ", err)
+		w.Write([]byte("AddAccountHandler acc.AdvanceUpdate error " + err.Error()))
 		return
 	}
 
-	if exists {
-		//w.Write([]byte("Аккаунт с именем " + acc.Accountlogin + " уже есть в базе. "))
-		log.Println("Аккаунт у этого пользователя с таким именем уже существует")
-		w.Write([]byte("Аккаунт у этого пользователя с таким именем уже существует"))
-		return
-	} else {
-		acc.Email = userinfo.Email
-		acc.Status = "notactive"
-		acc.SsaAppYandexID = Config.YandexDirectAppID
-		acc.SsaAppYandexSecret = Config.YandexDirectAppSecret
-		user.AccountList = append(user.AccountList, acc.Accountlogin)
-		err := user.AdvanceUpdate()
-		if err != nil {
-			log.Println("AddAccountHandler user.AdvanceUpdate() error ", err)
-			w.Write([]byte("AddAccountHandler user.AdvanceUpdate() error " + err.Error()))
-			return
-		}
-		err = acc.AdvanceUpdate()
-		if err != nil {
-			log.Println("AddAccountHandler acc.AdvanceUpdate error ", err)
-			w.Write([]byte("AddAccountHandler acc.AdvanceUpdate error " + err.Error()))
-			return
-		}
-
-	}
+	//}
 	w.Write([]byte("Succsess. Аккаунт добавлен."))
 }
 

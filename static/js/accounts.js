@@ -23,8 +23,8 @@
 				var vklog = $("#accountloginvk").val();
 
 				if (yandexlog) {
-					window.accountlogin = $("#accountloginyandex").val()
-					window.accrole = $("#accountroleyandex").val()
+					window.accountlogin = $("#accountloginyandex").val();
+					window.accrole = $("#accountroleyandex").val();
                     window.sourcename = $(this).attr("id")
 				} else if (window.accrole === 0 || window.sourcename === 0) {
                     	console.log("Some of important valuse are empty:");
@@ -58,7 +58,6 @@
                        // appendid = $(this).attr("result")
 
                         console.log("accountlogin: ", accountlogin)
-
                             // code goes here
                             $.ajax({
                                 data: {
@@ -86,8 +85,6 @@
                                     //      });
                                     // asdialog.dialog('open');
                                     // console.log("Id of append obj: ", appendid)
-
-
                                 },
                                 error: function (req, status, err) {
                                     //console.log(req.responseText)
