@@ -195,6 +195,8 @@ func (u *UserInfo) GetInfo() (UserInfo, error) {
 }
 
 func (u *UserInfo) GetAccountList() ([]Account, error) {
+
+	log.Println(" *UserInfo) GetAccountList() used with", u)
 	if u.Username == "" {
 		return nil, errors.New("UserInfo.GetAccountList() username field can't be blank.")
 	}
@@ -213,11 +215,13 @@ func (u *UserInfo) GetAccountList() ([]Account, error) {
 		log.Println("GetAccountList u.GetInfo() err: ", err)
 		return nil, err
 	}
+	log.Println("userinfo, err := u.GetInfo() : ", userinfo)
 	err = c.Find(bson.M{"accountlogin": bson.M{"$in": userinfo.AccountList}}).All(&result)
 	if err != nil {
 		log.Println("GetAccountList err: ", err)
 		return nil, err
 	}
+	log.Println("c.Find(bson.M{accountlogin: bson.M{$in: userinfo.AccountList}}) ", result)
 	//result := []Account{}
 	//u.AccountList
 	return result, nil
