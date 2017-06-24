@@ -194,7 +194,7 @@
 
 
 		<!-- Modal -->
-		<div class="modal fade" id="yandexModal" role="dialog">
+		<div class="modal" id="yandexModal" role="dialog">
 			<div class="modal-dialog">
 				<!-- Modal content-->
 				<div class="modal-content">
@@ -220,13 +220,22 @@
 						<br>
 					</div>
 					<div class="modal-footer">
-						<button type="button" id="Яндекс Директ" class="addaccountmodal btn btn-info">Создать</button>
+						<button type="button" id="Яндекс Директ" class="addaccountmodal btn btn-info">Создать</button><script>
+                        document.getElementById("yandexModal").addEventListener("keyup", function(event) {
+                            event.preventDefault();
+                            if (event.keyCode == 13) {
+                                console.log("Clicked Яндекс Директ")
+                                document.getElementById("Яндекс Директ").click();
+                            }
+                        });
+					</script>
 						<button type="button" class="btn btn-default" data-dismiss="modal">Закрыть</button>
 					</div>
 				</div>
 
 			</div>
 		</div>
+
 		<div class="modal fade" id="youtubeModal" role="dialog">
 			<div class="modal-dialog">
 				<!-- Modal content-->
@@ -253,12 +262,12 @@
 
 			</div>
 		</div>
-		<div class="modal fade" id="youtubeModal" role="dialog">
+		<div class="modal fade" id="vkModal" role="dialog">
 			<div class="modal-dialog">
 				<!-- Modal content-->
 				<div class="modal-content">
 					<div class="modal-header">
-						<img src="../static/youtubeads3.png" style="width: 130px; height: 60px; border-radius: 6px;"></img>
+						<img src="../static/vkapi.png" style="width: 130px; height: 60px; border-radius: 6px;"></img>
 						<button type="button" class="close" data-dismiss="modal">&times;</button>
 						<h4 class="modal-title">Добавить аккаунт Вконтакте</h4>
 					</div>

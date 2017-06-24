@@ -170,6 +170,7 @@ func (a *Account) GetStatistics(ids []int, start, end string) ([]CampaignStat, e
 
 func (a *Account) GetStatisticsConc(ids []int, start, end time.Time) ([]CampaignStat, error) {
 	url := apiURL + "/v4/json"
+
 	fomrmatstart := start.Format(ctLayout)
 	formatend := end.Format(ctLayout)
 	StartGetStatisticsConc := time.Now()
@@ -281,6 +282,7 @@ func (a *Account) GetStatisticsConc(ids []int, start, end time.Time) ([]Campaign
 				log.Println("\n\n  TIME YANDEX REQEST : ", getreq.Seconds())
 
 				result := new(ResultV4CampStat)
+
 				err = json.Unmarshal(body, &result)
 				if err != nil {
 					BigErr = errors.New("GetStatistics json.Unmarshal error: " + err.Error())

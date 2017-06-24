@@ -1,0 +1,69 @@
+package vkontakte
+
+import (
+	"log"
+	"net/http"
+
+	"encoding/json"
+
+	"io/ioutil"
+
+	vk "gogs.itcloud.pro/SAS-project/sas/vkontakteAPI"
+)
+
+func GetVKAuthCode(w http.ResponseWriter, r *http.Request) {
+
+	// https://oauth.vk.com/authorize?client_id=1&display=page&redirect_uri=http://example.com/callback&scope=friends&response_type=code
+	log.Println(" --- :GetVKAuthCode used ")
+	VKurl := "https://oauth.vk.com/authorize?client_id=" + Config.VKAppID +
+		"&scope=stats,ads&redirect_uri=" + Config.VKRedirectURL + "&response_type=code"
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+	w.Header().Set("Access-Control-Allow-Headers",
+		"Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	// sending back to client endpoint of redirecting url
+	// with id of this app and client's Yandex account login
+	w.Write([]byte(VKurl))
+	return
+
+}
+func VKauthorize(w http.ResponseWriter, r *http.Request) {
+	//REDIRECT_URI?code=7a6fa4dff77a228eeda56603b8f53806c883f011c40b72630bb50df056f6479e52a
+	r.ParseForm()
+	query := r.URL.Query()
+	log.Println("GetYandexAccessToken income URL query: ", r.URL.Query())
+
+	code := query["code"]
+	if code != nil || len(code) != 0 {
+		vktoken, err := vk.VkAccessToken(Config.VKAppID, Config.VKAppSecret, Config.VKRedirectURL, code[0])
+		if err != nil {
+			log.Println("VKauthorize vk.VkAccessToken error: ", err)
+			return
+		}
+		log.Println("Inside VKauthorize vk.VkAccessToken result:::::: ", vktoken)
+
+	}
+	log.Println("Request from Vkontakte received without code")
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		log.Println("VkAuthorize ioutil.ReadAll(resp.Body) error", err)
+		w.Write([]byte("VkAuthorize ioutil.ReadAll(resp.Body) error" + err.Error()))
+		return
+	}
+	var token vk.VKtoken
+
+	err = json.Unmarshal(body, &token)
+	if err != nil {
+		log.Println("VkAuthorize bad request repsonse body, trying to unmarshal err ", err)
+		var vkerr vk.VKtokenErr
+		err = json.Unmarshal(body, &vkerr)
+		if err != nil {
+			log.Println("response VkAuthorize VKtokenErr json.Unmarshal: \n Indefined body: ", err, string(body))
+			w.Write([]byte("response VkAuthorize VKtokenErr json.Unmarshal: \n Indefined body:" + err.Error()))
+			return
+		}
+		w.Write([]byte("YandexDirectAPI error: " + vkerr.Error + " " + vkerr.ErrorDesсription))
+		return
+	}
+	log.Println("Inside VKauthorize vk.VkAccessToken result:::::: ", token)
+}

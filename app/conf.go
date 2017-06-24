@@ -11,15 +11,21 @@ import (
 )
 
 type ConfigType struct {
-	Mongourl              string       `json:"mongourl"`
-	DBname                string       `json:"bdname"`
-	YandexDirectAppID     string       `json:"yandexappid"`
-	YandexDirectAppSecret string       `json:"yandexappsecret"`
-	YandexDirectAPIURL    string       `json:"yandexapiurl"`
-	SessionSecret         string       `json:"sessionsecret"`
-	ServerPort            string       `json:"serverport"`
-	filename              string       `json:"-"`
-	Session               *mgo.Session `json:"-"`
+	Mongourl string `json:"mongourl"`
+	DBname   string `json:"bdname"`
+
+	YandexDirectAppID     string `json:"yandexappid"`
+	YandexDirectAppSecret string `json:"yandexappsecret"`
+	YandexDirectAPIURL    string `json:"yandexapiurl"`
+
+	VKAppID       string `json:"vkappid"`
+	VKAppSecret   string `json:"vkappsecret"`
+	VKRedirectURL string `json:"vkredirecturl"`
+
+	SessionSecret string       `json:"sessionsecret"`
+	ServerPort    string       `json:"serverport"`
+	filename      string       `json:"-"`
+	Session       *mgo.Session `json:"-"`
 }
 
 var Config = new(ConfigType)

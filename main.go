@@ -7,6 +7,7 @@ import (
 
 	"gogs.itcloud.pro/SAS-project/sas/app"
 	userhandlers "gogs.itcloud.pro/SAS-project/sas/handlers/user"
+	vkhandlers "gogs.itcloud.pro/SAS-project/sas/handlers/vkontakte"
 	yandexhandlers "gogs.itcloud.pro/SAS-project/sas/handlers/yandex"
 	"gogs.itcloud.pro/SAS-project/sas/model"
 	yad "gogs.itcloud.pro/SAS-project/sas/yandexDirectAPI"
@@ -45,6 +46,7 @@ func init() {
 	}
 	userhandlers.SetParams(Config)
 	yandexhandlers.SetParams(Config)
+	vkhandlers.SetParams(Config)
 	//log.Println("Debug2")
 
 }
@@ -78,6 +80,11 @@ func main() {
 	http.HandleFunc("/refreshdbcampaign", yandexhandlers.RefreshCampaignsListHandler)
 	http.HandleFunc("/getreport", yandexhandlers.GetStatSliceHandler)
 	http.HandleFunc("/report", yandexhandlers.ReportTemplateHandler)
+
+	//"/getauthcodevk", vkhandlers.GetVKAuthCode uses for getting VKapp info from server
+	http.HandleFunc("/getauthcodevk", vkhandlers.GetVKAuthCode)
+
+	http.HandleFunc("/vkauth", vkhandlers.VKauthorize)
 
 	http.Handle("/static/",
 		http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))

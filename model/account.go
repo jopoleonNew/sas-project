@@ -23,6 +23,7 @@ type Account struct {
 	SsaAppYandexSecret string
 	Status             string
 	OauthToken         string
+	VKtoken            string
 	YandexRole         string `json:"yandexrole" bson:"yandexrole"`
 	AgencyClients      []string
 	CampaignsInfo      []Campaign `json:"campaignsinfo" bson:"campaignsinfo"`
@@ -94,6 +95,9 @@ func (a *Account) AdvanceUpdate() error {
 	}
 	if a.OauthToken != "" {
 		changeParams = append(changeParams, bson.DocElem{"oauthtoken", a.OauthToken})
+	}
+	if a.VKtoken != "" {
+		changeParams = append(changeParams, bson.DocElem{"vktoken", a.VKtoken})
 	}
 	if a.YandexRole != "" {
 		changeParams = append(changeParams, bson.DocElem{"yandexrole", a.YandexRole})
