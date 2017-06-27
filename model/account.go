@@ -11,6 +11,14 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+type SourceInfo struct {
+	Accountlogin  string
+	AppID         string
+	AppSecret     string
+	AuthToken     string
+	CampaingsInfo []Campaign
+}
+
 type Account struct {
 	//Username of user created this account
 	Username string

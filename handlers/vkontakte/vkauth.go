@@ -40,7 +40,18 @@ func VKauthorize(w http.ResponseWriter, r *http.Request) {
 			log.Println("VKauthorize vk.VkAccessToken error: ", err)
 			return
 		}
+
+		//42f17cfb678d3008ad04df046815c5fdfa3663d984771b92db47955675f7a224c1f259b125062ecfdb04b
+		tempToken := "42f17cfb678d3008ad04df046815c5fdfa3663d984771b92db47955675f7a224c1f259b125062ecfdb04b"
+
 		log.Println("Inside VKauthorize vk.VkAccessToken result:::::: ", vktoken)
+		response, err := vk.Request(tempToken, "ads.getAccounts", nil)
+		if err != nil {
+			log.Println("VKauthorize vk.Request error: ", err)
+			return
+		}
+		log.Println("vk.Request ads.getAccounts result: ", response)
+		return
 
 	}
 	log.Println("Request from Vkontakte received without code")

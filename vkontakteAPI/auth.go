@@ -42,10 +42,11 @@ type VKtokenErr struct {
 	ErrorDesсription string `json:"error_desсription"`
 }
 
-var (
-	appID       = "6082545"
-	redirectURL = "https://sas.itcloud.pro/getauthcodevk"
-)
+//
+//var (
+//	appID       = "6082545"
+//	redirectURL = "https://sas.itcloud.pro/getauthcodevk"
+//)
 
 //https://oauth.vk.com/authorize?
 //client_id=APP_ID&
@@ -92,6 +93,7 @@ func VkAccessToken(appID, appSecret, redirectURL, code string) (VKtoken, error) 
 	var token VKtoken
 	//https://api.vk.com/oauth/access_token
 	//s := strconv.Itoa(-42)
+
 	VKurl := "https://oauth.vk.com/access_token?" +
 		"client_id=" + appID +
 		"&client_secret=" + appSecret +
