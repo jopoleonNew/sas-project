@@ -9,32 +9,34 @@ import (
 	"log"
 )
 
-const (
-	host     = "localhost"
-	port     = 5432
-	user     = "postgres"
-	password = "qwe"
-	dbname   = "test"
-)
+//
+//const (
+//	host     = "localhost"
+//	port     = 5432
+//	user     = "postgres"
+//	password = "qwe"
+//	dbname   = "test"
+//)
 
-var db *sql.DB
+var PostgreDB *sql.DB
 var err error
 
-func SetDBParams(host, port, user, password, dbname string) error {
+func SetDBParams(host string, port int, user, password, dbname string) error {
 
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
 		"password=%s dbname=%s sslmode=disable",
 		host, port, user, password, dbname)
-	db, err = sql.Open("postgres", psqlInfo)
+
+	PostgreDB, err = sql.Open("postgres", psqlInfo)
 	if err != nil {
-		log.Println(err)
+		log.Println("PostgreSQL SetDBParams sql.Open error: ", err)
 		return err
 	}
-	defer db.Close()
+	//defer PostgreDB.Close()
 
-	err = db.Ping()
+	err = PostgreDB.Ping()
 	if err != nil {
-		log.Println(err)
+		log.Println("PostgreSQL SetDBParams db.Ping() error: ", err)
 		return err
 	}
 	fmt.Println("Successfully connected!")

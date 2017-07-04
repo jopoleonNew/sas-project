@@ -36,7 +36,7 @@ func GetConfig() *ConfigType {
 }
 
 func InitConf(filename string) error {
-	log.Println("....InitConf used")
+	//log.Println("....InitConf used")
 	var c = &ConfigType{
 		Mongourl:              "",
 		YandexDirectAppID:     "",
@@ -64,12 +64,8 @@ func InitConf(filename string) error {
 		fmt.Errorf("Can't read config file: %s", err)
 		return err
 	}
-	// c.Session, err = mgo.Dial(c.Mongourl)
-	// if err != nil {
-	// 	return err
-	// }
 	Config = c
-	log.Println("...... Config file values: ", Config)
+	//log.Println("...... Config file values: ", Config)
 	return nil
 }
 

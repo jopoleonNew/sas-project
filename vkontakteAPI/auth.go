@@ -47,43 +47,6 @@ type VKtokenErr struct {
 //	appID       = "6082545"
 //	redirectURL = "https://sas.itcloud.pro/getauthcodevk"
 //)
-
-//https://oauth.vk.com/authorize?
-//client_id=APP_ID&
-//scope=SETTINGS&
-//redirect_uri=REDIRECT_URI&
-//response_type=code
-//
-//https://oauth.vk.com/access_token?
-//client_id=APP_ID&
-//client_secret=APP_SECRET&
-//code=7a6fa4dff77a228eeda56603b8f53806c883f011c40b72630bb50df056f6479e52a&
-//redirect_uri=REDIRECT_URI&
-func VkAuthorize(appID, redirectURL string) error {
-	//https://oauth.vk.com/authorize?
-	//client_id=APP_ID&
-	//scope=SETTINGS&
-	//redirect_uri=REDIRECT_URI&
-	//response_type=code
-	VKurl := "https://oauth.vk.com/authorize?client_id=" + appID +
-		"&scope=stats,ads&redirect_uri=" + redirectURL + "&response_type=code"
-	log.Println("VkAuthorize used")
-	client := &http.Client{}
-	r, _ := http.NewRequest("POST", VKurl, nil)
-	resp, err := client.Do(r)
-	if err != nil {
-		log.Println("VkAuthorize client.Do(r) error: ", err)
-		return err
-	}
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Println("VkAuthorize ioutil.ReadAll(resp.Body) error", err)
-		return err
-	}
-	log.Println("VkAuthorize response: ", string(body))
-	return nil
-}
-
 func VkAccessToken(appID, appSecret, redirectURL, code string) (VKtoken, error) {
 	//https://oauth.vk.com/access_token?
 	//client_id=APP_ID&
@@ -91,9 +54,6 @@ func VkAccessToken(appID, appSecret, redirectURL, code string) (VKtoken, error) 
 	//code=7a6fa4dff77a228eeda56603b8f53806c883f011c40b72630bb50df056f6479e52a&
 	//redirect_uri=REDIRECT_URI&
 	var token VKtoken
-	//https://api.vk.com/oauth/access_token
-	//s := strconv.Itoa(-42)
-
 	VKurl := "https://oauth.vk.com/access_token?" +
 		"client_id=" + appID +
 		"&client_secret=" + appSecret +

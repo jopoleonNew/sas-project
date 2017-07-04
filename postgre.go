@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"math/rand"
 
 	_ "github.com/lib/pq"
 )
@@ -15,6 +16,15 @@ const (
 	dbname   = "test"
 )
 
+const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
+
+func RandStringBytes(n int) string {
+	b := make([]byte, n)
+	for i := range b {
+		b[i] = letterBytes[rand.Intn(len(letterBytes))]
+	}
+	return string(b)
+}
 func main() {
 
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
@@ -48,7 +58,7 @@ INSERT INTO users (age, email, first_name, last_name)
 VALUES ($1, $2, $3, $4)
 RETURNING id`
 	id := 0
-	err = db.QueryRow(sqlStatement, 30, "22223-A3asd.io", "Jonathan", "Calhoun").Scan(&id)
+	err = db.QueryRow(sqlStatement, 30, RandStringBytes(7)+".oio", "Jonathan", "Calhoun").Scan(&id)
 	if err != nil {
 		panic(err)
 	}
@@ -56,26 +66,27 @@ RETURNING id`
 	type User struct {
 		ID        int
 		Age       int
+		Email     string
 		FirstName string
 		LastName  string
-		Email     string
 	}
-	rows, err := db.Query("SELECT id, first_name, email FROM users")
+	rows, err := db.Query("SELECT * FROM users")
 	if err != nil {
 		// handle this error better than this
 		panic(err)
 	}
 	defer rows.Close()
 	for rows.Next() {
-		var id int
-		var firstName string
-		var email string
-		err = rows.Scan(&id, &firstName, &email)
+		//var id int
+		//var firstName string
+		//var email string
+		var user User
+		err = rows.Scan(&user)
 		if err != nil {
 			// handle this error
 			panic(err)
 		}
-		fmt.Println(id, firstName, email)
+		fmt.Println(user)
 	}
 	// get any error encountered during iteration
 	err = rows.Err()

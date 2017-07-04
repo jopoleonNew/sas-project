@@ -46,6 +46,9 @@ type RequestType struct {
 	Values url.Values `json:"values"`
 }
 
+//https://api.vk.com/method/METHOD_NAME?PARAMETERS&access_token=ACCESS_TOKEN&v=V
+// Request makes request to VK API with given method name and parameters
+// You can see full list of them in official docs https://vk.com/dev/manuals
 func Request(token, methodName string, params map[string]string) (string, error) {
 	u, err := url.Parse(API_METHOD_URL + methodName)
 	if err != nil {
@@ -75,5 +78,3 @@ func Request(token, methodName string, params map[string]string) (string, error)
 
 	return string(content), nil
 }
-
-//https://api.vk.com/method/METHOD_NAME?PARAMETERS&access_token=ACCESS_TOKEN&v=V

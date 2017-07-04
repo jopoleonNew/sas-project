@@ -15,6 +15,7 @@ import (
 	_ "net/http/pprof"
 
 	"github.com/gorilla/context"
+	"gogs.itcloud.pro/SAS-project/sas/modelPostgre"
 )
 
 var (
@@ -35,25 +36,36 @@ func init() {
 	Config = app.GetConfig()
 
 	log.Printf("CONFIG FILE MAIN: %+v", Config)
+	// initiation of MongoDB session
 	err := model.SetDBParams(Config.Mongourl, Config.DBname)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
+	}
+
+	//host = "localhost"
+	//port = 5432
+	//user = "postgres"
+	//password = "qwe"
+	//dbname = "test"
+
+	//initiation of PostgreSQL driver
+	modelPostgre.SetDBParams("localhost", 5432, "postgres", "qwe", "test")
+	if err != nil {
+		panic(err)
 	}
 	//log.Println("Debug1")
 	err = yad.SetParams(Config.YandexDirectAppID, Config.YandexDirectAppSecret)
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	userhandlers.SetParams(Config)
 	yandexhandlers.SetParams(Config)
 	vkhandlers.SetParams(Config)
-	//log.Println("Debug2")
-
 }
 
 func main() {
 
-	log.Println("............main() Main.go")
 	http.HandleFunc("/", userhandlers.IndexHandler) // GET
 
 	http.HandleFunc("/signup", userhandlers.SignUpHandler)              // GET
@@ -83,7 +95,6 @@ func main() {
 
 	//"/getauthcodevk", vkhandlers.GetVKAuthCode uses for getting VKapp info from server
 	http.HandleFunc("/getauthcodevk", vkhandlers.GetVKAuthCode)
-
 	http.HandleFunc("/vkauth", vkhandlers.VKauthorize)
 
 	http.Handle("/static/",
