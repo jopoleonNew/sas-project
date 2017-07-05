@@ -3,7 +3,6 @@ package yandex
 import (
 	"log"
 	"net/http"
-	"sync"
 
 	"gogs.itcloud.pro/SAS-project/sas/model"
 	"gogs.itcloud.pro/SAS-project/sas/utils"
@@ -75,47 +74,47 @@ func GetYandexAccessToken(w http.ResponseWriter, r *http.Request) {
 			log.Println("SubmitConfirmationYandexCode GetAgencyLogins error: ", err)
 			return
 		}
+
 		//log.Println("SubmitConfirmationYandexCode GetAccountInfo: ", accinfo)
 		log.Println("SubmitConfirmationYandexCode account.GetAgencyLogins(): ", agencystruct)
-
-		wg := sync.WaitGroup{}
-		wg.Add(len(agencystruct))
+		//
+		//wg := sync.WaitGroup{}
+		//wg.Add(len(agencystruct))
 		for _, agClient := range agencystruct {
-			go func() {
-				agencyacc := model.NewAccount()
-				agencyacc.Accountlogin = agClient.Login
-				agencyacc.Username = username
-				agencyacc.Email = agClient.Representatives[0].Email
-				agencyacc.YandexRole = agClient.Representatives[0].Role
-				agencyacc.Source = "Яндекс Директ"
-				agencyacc.OauthToken = oauthresp.AccessToken
-				//var campjson model.CampaingsGetResult
-				account := yad.NewAccount()
-				account.Login = agClient.Login
-				account.OAuthToken = accinfo.OauthToken
-				yadcamps, err := account.GetCampaignList()
-				if err != nil {
-					log.Fatal("SubmitConfirmationYandexCode GetAgencyLogins GetCampaignList: ", err)
-					//w.Write([]byte("SubmitConfirmationYandexCode GetCampaignsListYandex:" + err.Error()))
-					return
-				}
-				acccamps := make([]model.Campaign, len(yadcamps))
-				for i, camp := range yadcamps {
-					acccamps[i].ID = camp.ID
-					acccamps[i].Status = camp.Status
-					acccamps[i].Name = camp.Name
-				}
-				agencyacc.CampaignsInfo = acccamps
-
-				err = agencyacc.AdvanceUpdate()
-				if err != nil {
-					log.Fatal("SubmitConfirmationYandexCode agencyacc.Update() error: ", err)
-					return
-				}
-				wg.Done()
-			}()
+			agencyacc := model.NewAccount()
+			agencyacc.Accountlogin = agClient.Login
+			agencyacc.Username = username
+			agencyacc.Email = agClient.Representatives[0].Email
+			agencyacc.YandexRole = agClient.Representatives[0].Role
+			agencyacc.Source = "Яндекс Директ"
+			agencyacc.OauthToken = oauthresp.AccessToken
+			//var campjson model.CampaingsGetResult
+			account := yad.NewAccount()
+			account.Login = agClient.Login
+			account.OAuthToken = accinfo.OauthToken
+			yadcamps, err := account.GetCampaignList()
+			if err != nil {
+				w.Write([]byte("SubmitConfirmationYandexCode GetAgencyLogins GetCampaignList err:" + err.Error()))
+				log.Fatal("SubmitConfirmationYandexCode GetAgencyLogins GetCampaignList err: ", err)
+				//w.Write([]byte("SubmitConfirmationYandexCode GetCampaignsListYandex:" + err.Error()))
+				return
+			}
+			acccamps := make([]model.Campaign, len(yadcamps))
+			for i, camp := range yadcamps {
+				acccamps[i].ID = camp.ID
+				acccamps[i].Status = camp.Status
+				acccamps[i].Name = camp.Name
+			}
+			agencyacc.CampaignsInfo = acccamps
+			acc.AgencyClients = append(acc.AgencyClients, agClient.Login)
+			err = agencyacc.AdvanceUpdate()
+			if err != nil {
+				log.Fatal("SubmitConfirmationYandexCode agencyacc.Update() error: ", err)
+				return
+			}
+			//wg.Done()
 		}
-		wg.Wait()
+		//wg.Wait()
 		return
 	}
 	yadacc := yad.NewAccount()
