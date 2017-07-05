@@ -1,4 +1,5 @@
-//package vkontakteAPI
+package vkontakteAPI
+
 //
 //import (
 //	"encoding/json"
