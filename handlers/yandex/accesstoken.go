@@ -7,6 +7,7 @@ import (
 	"gogs.itcloud.pro/SAS-project/sas/model"
 	"gogs.itcloud.pro/SAS-project/sas/utils"
 	yad "gogs.itcloud.pro/SAS-project/sas/yandexDirectAPI"
+	"gopkg.in/inconshreveable/log15.v2"
 )
 
 // GetYandexAccessToken handles requests from Yandex Direct Api to application
@@ -110,6 +111,7 @@ func GetYandexAccessToken(w http.ResponseWriter, r *http.Request) {
 			agencyacc.CampaignsInfo = acccamps
 			acc.AgencyClients = append(acc.AgencyClients, agClient.Login)
 			user.AccountList = append(user.AccountList, agClient.Login)
+			log15.Info("user.AccountList inside agency adding: ", user.AccountList)
 			err = agencyacc.AdvanceUpdate()
 			if err != nil {
 				log.Fatal("SubmitConfirmationYandexCode agencyacc.Update() error: ", err)
