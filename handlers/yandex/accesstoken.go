@@ -108,6 +108,7 @@ func GetYandexAccessToken(w http.ResponseWriter, r *http.Request) {
 						return
 					}
 					//log15.Info("Inside agency handling for loop ", "agency", agClient)
+					log.Println("------------............. ///// \n\n\n Inside agency handling for loop ", agClient)
 					agencyacc := model.NewAccount()
 					agencyacc.Accountlogin = agClient.Login
 					agencyacc.Username = username
