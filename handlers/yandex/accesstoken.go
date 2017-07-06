@@ -6,7 +6,6 @@ import (
 
 	"sync"
 
-	"github.com/inconshreveable/log15"
 	"gogs.itcloud.pro/SAS-project/sas/model"
 	"gogs.itcloud.pro/SAS-project/sas/utils"
 	yad "gogs.itcloud.pro/SAS-project/sas/yandexDirectAPI"
@@ -108,7 +107,7 @@ func GetYandexAccessToken(w http.ResponseWriter, r *http.Request) {
 						wg.Done()
 						return
 					}
-					log15.Info("Inside agency handling for loop ", "agency", agClient)
+					//log15.Info("Inside agency handling for loop ", "agency", agClient)
 					agencyacc := model.NewAccount()
 					agencyacc.Accountlogin = agClient.Login
 					agencyacc.Username = username
