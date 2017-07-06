@@ -111,7 +111,7 @@ func (a *Account) makeV5GetRequest(url string, fieldNames []string) ([]byte, err
 	if string(body) == "" {
 		return nil, errors.New("makeV5GetRequest body response is empty")
 	}
-	log.Println("makeV5GetRequest Response: ", string(body))
+	//log.Println("makeV5GetRequest Response: ", string(body))
 	if strings.Contains(string(body), "error") {
 		var errresult = YandexV5Error{}
 		err := json.Unmarshal(body, &errresult)
