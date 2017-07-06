@@ -86,12 +86,14 @@ func AccountsHandler(w http.ResponseWriter, r *http.Request) {
 					w.Write([]byte("AccountsHandler error: " + err.Error()))
 					return
 				}
+				log.Println("Inside AccountHandler. Agency's AccountInfo : %+v", agencyAccInfo)
 				data.AccountList = append(data.AccountList, agencyAccInfo)
 			}
 		}
 	}
 	log.Println("AccountsHandler user.GetAccountList(): ", acclist)
-	data.AccountList = acclist
+	data.AccountList = append(data.AccountList, acclist...)
+	//data.AccountList = acclist
 
 	t, err := template.New("accounts2.tmpl").ParseFiles(
 		"static/templates/header.tmpl",
