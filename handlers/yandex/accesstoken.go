@@ -80,6 +80,8 @@ func GetYandexAccessToken(w http.ResponseWriter, r *http.Request) {
 		//
 		//wg := sync.WaitGroup{}
 		//wg.Add(len(agencystruct))
+		user := model.NewUser()
+		user.Username = username
 		for _, agClient := range agencystruct {
 			agencyacc := model.NewAccount()
 			agencyacc.Accountlogin = agClient.Login
@@ -107,14 +109,26 @@ func GetYandexAccessToken(w http.ResponseWriter, r *http.Request) {
 			}
 			agencyacc.CampaignsInfo = acccamps
 			acc.AgencyClients = append(acc.AgencyClients, agClient.Login)
+			user.AccountList = append(user.AccountList, agClient.Login)
 			err = agencyacc.AdvanceUpdate()
 			if err != nil {
 				log.Fatal("SubmitConfirmationYandexCode agencyacc.Update() error: ", err)
 				return
 			}
 			//wg.Done()
+
 		}
 		//wg.Wait()
+		err = user.AdvanceUpdate()
+		if err != nil {
+			log.Fatal("SubmitConfirmationYandexCode user.AdvanceUpdate() error: ", err)
+			return
+		}
+		err = acc.AdvanceUpdate()
+		if err != nil {
+			log.Fatal("SubmitConfirmationYandexCode acc.AdvanceUpdate() error: ", err)
+			return
+		}
 		return
 	}
 	yadacc := yad.NewAccount()
@@ -137,11 +151,7 @@ func GetYandexAccessToken(w http.ResponseWriter, r *http.Request) {
 	acc.CampaignsInfo = acccamps
 	//updating acc status on active
 	acc.Status = "active"
-	err = acc.AdvanceUpdate()
-	if err != nil {
-		log.Fatal("SubmitConfirmationYandexCode acc.AdvanceUpdate() error: ", err)
-		return
-	}
+
 	//log.Println("SubmitConfirmationYandexCode account change info: ", chInfo)
 	//campsbyte, err := json.Marshal(yadcamps)
 	//if err != nil {

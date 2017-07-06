@@ -96,8 +96,11 @@ func (a *Account) makeV5GetRequest(url string, fieldNames []string) ([]byte, err
 	r.Header.Add("Client-Login", a.Login)
 	r.Header.Add("Authorization", "Bearer "+a.OAuthToken)
 	r.Header.Add("Client-ID", application.ID)
-	log.Println("makeV5GetRequest body Request: ", r)
+
+	//log.Println("makeV5GetRequest body Request: ", r)
+
 	resp, err := client.Do(r)
+
 	if err != nil {
 		return nil, errors.New("http.Request.Do error: " + err.Error())
 	}
@@ -108,6 +111,7 @@ func (a *Account) makeV5GetRequest(url string, fieldNames []string) ([]byte, err
 	if string(body) == "" {
 		return nil, errors.New("makeV5GetRequest body response is empty")
 	}
+	log.Println("makeV5GetRequest Response: ", string(body))
 	if strings.Contains(string(body), "error") {
 		var errresult = YandexV5Error{}
 		err := json.Unmarshal(body, &errresult)
