@@ -56,14 +56,39 @@ func AccountsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	var data datas
 	data.CurrentUser = username
-	acc := model.NewAccount()
-	acc.Username = username
+	//acc := model.NewAccount()
+	//acc.Username = username
 	//acclist, err := acc.GetInfoList()
 	acclist, err := user.GetAccountList()
 	if err != nil {
 		log.Println("AccountsHandler user.GetAccountList() error:", err)
 		w.Write([]byte("AccountsHandler error: " + err.Error()))
 		return
+	}
+	for _, uaccount := range acclist {
+		if uaccount.YandexRole == "agency" {
+			acc := model.NewAccount()
+			acc.Username = username
+			acc.Accountlogin = uaccount.Accountlogin
+			agencyInfo, err := acc.GetInfo()
+			if err != nil {
+				log.Println("AccountsHandler agencyInfo.GetInfo error:", err)
+				w.Write([]byte("AccountsHandler error: " + err.Error()))
+				return
+			}
+			for _, agencyAccountLogin := range agencyInfo.AgencyClients {
+				agencyAcc := model.NewAccount()
+				agencyAcc.Username = username
+				agencyAcc.Accountlogin = agencyAccountLogin
+				agencyAccInfo, err := agencyAcc.GetInfo()
+				if err != nil {
+					log.Println("AccountsHandler agencyAccInfo.GetInfo error:", err)
+					w.Write([]byte("AccountsHandler error: " + err.Error()))
+					return
+				}
+				data.AccountList = append(data.AccountList, agencyAccInfo)
+			}
+		}
 	}
 	log.Println("AccountsHandler user.GetAccountList(): ", acclist)
 	data.AccountList = acclist

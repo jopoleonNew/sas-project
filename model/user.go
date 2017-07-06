@@ -240,7 +240,7 @@ func (u *UserInfo) GetAccountList() ([]Account, error) {
 		log.Println("GetAccountList err: ", err)
 		return nil, err
 	}
-	log.Println("c.Find(bson.M{accountlogin: bson.M{$in: userinfo.AccountList}}) ", result)
+	//log.Println("c.Find(bson.M{accountlogin: bson.M{$in: userinfo.AccountList}}) ", result)
 	//result := []Account{}
 	//u.AccountList
 	return result, nil

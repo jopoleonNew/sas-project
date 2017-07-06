@@ -86,6 +86,7 @@ func GetYandexAccessToken(w http.ResponseWriter, r *http.Request) {
 		for _, as := range agencystruct {
 			user.AccountList = append(user.AccountList, as.Login)
 		}
+		log.Println(" Inside agency adding account list in  ", agencystruct)
 		err = user.AdvanceUpdate()
 		if err != nil {
 			log.Fatal("SubmitConfirmationYandexCode user.AdvanceUpdate() error: ", err)
@@ -108,7 +109,7 @@ func GetYandexAccessToken(w http.ResponseWriter, r *http.Request) {
 						return
 					}
 					//log15.Info("Inside agency handling for loop ", "agency", agClient)
-					log.Println("------------............. ///// \n\n\n Inside agency handling for loop ", agClient)
+					log.Println("------------............. ///// \n Inside agency handling for loop ", agClient)
 					agencyacc := model.NewAccount()
 					agencyacc.Accountlogin = agClient.Login
 					agencyacc.Username = username
