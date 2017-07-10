@@ -75,24 +75,24 @@ func GetYandexAccessToken(w http.ResponseWriter, r *http.Request) {
 			log.Println("SubmitConfirmationYandexCode GetAgencyLogins error: ", err)
 			return
 		}
-
+		//user := model.NewUser()
+		//user.Username = username
 		//log.Println("SubmitConfirmationYandexCode GetAccountInfo: ", accinfo)
-		log.Println("SubmitConfirmationYandexCode account.GetAgencyLogins(): ", agencystruct)
+		//log.Println("SubmitConfirmationYandexCode account.GetAgencyLogins(): ", agencystruct)
 		//
 		//wg := sync.WaitGroup{}
 		//wg.Add(len(agencystruct))
-		user := model.NewUser()
-		user.Username = username
-		for _, as := range agencystruct {
-			user.AccountList = append(user.AccountList, as.Login)
-			err = user.AdvanceUpdate()
-			if err != nil {
-				log.Fatal("SubmitConfirmationYandexCode user.AdvanceUpdate() error: ", err)
-				return
-			}
-		}
-		log.Println(" Inside agency adding account list in  ", agencystruct)
-		log.Println(" Inside agency adding account list in  ", user.AccountList)
+
+		//for _, as := range agencystruct {
+		//	user.AccountList = append(user.AccountList, as.Login)
+		//	err = user.AdvanceUpdate()
+		//	if err != nil {
+		//		log.Fatal("SubmitConfirmationYandexCode user.AdvanceUpdate() error: ", err)
+		//		return
+		//	}
+		//}
+		//log.Println(" Inside agency adding account list in  ", agencystruct)
+		//log.Println(" Inside agency adding account list in  ", user.AccountList)
 
 		YandexConnectionsLimit := 10
 		chAC := make(chan yad.Client, 3) // This number 3 can be anything as long as it's larger than YandexConnectionsLimit
@@ -154,44 +154,6 @@ func GetYandexAccessToken(w http.ResponseWriter, r *http.Request) {
 		close(chAC) // This tells the goroutines there's nothing else to do
 		wg.Wait()   // Wait for the threads to finish
 
-		//for _, agClient := range agencystruct {
-		//	log15.Info("Inside agency handling for loop ", "agency", agClient)
-		//	agencyacc := model.NewAccount()
-		//	agencyacc.Accountlogin = agClient.Login
-		//	agencyacc.Username = username
-		//	agencyacc.Email = agClient.Representatives[0].Email
-		//	agencyacc.YandexRole = agClient.Representatives[0].Role
-		//	agencyacc.Source = "Яндекс Директ"
-		//	agencyacc.OauthToken = oauthresp.AccessToken
-		//	//var campjson model.CampaingsGetResult
-		//	account := yad.NewAccount()
-		//	account.Login = agClient.Login
-		//	account.OAuthToken = accinfo.OauthToken
-		//	yadcamps, err := account.GetCampaignList()
-		//	if err != nil {
-		//		w.Write([]byte("SubmitConfirmationYandexCode GetAgencyLogins GetCampaignList err:" + err.Error()))
-		//		log.Fatal("SubmitConfirmationYandexCode GetAgencyLogins GetCampaignList err: ", err)
-		//		//w.Write([]byte("SubmitConfirmationYandexCode GetCampaignsListYandex:" + err.Error()))
-		//		return
-		//	}
-		//	acccamps := make([]model.Campaign, len(yadcamps))
-		//	for i, camp := range yadcamps {
-		//		acccamps[i].ID = camp.ID
-		//		acccamps[i].Status = camp.Status
-		//		acccamps[i].Name = camp.Name
-		//	}
-		//	agencyacc.CampaignsInfo = acccamps
-		//	acc.AgencyClients = append(acc.AgencyClients, agClient.Login)
-		//	err = agencyacc.AdvanceUpdate()
-		//	if err != nil {
-		//		log.Fatal("SubmitConfirmationYandexCode agencyacc.Update() error: ", err)
-		//		return
-		//	}
-		//	//wg.Done()
-		//
-		//}
-		//wg.Wait()
-
 		err = acc.AdvanceUpdate()
 		if err != nil {
 			log.Fatal("SubmitConfirmationYandexCode acc.AdvanceUpdate() error: ", err)
@@ -220,12 +182,6 @@ func GetYandexAccessToken(w http.ResponseWriter, r *http.Request) {
 	//updating acc status on active
 	acc.Status = "active"
 
-	//log.Println("SubmitConfirmationYandexCode account change info: ", chInfo)
-	//campsbyte, err := json.Marshal(yadcamps)
-	//if err != nil {
-	//	log.Println("SubmitConfirmationYandexCode json.Marshal error: ", err)
-	//	return
-	//}
 	http.Redirect(w, r, "/accounts", http.StatusSeeOther)
 	return
 }

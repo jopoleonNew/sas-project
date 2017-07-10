@@ -64,11 +64,38 @@ func GetStatSliceHandler(w http.ResponseWriter, r *http.Request) {
 	//DONETODO: Add concurrency for every account in loop
 	//wg := sync.WaitGroup{}
 	for _, camp := range acclist {
-		if camp.YandexRole == "agency" {
-			continue
-		}
+
 		if camp.Source == "Яндекс Директ" {
+
 			var idslice []int
+			if camp.YandexRole == "agency" {
+				acc := model.NewAccount()
+				acc.Username = username
+				acc.Accountlogin = camp.Accountlogin
+				agencyInfo, err := acc.GetInfo()
+				if err != nil {
+					log.Println("GetStatSliceHandler agencyInfo.GetInfo error:", err)
+					w.Write([]byte("GetStatSliceHandler agencyInfo.GetInfo error: " + err.Error()))
+					return
+				}
+				for _, agencyAccountLogin := range agencyInfo.AgencyClients {
+					agencyAcc := model.NewAccount()
+					agencyAcc.Username = username
+					agencyAcc.Accountlogin = agencyAccountLogin
+					agencyAccInfo, err := agencyAcc.GetInfo()
+					if err != nil {
+						log.Println("GetStatSliceHandler agencyAccInfo.GetInfo error:", err)
+						w.Write([]byte("GetStatSliceHandler agencyAccInfo.GetInfo error: " + err.Error()))
+						return
+					}
+					//log.Println("Inside AccountHandler. Agency's AccountInfo : %+v", agencyAccInfo)
+					for _, id := range agencyAccInfo.CampaignsInfo {
+						idslice = append(idslice, id.ID)
+					}
+
+					//idslice = append(idslice, id.ID)
+				}
+			}
 			for _, id := range camp.CampaignsInfo {
 				idslice = append(idslice, id.ID)
 			}
