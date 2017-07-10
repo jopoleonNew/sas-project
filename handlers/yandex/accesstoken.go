@@ -85,6 +85,11 @@ func GetYandexAccessToken(w http.ResponseWriter, r *http.Request) {
 		user.Username = username
 		for _, as := range agencystruct {
 			user.AccountList = append(user.AccountList, as.Login)
+			err = user.AdvanceUpdate()
+			if err != nil {
+				log.Fatal("SubmitConfirmationYandexCode user.AdvanceUpdate() error: ", err)
+				return
+			}
 		}
 		log.Println(" Inside agency adding account list in  ", agencystruct)
 		log.Println(" Inside agency adding account list in  ", user.AccountList)
@@ -148,12 +153,6 @@ func GetYandexAccessToken(w http.ResponseWriter, r *http.Request) {
 
 		close(chAC) // This tells the goroutines there's nothing else to do
 		wg.Wait()   // Wait for the threads to finish
-
-		err = user.AdvanceUpdate()
-		if err != nil {
-			log.Fatal("SubmitConfirmationYandexCode user.AdvanceUpdate() error: ", err)
-			return
-		}
 
 		//for _, agClient := range agencystruct {
 		//	log15.Info("Inside agency handling for loop ", "agency", agClient)
