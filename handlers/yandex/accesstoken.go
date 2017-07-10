@@ -87,13 +87,9 @@ func GetYandexAccessToken(w http.ResponseWriter, r *http.Request) {
 			user.AccountList = append(user.AccountList, as.Login)
 		}
 		log.Println(" Inside agency adding account list in  ", agencystruct)
-		err = user.AdvanceUpdate()
-		if err != nil {
-			log.Fatal("SubmitConfirmationYandexCode user.AdvanceUpdate() error: ", err)
-			return
-		}
+		log.Println(" Inside agency adding account list in  ", user.AccountList)
 
-		YandexConnectionsLimit := 3
+		YandexConnectionsLimit := 10
 		chAC := make(chan yad.Client, 3) // This number 3 can be anything as long as it's larger than YandexConnectionsLimit
 		var wg sync.WaitGroup
 
@@ -152,6 +148,13 @@ func GetYandexAccessToken(w http.ResponseWriter, r *http.Request) {
 
 		close(chAC) // This tells the goroutines there's nothing else to do
 		wg.Wait()   // Wait for the threads to finish
+
+		err = user.AdvanceUpdate()
+		if err != nil {
+			log.Fatal("SubmitConfirmationYandexCode user.AdvanceUpdate() error: ", err)
+			return
+		}
+
 		//for _, agClient := range agencystruct {
 		//	log15.Info("Inside agency handling for loop ", "agency", agClient)
 		//	agencyacc := model.NewAccount()

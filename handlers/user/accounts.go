@@ -62,7 +62,7 @@ func AccountsHandler(w http.ResponseWriter, r *http.Request) {
 	acclist, err := user.GetAccountList()
 	if err != nil {
 		log.Println("AccountsHandler user.GetAccountList() error:", err)
-		w.Write([]byte("AccountsHandler error: " + err.Error()))
+		w.Write([]byte("AccountsHandler user.GetAccountList() error: " + err.Error()))
 		return
 	}
 	for _, uaccount := range acclist {
@@ -73,7 +73,7 @@ func AccountsHandler(w http.ResponseWriter, r *http.Request) {
 			agencyInfo, err := acc.GetInfo()
 			if err != nil {
 				log.Println("AccountsHandler agencyInfo.GetInfo error:", err)
-				w.Write([]byte("AccountsHandler error: " + err.Error()))
+				w.Write([]byte("AccountsHandler agencyInfo.GetInfo error: " + err.Error()))
 				return
 			}
 			for _, agencyAccountLogin := range agencyInfo.AgencyClients {
@@ -83,7 +83,7 @@ func AccountsHandler(w http.ResponseWriter, r *http.Request) {
 				agencyAccInfo, err := agencyAcc.GetInfo()
 				if err != nil {
 					log.Println("AccountsHandler agencyAccInfo.GetInfo error:", err)
-					w.Write([]byte("AccountsHandler error: " + err.Error()))
+					w.Write([]byte("AccountsHandler agencyAccInfo.GetInfo error: " + err.Error()))
 					return
 				}
 				log.Println("Inside AccountHandler. Agency's AccountInfo : %+v", agencyAccInfo)

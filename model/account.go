@@ -17,6 +17,8 @@ type SourceInfo struct {
 	AppSecret     string
 	AuthToken     string
 	CampaingsInfo []Campaign
+	AgencyClients []string
+	AccountRole       string
 }
 
 type Account struct {
@@ -25,17 +27,23 @@ type Account struct {
 	//Source is the name of organization which hosts the account.
 	Source string
 	//Accountlogin is the login of account in organization from Source
-	Accountlogin       string
-	Email              string
+	Accountlogin string
+	//Owners is the list of user's who have access to that account
+	Owners []string
+
+	Email string
+
+	Status string
+
+	collName           string `json:"-"` // mgo Collection name
+	SourceInfo         SourceInfo
 	SsaAppYandexID     string
 	SsaAppYandexSecret string
-	Status             string
 	OauthToken         string
 	VKtoken            string
 	YandexRole         string `json:"yandexrole" bson:"yandexrole"`
 	AgencyClients      []string
 	CampaignsInfo      []Campaign `json:"campaignsinfo" bson:"campaignsinfo"`
-	collName           string     `json:"-"` // mgo Collection name
 }
 
 func NewAccount() *Account {
