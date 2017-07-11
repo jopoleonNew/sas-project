@@ -14,22 +14,24 @@ import (
 )
 
 func AccountsHandler(w http.ResponseWriter, r *http.Request) {
-
-	session, err := store.Get(r, "sessionSSA")
-	if err != nil {
-		log.Println(err)
-	}
-	username, err := utils.GetUsernamefromRequestSession(r)
-	if err != nil {
-		log.Println("AccountsHandler GetUsernamefromRequestSession err: ", err)
-		//w.Write([]byte("AccountsHandler GetUsernamefromRequestSession err: " + err.Error()))
-		http.Redirect(w, r, "/", http.StatusSeeOther)
-		return
-	}
+	//
+	//session, err := store.Get(r, "sessionSSA")
+	//if err != nil {
+	//	log.Println(err)
+	//}
+	//username, err := utils.GetUsernamefromRequestSession(r)
+	//if err != nil {
+	//	log.Println("AccountsHandler GetUsernamefromRequestSession err: ", err)
+	//	//w.Write([]byte("AccountsHandler GetUsernamefromRequestSession err: " + err.Error()))
+	//	http.Redirect(w, r, "/", http.StatusSeeOther)
+	//	return
+	//}
+	//log.Println("AccountsHandler used with username: ", username)
+	//if session.Values["loggedin"].(string) == "false" {
+	//	http.Redirect(w, r, "/", 302)
+	//}
+	username := r.Context().Value("username").(string)
 	log.Println("AccountsHandler used with username: ", username)
-	if session.Values["loggedin"].(string) == "false" {
-		http.Redirect(w, r, "/", 302)
-	}
 	user := model.NewUser()
 	user.Username = username
 	exist, err := user.IsExist()
@@ -38,16 +40,17 @@ func AccountsHandler(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("AccountsHandler u.IsExist() error " + err.Error()))
 		return
 	}
+
 	if !exist {
 		w.Write([]byte("No such user found"))
 		//http.Redirect(w, r, "/", 302)
 		return
 	}
-	if session.Values["username"].(string) != username {
-		w.Write([]byte("You are not logged as " + username))
-		//http.Redirect(w, r, "/", 302)
-		return
-	}
+	//if session.Values["username"].(string) != username {
+	//	w.Write([]byte("You are not logged as " + username))
+	//	//http.Redirect(w, r, "/", 302)
+	//	return
+	//}
 
 	type datas struct {
 		UsingReport string
@@ -155,34 +158,6 @@ func AddAccountHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	//user.AccountListif strings.Contains(acc.Accountlogin, )
-	//func (ctl *Controller) IsAccountUnique(username, accountlogin string) (bool, error)
-
-	//exists, err := acc.IsExist()
-	//if err != nil && err != model.ErrAccNotFound {
-	//	log.Println("AddAccountHandler acc.IsExist() error: ", err)
-	//	w.Write([]byte("AddAccountHandler acc.IsExist() error: " + err.Error()))
-	//	return
-	//}
-	//if exists {
-	//	//w.Write([]byte("Аккаунт с именем " + acc.Accountlogin + " уже есть в базе. "))
-	//	log.Println("Аккаунт у этого пользователя с таким именем уже существует")
-	//	w.Write([]byte("Аккаунт у этого пользователя с таким именем уже существует"))
-	//	return
-	//}
-	//accExist, err := user.IsAccountExist(acc.Accountlogin)
-	//if err != nil && err != model.ErrAccNotFound {
-	//	log.Println("AddAccountHandler user.IsAccountExist(acc.Accountlogin) error: ", err)
-	//	w.Write([]byte("AddAccountHandler user.IsAccountExist(acc.Accountlogin) error: " + err.Error()))
-	//	return
-	//}
-	//if accExist {
-	//	log.Println("Аккаунт у этого пользователя с таким именем уже существует")
-	//	w.Write([]byte("Аккаунт у этого пользователя с таким именем уже существует"))
-	//	return
-	//}
-
-	//} else {
 	acc.Email = userinfo.Email
 	acc.Status = "notactive"
 	acc.SsaAppYandexID = Config.YandexDirectAppID
@@ -205,6 +180,9 @@ func AddAccountHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Succsess. Аккаунт добавлен."))
 }
 
+func AddVkAccount(w http.ResponseWriter, r *http.Request) {
+
+}
 func DeleteAccountHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("DeleteAccountHandler used")
 	username, err := utils.GetUsernamefromRequestSession(r)

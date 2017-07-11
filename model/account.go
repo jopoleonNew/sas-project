@@ -18,9 +18,34 @@ type SourceInfo struct {
 	AuthToken     string
 	CampaingsInfo []Campaign
 	AgencyClients []string
-	AccountRole       string
+	AccountRole   string
+}
+type YandexInfo struct {
+	AppID         string
+	AppSecret     string
+	OauthToken    string
+	YandexRole    string `json:"yandexrole" bson:"yandexrole"`
+	AgencyClients []string
+	CampaignsInfo []Campaign `json:"campaignsinfo" bson:"campaignsinfo"`
 }
 
+//account_id integer	идентификатор рекламного кабинета.
+//account_type//string	тип рекламного кабинета. Возможные значения:
+//general — обычный;
+//agency — агентский.
+//account_status integer, [0,1]	статус рекламного кабинета. Возможные значения:
+//1 — активен;
+//0 — неактивен.
+//access_role string	права пользователя в рекламном кабинете. Возможные значения:
+//admin — главный администратор;
+//manager — администратор;
+//reports — наблюдатель.
+type VKInfo struct {
+	VKtoken       string
+	AccessRole    string
+	AccountType   string
+	AccountStatus string
+}
 type Account struct {
 	//Username of user created this account
 	Username string
@@ -192,85 +217,6 @@ func (a *Account) checkMainFields() error {
 	if a.Accountlogin == "" {
 		return errors.New("Account's Accountlogin field can't be blank.")
 	}
-	// if a.Email == "" {
-	// 	return errors.New("Account's Email can't be blank.")
-	// }
-	// if a.SsaAppYandexID == "" {
-	// 	return errors.New("Account's SsaAppYandexID can't be blank.")
-	// }
-	// if a.SsaAppYandexSecret == "" {
-	// 	return errors.New("Account's SsaAppYandexSecret can't be blank.")
-	// }
-	// if a.Status == "" {
-	// 	return errors.New("Account's Status can't be blank.")
-	// }
-	// if a.OauthToken == "" {
-	// 	return errors.New("Account's OauthToken can't be blank.")
-	// }
+
 	return nil
 }
-
-//// Update updates Account struct fields in
-//// database according to passed account as method receiver.
-//// Currently DEPRECATED method, use AdvanceUpdate() instead
-//func (a *Account) Update() error {
-//	log.Println("account.Update used")
-//	s := mainSession.Clone()
-//	defer s.Close()
-//	c := s.DB(mainDB.Name).C(a.collName)
-//	err := a.checkMainFields()
-//	if err != nil {
-//		//log.Println("a.Update checkFields() err: ", err)
-//		return err
-//	}
-//
-//	changeInfo, err := c.Upsert(bson.M{"username": a.Username, "accountlogin": a.Accountlogin}, a)
-//	if err != nil {
-//		log.Println("a.Update Update() err: ", err)
-//		return err
-//	}
-//
-//	log.Printf("\n Account ", a, " Upserted in database: %+v ", changeInfo)
-//
-//	return nil
-//}
-//
-//// SetStatusAndToken() sets Status And Token of account in DB.
-//// Currently DEPRECATED method, use AdvanceUpdate() instead
-//func (a *Account) SetStatusAndToken() error {
-//	err := a.checkMainFields()
-//	if err != nil {
-//		return err
-//	}
-//	s := mainSession.Clone()
-//	defer s.Close()
-//	c := s.DB(mainDB.Name).C(a.collName)
-//
-//	colQuerier := bson.M{"username": a.Username, "accountlogin": a.Accountlogin, "source": "Яндекс Директ"}
-//	change := bson.M{"$set": bson.M{"status": "active", "oauthtoken": a.OauthToken}}
-//	err = c.Update(colQuerier, change)
-//	if err != nil {
-//		log.Println("a.SetStatusAndToken() Update() err: ", err)
-//		return err
-//	}
-//	log.Printf("\n Account ", a, " Upserted in database: %+v ")
-//	return nil
-//}
-//GetInfoList returns slice of Account model with info about accounts from db by username.
-// Currently DEPRECATED method, use User.GetAccountList() instead
-//func (a *Account) GetInfoList() ([]Account, error) {
-//	log.Println("GetInfoList used by ", a.Username, " ", a.Accountlogin)
-//	s := mainSession.Clone()
-//	defer s.Close()
-//	c := s.DB(mainDB.Name).C(a.collName)
-//	collen, _ := c.Count()
-//	result := make([]Account, collen)
-//	err := c.Find(bson.M{"username": a.Username}).All(&result)
-//
-//	if err != nil {
-//		//log.Println(err, "GetInfoList")
-//
-//		return result, errors.New("Some field in Account are empty")
-//	}
-//	return result, nil
-//}

@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+	"errors"
 	"flag"
 	"log"
 	"net/http"
@@ -14,7 +16,11 @@ import (
 
 	_ "net/http/pprof"
 
-	"github.com/gorilla/context"
+	"fmt"
+
+	gctx "github.com/gorilla/context"
+	"github.com/gorilla/mux"
+	"github.com/gorilla/sessions"
 	"gogs.itcloud.pro/SAS-project/sas/modelPostgre"
 )
 
@@ -64,7 +70,47 @@ func init() {
 	vkhandlers.SetParams(Config)
 }
 
+func CheckIsUserLogged(next http.HandlerFunc) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		var store = sessions.NewCookieStore([]byte(app.GetConfig().SessionSecret))
+		session, err := store.Get(r, "sessionSSA")
+		if err != nil {
+			log.Println(errors.New("CheckIsUserLogged store.Get err: " + err.Error()))
+			fmt.Fprintf(w, "CheckIsUserLogged store.Get err: "+err.Error())
+			return
+		}
+		log.Println("CheckIsUserLogged middleware values: ", session.Values)
+
+		if session.Values["loggedin"] != nil && session.Values["loggedin"].(string) == "true" &&
+			len(session.Values) != 0 {
+			//Add data to context
+			ctx := context.WithValue(r.Context(), "username", session.Values["username"])
+			next.ServeHTTP(w, r.WithContext(ctx))
+			//next.ServeHTTP(w, r)
+		} else {
+
+			fmt.Fprintf(w, "You are not logger in.")
+			//http.Redirect(w, r, "/", http.StatusSeeOther)
+			return
+		}
+
+		log.Println("Executing CheckIsUserLogged again")
+	})
+}
+func ArticlesCategoryHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, "Category: %v\n", vars["source"])
+}
 func main() {
+	//finalHandler := http.HandlerFunc(final)
+	//
+	//http.Handle("/", middlewareOne(middlewareTwo(finalHandler)))
+	//http.ListenAndServe(":3000", nil)
+	//dexHandler := http.HandlerFunc(userhandlers.IndexHandler)
+	r := mux.NewRouter()
+	r.HandleFunc("/addaccount/{source}", ArticlesCategoryHandler)
 
 	http.HandleFunc("/", userhandlers.IndexHandler) // GET
 
@@ -78,7 +124,7 @@ func main() {
 	http.HandleFunc("/loginsubmit", userhandlers.LoginSubmitHandler)
 	http.HandleFunc("/logoutsubmit", userhandlers.LogoutSubmitHandler)
 
-	http.HandleFunc("/accounts", userhandlers.AccountsHandler)
+	http.HandleFunc("/accounts", CheckIsUserLogged(userhandlers.AccountsHandler))
 	http.HandleFunc("/addaccount", userhandlers.AddAccountHandler)
 	http.HandleFunc("/deleteaccount", userhandlers.DeleteAccountHandler)
 
@@ -100,7 +146,7 @@ func main() {
 	http.Handle("/static/",
 		http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
 	log.Println("Server started at port: " + Config.ServerPort)
-	err := http.ListenAndServe(":"+Config.ServerPort, context.ClearHandler(http.DefaultServeMux))
+	err := http.ListenAndServe(":"+Config.ServerPort, gctx.ClearHandler(http.DefaultServeMux))
 	if err != nil {
 		log.Fatalln(err)
 	}
