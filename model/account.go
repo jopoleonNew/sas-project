@@ -70,6 +70,38 @@ type Account struct {
 	AgencyClients      []string
 	CampaignsInfo      []Campaign `json:"campaignsinfo" bson:"campaignsinfo"`
 }
+type Account2 struct {
+	//Username of user created this account
+	Username string
+	//Source is the name of organization which hosts the account.
+	Source string
+	//Accountlogin is the login or id of account in organization from Source
+	Accountlogin string
+	//Owners is the list of user's who have access to that account
+	Owners []string
+
+	Email string
+
+	Status string //active or notactive
+
+	AppID         string
+	AppSecret     string
+	AuthToken     string
+	Role          string `json:"yandexrole" bson:"yandexrole"`
+	AccType       string
+	AgencyClients []string
+	CampaignsInfo []Campaign `json:"campaignsinfo" bson:"campaignsinfo"`
+
+	collName string `json:"-"` // mgo Collection name
+}
+
+func (a *Account) Adapter() {
+
+}
+
+type AccountDB interface {
+
+}
 
 func NewAccount() *Account {
 	a := new(Account)

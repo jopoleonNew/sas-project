@@ -45,9 +45,8 @@
 						"accountlogin": window.accountlogin,
 						"accrole": window.accrole,
 					},
-					//dataType: "json",
 					type: "POST",
-					//http://localhost:3000/accounts?egor/addaccount
+
 					url: currentUrl.replace("accounts", "addaccount"),
 					success: function (data) {
 						console.log("Data get from server: ", data)

@@ -31,10 +31,11 @@ var (
 
 func init() {
 	var configFileName string
-
+	var local bool
 	flag.StringVar(&configFileName, "config", "conf-docker.json",
 		"Specify configuration file name to use. File should be in folder you starting the application")
-
+	flag.BoolVar(&local, "local", false,
+		"Specify where the app  started")
 	flag.Parse()
 
 	app.InitConf(configFileName)
@@ -90,7 +91,7 @@ func CheckIsUserLogged(next http.HandlerFunc) http.HandlerFunc {
 			//next.ServeHTTP(w, r)
 		} else {
 
-			fmt.Fprintf(w, "You are not logger in.")
+			fmt.Fprintf(w, "You are not logged in.")
 			//http.Redirect(w, r, "/", http.StatusSeeOther)
 			return
 		}
@@ -98,6 +99,30 @@ func CheckIsUserLogged(next http.HandlerFunc) http.HandlerFunc {
 		log.Println("Executing CheckIsUserLogged again")
 	})
 }
+func AccountSource(next http.HandlerFunc) http.HandlerFunc {
+	log.Println("Executing AccountSource")
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch vars := mux.Vars(r); vars["source"] {
+		case "yandex":
+			ctx := context.WithValue(r.Context(), "source", "Яндекс Директ")
+			//return vkhandlers.VKauthorize()
+			next.ServeHTTP(w, r.WithContext(ctx))
+		case "vkontakte":
+			ctx := context.WithValue(r.Context(), "source", "Вконтакте")
+			next.ServeHTTP(w, r.WithContext(ctx))
+		case "youtube":
+			ctx := context.WithValue(r.Context(), "source", "YouTube")
+			next.ServeHTTP(w, r.WithContext(ctx))
+		default:
+			// freebsd, openbsd,
+			// plan9, windows...
+			fmt.Fprintf(w, "Unknow account source: %s", vars["source"])
+			return
+		}
+
+	})
+}
+
 func ArticlesCategoryHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	w.WriteHeader(http.StatusOK)
@@ -110,7 +135,7 @@ func main() {
 	//http.ListenAndServe(":3000", nil)
 	//dexHandler := http.HandlerFunc(userhandlers.IndexHandler)
 	r := mux.NewRouter()
-	r.HandleFunc("/addaccount/{source}", ArticlesCategoryHandler)
+	r.HandleFunc("/addaccount/{source}", CheckIsUserLogged(userhandlers.AddAccountHandler))
 
 	http.HandleFunc("/", userhandlers.IndexHandler) // GET
 
@@ -125,7 +150,7 @@ func main() {
 	http.HandleFunc("/logoutsubmit", userhandlers.LogoutSubmitHandler)
 
 	http.HandleFunc("/accounts", CheckIsUserLogged(userhandlers.AccountsHandler))
-	http.HandleFunc("/addaccount", userhandlers.AddAccountHandler)
+	//http.HandleFunc("/addaccount", userhandlers.AddAccountHandler)
 	http.HandleFunc("/deleteaccount", userhandlers.DeleteAccountHandler)
 
 	//TODO: join this two endpoints in one, to make possible autoadding of accounts.
@@ -146,6 +171,15 @@ func main() {
 	http.Handle("/static/",
 		http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
 	log.Println("Server started at port: " + Config.ServerPort)
+	//srv := &http.Server{
+	//	Handler:      r,
+	//	Addr:         "127.0.0.1:8000",
+	//	// Good practice: enforce timeouts for servers you create!
+	//	WriteTimeout: 15 * time.Second,
+	//	ReadTimeout:  15 * time.Second,
+	//}
+	//
+	//log.Fatal(srv.ListenAndServe())
 	err := http.ListenAndServe(":"+Config.ServerPort, gctx.ClearHandler(http.DefaultServeMux))
 	if err != nil {
 		log.Fatalln(err)

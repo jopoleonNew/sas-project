@@ -4,9 +4,23 @@
 	"GodepVersion": "v78",
 	"Deps": [
 		{
+			"ImportPath": "github.com/PuerkitoBio/goquery",
+			"Comment": "v1.1.0-6-g8806ada",
+			"Rev": "8806ada2a4ab225c06e9106f9631be80932db7ce"
+		},
+		{
+			"ImportPath": "github.com/andybalholm/cascadia",
+			"Rev": "349dd0209470eabd9514242c688c403c0926d266"
+		},
+		{
 			"ImportPath": "github.com/gorilla/context",
 			"Comment": "v1.1-7-g08b5f42",
 			"Rev": "08b5f424b9271eedf6f9f0ce86cb9396ed337a42"
+		},
+		{
+			"ImportPath": "github.com/gorilla/mux",
+			"Comment": "v1.4.0-13-gac112f7",
+			"Rev": "ac112f7d75a0714af1bd86ab17749b31f7809640"
 		},
 		{
 			"ImportPath": "github.com/gorilla/securecookie",
@@ -29,16 +43,6 @@
 			"Rev": "8837942c3e09574accbc5f150e2c5e057189cace"
 		},
 		{
-			"ImportPath": "github.com/mattn/go-colorable",
-			"Comment": "v0.0.7-24-gded68f7",
-			"Rev": "ded68f7a9561c023e790de24279db7ebf473ea80"
-		},
-		{
-			"ImportPath": "github.com/mattn/go-isatty",
-			"Comment": "v0.0.2",
-			"Rev": "fc9e8d8ef48496124e79ae0df75490096eccf6fe"
-		},
-		{
 			"ImportPath": "golang.org/x/crypto/bcrypt",
 			"Rev": "122d919ec1efcfb58483215da23f815853e24b81"
 		},
@@ -47,23 +51,12 @@
 			"Rev": "122d919ec1efcfb58483215da23f815853e24b81"
 		},
 		{
-			"ImportPath": "golang.org/x/sys/unix",
-			"Rev": "6faef541c73732f438fb660a212750a9ba9f9362"
+			"ImportPath": "golang.org/x/net/html",
+			"Rev": "fe686d45ea04bc1bd4eff6a52865ce8757320325"
 		},
 		{
-			"ImportPath": "gopkg.in/inconshreveable/log15.v2",
-			"Comment": "v2.11",
-			"Rev": "b105bd37f74e5d9dc7b6ad7806715c7a2b83fd3f"
-		},
-		{
-			"ImportPath": "gopkg.in/inconshreveable/log15.v2/stack",
-			"Comment": "v2.11",
-			"Rev": "b105bd37f74e5d9dc7b6ad7806715c7a2b83fd3f"
-		},
-		{
-			"ImportPath": "gopkg.in/inconshreveable/log15.v2/term",
-			"Comment": "v2.11",
-			"Rev": "b105bd37f74e5d9dc7b6ad7806715c7a2b83fd3f"
+			"ImportPath": "golang.org/x/net/html/atom",
+			"Rev": "fe686d45ea04bc1bd4eff6a52865ce8757320325"
 		},
 		{
 			"ImportPath": "gopkg.in/mgo.v2",

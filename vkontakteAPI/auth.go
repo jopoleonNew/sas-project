@@ -77,16 +77,6 @@ func VkAccessToken(appID, appSecret, redirectURL, code string) (VKtoken, error) 
 		return token, err
 	}
 	log.Println("VkAuthorize response: ", string(body))
-	//if strings.Contains(string(body), "error") {
-	//	var VKerr VKtokenErr
-	//	err := json.Unmarshal(body, &VKerr)
-	//	if err != nil {
-	//		return nil, err
-	//	}
-	//	return nil, errors.New("VK_AUTH_API error: " + VKerr.Error + " : " + VKerr.ErrorDesсription)
-	//
-	//}
-
 	err = json.Unmarshal(body, &token)
 	if err != nil {
 		log.Println("VkAuthorize bad request repsonse body, trying to unmarshal err ", err)
