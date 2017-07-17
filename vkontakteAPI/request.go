@@ -41,9 +41,9 @@ const (
 )
 
 type RequestType struct {
-	Method string     `json:"method"`
-	Token  string     `json:"token"`
-	Values url.Values `json:"values"`
+	Method string            `json:"method"`
+	Token  string            `json:"token"`
+	Values map[string]string `json:"values"`
 }
 
 //https://api.vk.com/method/METHOD_NAME?PARAMETERS&access_token=ACCESS_TOKEN&v=V

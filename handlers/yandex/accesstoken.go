@@ -67,37 +67,15 @@ func GetYandexAccessToken(w http.ResponseWriter, r *http.Request) {
 
 	if accinfo.YandexRole == "agency" {
 		log.Println("..................//////////Hello agency ", acc.Username, oauthresp.AccessToken)
-		account := yad.NewAccount()
-		account.Login = accinfo.Accountlogin
-		account.OAuthToken = oauthresp.AccessToken
+		account := yad.NewAccount(accinfo.Accountlogin, oauthresp.AccessToken)
 		agencystruct, err := account.GetAgencyLogins()
 		if err != nil {
 			log.Println("SubmitConfirmationYandexCode GetAgencyLogins error: ", err)
 			return
 		}
-		//user := model.NewUser()
-		//user.Username = username
-		//log.Println("SubmitConfirmationYandexCode GetAccountInfo: ", accinfo)
-		//log.Println("SubmitConfirmationYandexCode account.GetAgencyLogins(): ", agencystruct)
-		//
-		//wg := sync.WaitGroup{}
-		//wg.Add(len(agencystruct))
-
-		//for _, as := range agencystruct {
-		//	user.AccountList = append(user.AccountList, as.Login)
-		//	err = user.AdvanceUpdate()
-		//	if err != nil {
-		//		log.Fatal("SubmitConfirmationYandexCode user.AdvanceUpdate() error: ", err)
-		//		return
-		//	}
-		//}
-		//log.Println(" Inside agency adding account list in  ", agencystruct)
-		//log.Println(" Inside agency adding account list in  ", user.AccountList)
-
 		YandexConnectionsLimit := 10
 		chAC := make(chan yad.Client, 3) // This number 3 can be anything as long as it's larger than YandexConnectionsLimit
 		var wg sync.WaitGroup
-
 		// This starts number of goroutines that wait for add new account
 		// of agency and its campaings to DB
 		wg.Add(YandexConnectionsLimit)
@@ -110,7 +88,7 @@ func GetYandexAccessToken(w http.ResponseWriter, r *http.Request) {
 						return
 					}
 					//log15.Info("Inside agency handling for loop ", "agency", agClient)
-					log.Println("------------............. ///// \n Inside agency handling for loop ", agClient)
+					log.Println("----------.......///// \n Inside agency handling for loop ", agClient)
 					agencyacc := model.NewAccount()
 					agencyacc.Accountlogin = agClient.Login
 					agencyacc.Username = username
@@ -119,9 +97,7 @@ func GetYandexAccessToken(w http.ResponseWriter, r *http.Request) {
 					agencyacc.Source = "Яндекс Директ"
 					agencyacc.OauthToken = oauthresp.AccessToken
 					//var campjson model.CampaingsGetResult
-					account := yad.NewAccount()
-					account.Login = agClient.Login
-					account.OAuthToken = accinfo.OauthToken
+					account := yad.NewAccount(agClient.Login, accinfo.OauthToken)
 					yadcamps, err := account.GetCampaignList()
 					if err != nil {
 						w.Write([]byte("SubmitConfirmationYandexCode GetAgencyLogins GetCampaignList err:" + err.Error()))
@@ -161,9 +137,7 @@ func GetYandexAccessToken(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	yadacc := yad.NewAccount()
-	yadacc.Login = accountlogin
-	yadacc.OAuthToken = oauthresp.AccessToken
+	yadacc := yad.NewAccount(accountlogin, oauthresp.AccessToken)
 	yadcamps, err := yadacc.GetCampaignList()
 	if err != nil {
 		log.Println("SubmitConfirmationYandexCode GetCampaignsListYandex: ", err)

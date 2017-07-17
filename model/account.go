@@ -78,7 +78,7 @@ type Account2 struct {
 	//Accountlogin is the login or id of account in organization from Source
 	Accountlogin string
 	//Owners is the list of user's who have access to that account
-	Owners []string
+	Owners []string `json:"owners" bson:"owners"`
 
 	Email string
 
@@ -87,8 +87,8 @@ type Account2 struct {
 	AppID         string
 	AppSecret     string
 	AuthToken     string
-	Role          string `json:"yandexrole" bson:"yandexrole"`
-	AccType       string
+	Role          string
+	AccountType   string
 	AgencyClients []string
 	CampaignsInfo []Campaign `json:"campaignsinfo" bson:"campaignsinfo"`
 
@@ -100,13 +100,23 @@ func (a *Account) Adapter() {
 }
 
 type AccountDB interface {
-
 }
 
 func NewAccount() *Account {
 	a := new(Account)
 	a.collName = "accountsList"
 	return a
+}
+func NewAccount2(Username, Source, Accountlogin, Email string) *Account2 {
+	//a := new(Account)
+	//a.collName = "accountsList"
+	return &Account2{
+		Username:     Username,
+		Source:       Source,
+		Accountlogin: Accountlogin,
+		Email:        Email,
+		collName:     "accountsList",
+	}
 }
 func NewTestAccount() *Account {
 	a := new(Account)
@@ -194,12 +204,89 @@ func (a *Account) AdvanceUpdate() error {
 	colQuerier := bson.M{"username": a.Username, "accountlogin": a.Accountlogin, "source": a.Source}
 
 	change := bson.M{"$set": changeParams}
+	if len(a.Owners) != 0 {
+		colQuerier1 := bson.M{"accountlogin": a.Accountlogin}
+		change1 := bson.M{"$push": bson.M{"owners": a.Owners[0]}}
+		_, err := c.Upsert(colQuerier1, change1)
+		if err != nil {
+			log.Println("a.AdvanceUpdate() err: ", err)
+			return err
+		}
+	}
 	//omitting changeInfo value
 	_, err = c.Upsert(colQuerier, change)
 	if err != nil {
 		log.Println("a.AdvanceUpdate() err: ", err)
 		return err
 	}
+
+	//changeInfostr := fmt.Sprintf("%+v", changeInfo1)
+	//log.Printf("\n Account %+v Updated in database ", a)
+	return nil
+}
+func (a *Account2) AdvanceUpdate() error {
+
+	//log.Printf("Account.AdvanceUpdate() used with %+v", a)
+	err := a.checkMainFields()
+	if err != nil {
+		return err
+	}
+
+	var changeParams = []bson.DocElem{}
+
+	if a.Email != "" {
+		changeParams = append(changeParams, bson.DocElem{"email", a.Email})
+	}
+	if a.AppID != "" {
+		changeParams = append(changeParams, bson.DocElem{"ssaappyandexid", a.AppID})
+	}
+	if a.AppSecret != "" {
+		changeParams = append(changeParams, bson.DocElem{"ssaappyandexsecret", a.AppSecret})
+	}
+	if a.Status != "" {
+		changeParams = append(changeParams, bson.DocElem{"status", a.Status})
+	}
+	if a.AuthToken != "" {
+		changeParams = append(changeParams, bson.DocElem{"oauthtoken", a.AuthToken})
+	}
+	if a.Role != "" {
+		changeParams = append(changeParams, bson.DocElem{"yandexrole", a.Role})
+	}
+	if len(a.AgencyClients) != 0 {
+		changeParams = append(changeParams, bson.DocElem{"agencyclients", a.AgencyClients})
+	}
+	if len(a.CampaignsInfo) != 0 {
+		changeParams = append(changeParams, bson.DocElem{"campaignsinfo", a.CampaignsInfo})
+	}
+
+	if len(changeParams) == 0 {
+		return errors.New("Account.AdvanceUpdate() error: Nothing to update")
+	}
+	a.Accountlogin = strings.ToLower(a.Accountlogin)
+	a.Username = strings.ToLower(a.Username)
+	s := mainSession.Clone()
+	defer s.Close()
+	c := s.DB(mainDB.Name).C(a.collName)
+
+	colQuerier := bson.M{"username": a.Username, "accountlogin": a.Accountlogin, "source": a.Source}
+
+	change := bson.M{"$set": changeParams}
+	if len(a.Owners) != 0 {
+		colQuerier1 := bson.M{"accountlogin": a.Accountlogin}
+		change1 := bson.M{"$push": bson.M{"owners": a.Owners[0]}}
+		_, err := c.Upsert(colQuerier1, change1)
+		if err != nil {
+			log.Println("a.AdvanceUpdate() err: ", err)
+			return err
+		}
+	}
+	//omitting changeInfo value
+	_, err = c.Upsert(colQuerier, change)
+	if err != nil {
+		log.Println("a.AdvanceUpdate() err: ", err)
+		return err
+	}
+
 	//changeInfostr := fmt.Sprintf("%+v", changeInfo1)
 	//log.Printf("\n Account %+v Updated in database ", a)
 	return nil

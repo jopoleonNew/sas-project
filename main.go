@@ -18,10 +18,8 @@ import (
 
 	"fmt"
 
-	gctx "github.com/gorilla/context"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
-	"gogs.itcloud.pro/SAS-project/sas/modelPostgre"
 )
 
 var (
@@ -56,10 +54,10 @@ func init() {
 	//dbname = "test"
 
 	//initiation of PostgreSQL driver
-	modelPostgre.SetDBParams("localhost", 5432, "postgres", "qwe", "test")
-	if err != nil {
-		panic(err)
-	}
+	//modelPostgre.SetDBParams("localhost", 5432, "postgres", "qwe", "test")
+	//if err != nil {
+	//	panic(err)
+	//}
 	//log.Println("Debug1")
 	err = yad.SetParams(Config.YandexDirectAppID, Config.YandexDirectAppSecret)
 	if err != nil {
@@ -90,7 +88,6 @@ func CheckIsUserLogged(next http.HandlerFunc) http.HandlerFunc {
 			next.ServeHTTP(w, r.WithContext(ctx))
 			//next.ServeHTTP(w, r)
 		} else {
-
 			fmt.Fprintf(w, "You are not logged in.")
 			//http.Redirect(w, r, "/", http.StatusSeeOther)
 			return
@@ -99,77 +96,47 @@ func CheckIsUserLogged(next http.HandlerFunc) http.HandlerFunc {
 		log.Println("Executing CheckIsUserLogged again")
 	})
 }
-func AccountSource(next http.HandlerFunc) http.HandlerFunc {
-	log.Println("Executing AccountSource")
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		switch vars := mux.Vars(r); vars["source"] {
-		case "yandex":
-			ctx := context.WithValue(r.Context(), "source", "Яндекс Директ")
-			//return vkhandlers.VKauthorize()
-			next.ServeHTTP(w, r.WithContext(ctx))
-		case "vkontakte":
-			ctx := context.WithValue(r.Context(), "source", "Вконтакте")
-			next.ServeHTTP(w, r.WithContext(ctx))
-		case "youtube":
-			ctx := context.WithValue(r.Context(), "source", "YouTube")
-			next.ServeHTTP(w, r.WithContext(ctx))
-		default:
-			// freebsd, openbsd,
-			// plan9, windows...
-			fmt.Fprintf(w, "Unknow account source: %s", vars["source"])
-			return
-		}
 
-	})
-}
-
-func ArticlesCategoryHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "Category: %v\n", vars["source"])
-}
 func main() {
-	//finalHandler := http.HandlerFunc(final)
-	//
-	//http.Handle("/", middlewareOne(middlewareTwo(finalHandler)))
-	//http.ListenAndServe(":3000", nil)
-	//dexHandler := http.HandlerFunc(userhandlers.IndexHandler)
+
+	//making new gorilla router
 	r := mux.NewRouter()
-	r.HandleFunc("/addaccount/{source}", CheckIsUserLogged(userhandlers.AddAccountHandler))
 
-	http.HandleFunc("/", userhandlers.IndexHandler) // GET
+	//Block of new handlers with router
+	r.HandleFunc("/getauthlink/{source}", CheckIsUserLogged(userhandlers.GetAuthLink))
+	r.HandleFunc("/gettoken/{source}", userhandlers.GetToken)
 
-	http.HandleFunc("/signup", userhandlers.SignUpHandler)              // GET
-	http.HandleFunc("/signupsubmit", userhandlers.SignUpSubmitHandler)  // POST
-	http.HandleFunc("/activateuser", userhandlers.ActivateUserHandler)  // POST
-	http.HandleFunc("/forgetpass", userhandlers.ForgetPassHandler)      // POST
-	http.HandleFunc("/restorepass", userhandlers.RestorePasswordHadler) // POST
+	r.HandleFunc("/", userhandlers.IndexHandler) // GET
+
+	r.HandleFunc("/signup", userhandlers.SignUpHandler)              // GET
+	r.HandleFunc("/signupsubmit", userhandlers.SignUpSubmitHandler)  // POST
+	r.HandleFunc("/activateuser", userhandlers.ActivateUserHandler)  // POST
+	r.HandleFunc("/forgetpass", userhandlers.ForgetPassHandler)      // POST
+	r.HandleFunc("/restorepass", userhandlers.RestorePasswordHadler) // POST
 	//http.HandleFunc("/changepass", userhandlers.ChangePasswordHandler)  // POST
 
-	http.HandleFunc("/loginsubmit", userhandlers.LoginSubmitHandler)
-	http.HandleFunc("/logoutsubmit", userhandlers.LogoutSubmitHandler)
+	r.HandleFunc("/loginsubmit", userhandlers.LoginSubmitHandler)
+	r.HandleFunc("/logoutsubmit", userhandlers.LogoutSubmitHandler)
 
-	http.HandleFunc("/accounts", CheckIsUserLogged(userhandlers.AccountsHandler))
+	r.HandleFunc("/accounts", CheckIsUserLogged(userhandlers.AccountsHandler))
 	//http.HandleFunc("/addaccount", userhandlers.AddAccountHandler)
-	http.HandleFunc("/deleteaccount", userhandlers.DeleteAccountHandler)
+	r.HandleFunc("/deleteaccount", userhandlers.DeleteAccountHandler)
 
 	//TODO: join this two endpoints in one, to make possible autoadding of accounts.
-	http.HandleFunc("/getauthcodeyandex", yandexhandlers.GetAuthCodeYandexHandler)
-	http.HandleFunc("/submityandexcode", yandexhandlers.SubmitConfirmationYandexCode)
+	r.HandleFunc("/getauthcodeyandex", yandexhandlers.GetAuthCodeYandexHandler)
+	r.HandleFunc("/submityandexcode", yandexhandlers.SubmitConfirmationYandexCode)
 
-	http.HandleFunc("/getyandexaccesstoken", yandexhandlers.GetYandexAccessToken)
+	r.HandleFunc("/getyandexaccesstoken", yandexhandlers.GetYandexAccessToken)
 
-	http.HandleFunc("/getcampaingstats", yandexhandlers.GetCampaingStatsHandler) //POST
-	http.HandleFunc("/refreshdbcampaign", yandexhandlers.RefreshCampaignsListHandler)
-	http.HandleFunc("/getreport", yandexhandlers.GetStatSliceHandler)
-	http.HandleFunc("/report", yandexhandlers.ReportTemplateHandler)
+	r.HandleFunc("/getcampaingstats", yandexhandlers.GetCampaingStatsHandler) //POST
+	r.HandleFunc("/refreshdbcampaign", yandexhandlers.RefreshCampaignsListHandler)
+	r.HandleFunc("/getreport", yandexhandlers.GetStatSliceHandler)
+	r.HandleFunc("/report", yandexhandlers.ReportTemplateHandler)
 
 	//"/getauthcodevk", vkhandlers.GetVKAuthCode uses for getting VKapp info from server
-	http.HandleFunc("/getauthcodevk", vkhandlers.GetVKAuthCode)
-	http.HandleFunc("/vkauth", vkhandlers.VKauthorize)
-
-	http.Handle("/static/",
-		http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
+	r.HandleFunc("/getauthcodevk", vkhandlers.GetVKAuthCode)
+	r.HandleFunc("/vkauth", vkhandlers.VKauthorize)
+	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
 	log.Println("Server started at port: " + Config.ServerPort)
 	//srv := &http.Server{
 	//	Handler:      r,
@@ -180,7 +147,8 @@ func main() {
 	//}
 	//
 	//log.Fatal(srv.ListenAndServe())
-	err := http.ListenAndServe(":"+Config.ServerPort, gctx.ClearHandler(http.DefaultServeMux))
+	//err := http.ListenAndServe(":"+Config.ServerPort, gctx.ClearHandler(http.DefaultServeMux))
+	err := http.ListenAndServe(":"+Config.ServerPort, r)
 	if err != nil {
 		log.Fatalln(err)
 	}

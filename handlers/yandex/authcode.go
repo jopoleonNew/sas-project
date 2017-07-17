@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-// GetAuthCodeYandexHandler handling requests from client and returns in response
+// GetAuthCodeYandexHandler handling requests from client (mostly from browser's JS) and returns in response
 // the ID of this app and client's Yandex login, so the JS of client could redirect
 // him to "https://oauth.yandex.ru/authorize?response_type=code&client_id=&state=" + data
 // where :

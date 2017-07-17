@@ -8,10 +8,12 @@ import (
 
 	vk "gogs.itcloud.pro/SAS-project/sas/vkontakteAPI"
 )
-
-func AddVKAccount(w http.ResponseWriter, r *http.Request) {
+// GetVKAuthLink writes to ResponseWriter the VK API Auth Link
+// which front-end uses to redirect client to give access to his VK ads
+func GetVKAuthLink(w http.ResponseWriter, r *http.Request) {
 	VKurl := "https://oauth.vk.com/authorize?client_id=" + Config.VKAppID +
 		"&scope=stats,ads&redirect_uri=" + Config.VKRedirectURL + "&response_type=code"
+	http.Redirect(w, r, VKurl, http.StatusSeeOther)
 }
 func VKauthorize(w http.ResponseWriter, r *http.Request) {
 	//REDIRECT_URI?code=7a6fa4dff77a228eeda56603b8f53806c883f011c40b72630bb50df056f6479e52a

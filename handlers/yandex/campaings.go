@@ -50,9 +50,7 @@ func GetCampaingStatsHandler(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("GetCampaingStatsHandler strconv.Atoi error: " + err.Error()))
 		return
 	}
-	account := yad.NewAccount()
-	account.Login = accinfo.Accountlogin
-	account.OAuthToken = accinfo.OauthToken
+	account := yad.NewAccount(accinfo.Accountlogin, accinfo.OauthToken)
 	statres, err := account.GetStatistics([]int{idint}, startdate, enddate)
 	if err != nil {
 		log.Println("GetCampaingStatsHandler GetStatistics error: ", err)
@@ -98,9 +96,7 @@ func RefreshCampaignsListHandler(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("RefreshCampaignsListHandler acc.GetInfo() error: " + err.Error()))
 		return
 	}
-	yadacc := yad.NewAccount()
-	yadacc.Login = accinfo.Accountlogin
-	yadacc.OAuthToken = accinfo.OauthToken
+	yadacc := yad.NewAccount(accinfo.Accountlogin, accinfo.OauthToken)
 	yadcamps, err := yadacc.GetCampaignList()
 	if err != nil {
 		log.Println("RefreshCampaignsListHandler GetCampaignList error: ", err)

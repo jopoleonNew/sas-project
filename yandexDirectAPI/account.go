@@ -21,10 +21,10 @@ type Account struct {
 
 const YandexStatThreshold int = 900
 
-func NewAccount() *Account {
+func NewAccount(login, oauthtoken string) *Account {
 	return &Account{
-		Login:      "",
-		OAuthToken: "",
+		Login:      login,
+		OAuthToken: oauthtoken,
 	}
 }
 

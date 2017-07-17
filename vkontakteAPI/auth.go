@@ -6,6 +6,10 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+
+	"fmt"
+
+	"github.com/sirupsen/logrus"
 )
 
 /*
@@ -47,6 +51,9 @@ type VKtokenErr struct {
 //	appID       = "6082545"
 //	redirectURL = "https://sas.itcloud.pro/getauthcodevk"
 //)
+
+var logr = logrus.New()
+
 func VkAccessToken(appID, appSecret, redirectURL, code string) (VKtoken, error) {
 	//https://oauth.vk.com/access_token?
 	//client_id=APP_ID&
@@ -60,34 +67,37 @@ func VkAccessToken(appID, appSecret, redirectURL, code string) (VKtoken, error) 
 		"&code=" + code +
 		"&redirect_uri=" + redirectURL
 
-	log.Println("VkAccessToken used")
+	logr.Infoln("VkAccessToken used")
 
 	client := &http.Client{}
-	r, _ := http.NewRequest("POST", VKurl, nil)
+	r, err := http.NewRequest("POST", VKurl, nil)
 	//r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-
+	if err != nil {
+		logr.Errorln("VkAuthorize http.NewRequest error: ", err)
+		return token, fmt.Errorf("VkAuthorize http.NewRequest error: %s", err)
+	}
 	resp, err := client.Do(r)
 	if err != nil {
-		log.Println("VkAuthorize client.Do(r) error: ", err)
-		return token, err
+		logr.Errorln("VkAuthorize client.Do(r) error: ", err)
+		return token, fmt.Errorf("VkAuthorize client.Do(r) error: %s", err)
 	}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Println("VkAuthorize ioutil.ReadAll(resp.Body) error", err)
-		return token, err
+		logr.Errorln("VkAuthorize ioutil.ReadAll(resp.Body) error", err)
+		return token, fmt.Errorf("VkAuthorize ioutil.ReadAll(resp.Body) error: %s", err)
 	}
 	log.Println("VkAuthorize response: ", string(body))
 	err = json.Unmarshal(body, &token)
 	if err != nil {
-		log.Println("VkAuthorize bad request repsonse body, trying to unmarshal err ", err)
+		logr.Warnf("VkAuthorize bad request repsonse body, trying to unmarshal err %s", err)
 		var vkerr VKtokenErr
 		err = json.Unmarshal(body, &vkerr)
 		if err != nil {
-			log.Println("response VkAuthorize YandexOauthError json.Unmarshal: \n Indefined body: ", err, string(body))
+			logr.Fatalf("response VkAuthorize YandexOauthError json.Unmarshal: \n Indefined body: %s %s", err, string(body))
 			return token, err
 		}
-		return token, errors.New("YandexDirectAPI error: " + vkerr.Error + " " + vkerr.ErrorDesсription)
+		return token, errors.New("VkAccessToken VK API error: " + vkerr.Error + " " + vkerr.ErrorDesсription)
 	}
-	log.Println("////////////////////............................. \n\n\n\n\n\n\n\n TOKEN FROM VKONTAKTE", token)
+	log.Println("////\n\n TOKEN FROM VKONTAKTE: ", token)
 	return token, nil
 }

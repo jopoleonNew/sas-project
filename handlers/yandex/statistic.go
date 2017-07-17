@@ -103,10 +103,7 @@ func GetStatSliceHandler(w http.ResponseWriter, r *http.Request) {
 			//wg.Add(1)
 			//go func() {
 			//wg.Wait()
-			account := yad.NewAccount()
-			account.Login = camp.Accountlogin
-			account.OAuthToken = camp.OauthToken
-			//log.Println("GetStatSliceHandlerGetStatSliceHandler id slice ", idslice)
+			account := yad.NewAccount(camp.Accountlogin, camp.OauthToken)
 			statres, err := account.GetStatisticsConc(idslice, sttime, endtime)
 			if err != nil {
 				log.Println("GetStatSliceHandlerGetStatSliceHandler GetCampaingsSliceStatistic", err)
@@ -130,38 +127,3 @@ func GetStatSliceHandler(w http.ResponseWriter, r *http.Request) {
 	//log.Println("GetStatSliceHandler AFTER for loop statsslice reqbytes: ", string(reqbytes))
 	w.Write(reqbytes)
 }
-
-//func DoMakeCollConcur(username, acclogin string,
-//camp models.Account, in <-chan models.GetSummaryStatRes) {
-//	for statIn := range in {
-//		err := BDctl.MakeStatisticCollection(camp.Username, camp.Accountlogin, statIn)
-//		if err != nil {
-//			log.Fatal("CampaingStatiscicConcurently error: ", err)
-//		}
-//	}
-//
-//}
-//func DoStatConcur(ids []string, camp models.Account, out chan<- models.GetSummaryStatRes, wg sync.WaitGroup) {
-//
-//	for _, id := range ids {
-//		insidestatChan := make(chan models.GetSummaryStatRes)
-//		go func() {
-//			defer wg.Done()
-//			log.Println("DoAllStuff Inside concur loop", id)
-//			sumstat, _, err := CampaingStatiscicConcurently(id, camp.OauthToken)
-//			if err != nil {
-//				log.Fatal("CampaingStatiscicConcurently error: ", err)
-//			}
-//			Counter += 1
-//			sort.Sort(sumstat)
-//			insidestatChan <- sumstat
-//			close(insidestatChan)
-//
-//		}()
-//		preOut := <-insidestatChan
-//		out <- preOut
-//	}
-//	wg.Wait()
-//	close(out)
-//
-//}

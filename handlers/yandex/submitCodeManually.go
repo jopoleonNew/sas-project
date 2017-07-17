@@ -64,9 +64,7 @@ func SubmitConfirmationYandexCode(w http.ResponseWriter, r *http.Request) {
 
 		// if account who submiting code is agency,
 		// we must obtain all agency clients info(their login, email, etc.)
-		account := yad.NewAccount()
-		account.Login = accountlogin
-		account.OAuthToken = oauthresp.AccessToken
+		account := yad.NewAccount(accountlogin, oauthresp.AccessToken)
 		agencystruct, err := account.GetAgencyLogins()
 		if err != nil {
 			log.Println("SubmitConfirmationYandexCode GetAgencyLogins error: ", err)
@@ -97,9 +95,7 @@ func SubmitConfirmationYandexCode(w http.ResponseWriter, r *http.Request) {
 			agencyacc.Source = "Яндекс Директ"
 			agencyacc.OauthToken = oauthresp.AccessToken
 			//var campjson model.CampaingsGetResult
-			account := yad.NewAccount()
-			account.Login = agClient.Login
-			account.OAuthToken = oauthresp.AccessToken
+			account := yad.NewAccount(agClient.Login, oauthresp.AccessToken)
 			yadcamps, err := account.GetCampaignList()
 			if err != nil {
 				log.Fatal("SubmitConfirmationYandexCode GetAgencyLogins GetCampaignList: ", err)
@@ -122,9 +118,7 @@ func SubmitConfirmationYandexCode(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	yadacc := yad.NewAccount()
-	yadacc.Login = accountlogin
-	yadacc.OAuthToken = oauthresp.AccessToken
+	yadacc := yad.NewAccount(accountlogin, oauthresp.AccessToken)
 	yadcamps, err := yadacc.GetCampaignList()
 	if err != nil {
 		log.Println("SubmitConfirmationYandexCode GetCampaignsListYandex: ", err)

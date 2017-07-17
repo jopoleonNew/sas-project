@@ -17,23 +17,9 @@ import (
 	"gogs.itcloud.pro/SAS-project/sas/utils"
 )
 
+// AccountsHandler returns to client the list of client's account from all sources
 func AccountsHandler(w http.ResponseWriter, r *http.Request) {
 	//
-	//session, err := store.Get(r, "sessionSSA")
-	//if err != nil {
-	//	log.Println(err)
-	//}
-	//username, err := utils.GetUsernamefromRequestSession(r)
-	//if err != nil {
-	//	log.Println("AccountsHandler GetUsernamefromRequestSession err: ", err)
-	//	//w.Write([]byte("AccountsHandler GetUsernamefromRequestSession err: " + err.Error()))
-	//	http.Redirect(w, r, "/", http.StatusSeeOther)
-	//	return
-	//}
-	//log.Println("AccountsHandler used with username: ", username)
-	//if session.Values["loggedin"].(string) == "false" {
-	//	http.Redirect(w, r, "/", 302)
-	//}
 	username := r.Context().Value("username").(string)
 	log.Println("AccountsHandler used with username: ", username)
 	user := model.NewUser()
@@ -50,11 +36,6 @@ func AccountsHandler(w http.ResponseWriter, r *http.Request) {
 		//http.Redirect(w, r, "/", 302)
 		return
 	}
-	//if session.Values["username"].(string) != username {
-	//	w.Write([]byte("You are not logged as " + username))
-	//	//http.Redirect(w, r, "/", 302)
-	//	return
-	//}
 
 	type datas struct {
 		UsingReport string
@@ -118,21 +99,24 @@ func AccountsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 }
-func AddAccount(w http.ResponseWriter, r *http.Request) {
+func GetAuthLink(w http.ResponseWriter, r *http.Request) {
+
+	log.Println("GetAuthLink used")
 	switch vars := mux.Vars(r); vars["source"] {
 	case "yandex":
 		ctx := context.WithValue(r.Context(), "source", "Яндекс Директ")
+		context.WithValue(ctx, "YandexRole", r.FormValue("accrole"))
 		//return vkhandlers.VKauthorize()
-		yandexhandlers.GetYandexAccessToken2(w, r.WithContext(ctx))
+		yandexhandlers.GetYandexAuthLink(w, r.WithContext(ctx))
 	case "vkontakte":
 		ctx := context.WithValue(r.Context(), "source", "Вконтакте")
-		vkhandlers.AddVKAccount(w, r.WithContext(ctx))
+		vkhandlers.GetVKAuthLink(w, r.WithContext(ctx))
 	case "youtube":
 		//ctx := context.WithValue(r.Context(), "source", "YouTube")
 		fmt.Fprintf(w, "YouTube account are not availiable now: %s", vars["source"])
 		return
 	case "":
-		log.Println("AddAccount Error: no source")
+		log.Println("GetAuthLink Error: no source")
 		return
 	default:
 		fmt.Fprintf(w, "Unknow account source: %s", vars["source"])

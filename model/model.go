@@ -31,36 +31,11 @@ type Configuration struct {
 	MongoSession    *mgo.Session
 }
 
-type GetSummaryStat struct {
-	Token  string `json:"token"`
-	Method string `json:"method"`
-	Param  struct {
-		CampaignIDS string `json:"CampaignIDS"`
-		StartDate   string `json:"StartDate"`
-		EndDate     string `json:"EndDate"`
-	} `json:"param"`
-}
-
 type Campaign struct {
-	ID     int    `json:"Id"`
-	Name   string `json:"Name"`
-	Status string `json:"Status"`
-}
-
-type ModelCampaigns []struct {
-	Camp Campaign
-}
-
-type CampaignsType struct {
-	ID     int    `json:"Id"`
-	Name   string `json:"Name"`
-	Status string `json:"Status"`
-}
-type ResultType struct {
-	Campaigns []CampaignsType `json:"Campaigns"`
-}
-type CampaingsGetResult struct {
-	Result ResultType `json:"result"`
+	ID     int    `json:"id"`
+	Name   string `json:"name"`
+	Status string `json:"status"`
+	Type   string `json:"type"`
 }
 
 // YandexTokenbody is used in MakeYandexOauthRequest()

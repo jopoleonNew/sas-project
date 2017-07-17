@@ -10,6 +10,21 @@ import (
 	yad "gogs.itcloud.pro/SAS-project/sas/yandexDirectAPI"
 )
 
+// GetYandexAuthLink writes to ResponseWriter the Yandex.Direct API Auth Link
+// which front-end uses to redirect client to give access to his Yandex.Direct account
+func GetYandexAuthLink(w http.ResponseWriter, r *http.Request) {
+
+	accountlogin := r.FormValue("accountlogin")
+	log.Println(".............GetYandexAuthLink used: ", accountlogin, Config.YandexDirectAppID)
+	yandexUrl := "https://oauth.yandex.ru/authorize?response_type=code&client_id=" + Config.YandexDirectAppID + "&state=" + accountlogin + "&login_hint=" + accountlogin + "&force_confirm=yes"
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+	w.Header().Set("Access-Control-Allow-Headers",
+		"Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	w.Write([]byte(yandexUrl))
+	return
+}
+
 func GetYandexAccessToken2(w http.ResponseWriter, r *http.Request) {
 	log.Println("GetYandexAccessToken used")
 	query := r.URL.Query()
@@ -62,9 +77,7 @@ func GetYandexAccessToken2(w http.ResponseWriter, r *http.Request) {
 
 	if accinfo.YandexRole == "agency" {
 		log.Println("..................//////////Hello agency ", acc.Username, oauthresp.AccessToken)
-		account := yad.NewAccount()
-		account.Login = accinfo.Accountlogin
-		account.OAuthToken = oauthresp.AccessToken
+		account := yad.NewAccount(accinfo.Accountlogin, oauthresp.AccessToken)
 		agencystruct, err := account.GetAgencyLogins()
 		if err != nil {
 			log.Println("SubmitConfirmationYandexCode GetAgencyLogins error: ", err)
@@ -114,9 +127,8 @@ func GetYandexAccessToken2(w http.ResponseWriter, r *http.Request) {
 					agencyacc.Source = "Яндекс Директ"
 					agencyacc.OauthToken = oauthresp.AccessToken
 					//var campjson model.CampaingsGetResult
-					account := yad.NewAccount()
-					account.Login = agClient.Login
-					account.OAuthToken = accinfo.OauthToken
+					account := yad.NewAccount(agClient.Login, accinfo.OauthToken)
+
 					yadcamps, err := account.GetCampaignList()
 					if err != nil {
 						w.Write([]byte("SubmitConfirmationYandexCode GetAgencyLogins GetCampaignList err:" + err.Error()))
@@ -157,9 +169,8 @@ func GetYandexAccessToken2(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/accounts", http.StatusSeeOther)
 		return
 	}
-	yadacc := yad.NewAccount()
-	yadacc.Login = accountlogin
-	yadacc.OAuthToken = oauthresp.AccessToken
+	yadacc := yad.NewAccount(accountlogin, oauthresp.AccessToken)
+
 	yadcamps, err := yadacc.GetCampaignList()
 	if err != nil {
 		log.Println("SubmitConfirmationYandexCode GetCampaignsListYandex: ", err)

@@ -1,9 +1,12 @@
 {
-	"mongourl": "sas-mongo-dev",
-	"bdname": "sas",
-	"yandexappid": "83c11ef883e84b9a827b306a5e6e2a4a",
-	"yandexappsecret": "a753b0e476344758898dd9fb46284615",
-	"yandexapiurl": "https://api-sandbox.direct.yandex.ru",
+	"mongourl": "localhost",
+	"bdname": "ssa",
+	"yandexappid": "9d1ef373556e4e7ebabd7894f22f37d8",
+	"yandexappsecret": "3b48e964c3fc4ed4b1121313aea4d48a",
+	"yandexapiurl": "https://api.direct.yandex.ru",
+	"vkappid": "https://sas-dev.itcloud.pro",
+	"vkappsecret": "8JD0UiJ1KJL43DNm816q",
+	"vkredirecturl": "https://sas-dev.itcloud.pro/gettoken/vkontakte",
 	"sessionsecret": "4ivLAq9MTVtdhEDqr9dm",
 	"serverport": "3000"
 }

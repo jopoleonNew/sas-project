@@ -10,6 +10,7 @@
 		console.log(currentUrl);
 		console.log(hostUrl);
 		console.log(currentUrl + "/addaccount");
+		console.log(window.location.protocol+"//"+window.location.hostname+":"+window.location.port+"/addaccount/yandex");
 		$(".addaccountmodal").each(function () {
 			$(this).click(function () {
 				var yandexlog = $("#accountloginyandex").val();
@@ -38,98 +39,146 @@
 				console.log("accountloginyandex: ",window.accountlogin)
                 console.log("accountroleyandex: ",window.accrole)
                 console.log("sourcename: ",window.sourcename)
+                if (window.sourcename == "Яндекс Директ") {
+                    $.ajax({
+                        data: {
+                            "username": window.currentUser,
+                            "accountlogin": window.accountlogin,
+							"accrole": window.accrole,
+                        },
+                        //dataType: "json",
+                        type: "POST",
+                        url: window.location.protocol+"//"+window.location.hostname+":"+window.location.port+"/getauthlink/yandex",
+                        success: function (data) {
+                            window.open(
+                                data,
+                            '_blank' // <- This is what makes it open in a new window.
+                             )
+                        },
+                        error: function (req, status, err) {
+                            //console.log(req.responseText)
+                            console.log(req)
+                            console.log('Something went wrong', status, err);
+                            console.log(err)
+                        }
+                    });
+                };
+                if (window.sourcename == "Вконтакте") {
+                    $.ajax({
+                        data: {
+                            "username": window.currentUser,
+                            "accountlogin": window.accountlogin,
+                        },
+                        //dataType: "json",
+                        type: "POST",
+                        url: window.location.protocol+"//"+window.location.hostname+":"+window.location.port+"/getauthlink/vkontakte",
+                        success: function (data) {
 
-				$.ajax({
-					data: {
-						"sourcename": window.sourcename,
-						"accountlogin": window.accountlogin,
-						"accrole": window.accrole,
-					},
-					type: "POST",
+                            window.open(
+                                data,
+								'_blank' // <- This is what makes it open in a new window.
+                                       )
 
-					url: currentUrl.replace("accounts", "addaccount"),
-					success: function (data) {
-						console.log("Data get from server: ", data)
-						console.log("accountlogin: ", accountlogin)
-                        // this part makes ajax request on /getauthcodeyandex
-						// endpoint to open YandexDirect oauth.yandex.ru
-                        if (window.sourcename == "Яндекс Директ") {
-                            $.ajax({
-                                data: {
-                                    "username": window.currentUser,
-                                    "accountlogin": window.accountlogin,
-                                },
-                                //dataType: "json",
-                                type: "POST",
-                                url: currentUrl.replace("accounts", "getauthcodeyandex"),
-                                success: function (data) {
-                                    //$("#" + appendid).empty();
-                                    console.log("Data recieved from getauthcodeyandex: ", data)
-                                    var page ="https://oauth.yandex.ru/authorize?response_type=code&client_id=" + data+"&login_hint="+window.accountlogin+"&force_confirm=yes"
-                                    window.open(
-                                        page,
-                                        '_blank' // <- This is what makes it open in a new window.
-                                    )
-                                    //  console.log("Url to yandex oauth:  ", page)
-                                    //  var asdialog = $("<div></div>").html('<iframe style="border: 0px; " src="' + page + '" width="100%" height="100%"></iframe>').dialog({
-                                    //          autoOpen: false,
-                                    //          modal: true,
-                                    //          height: 800,
-                                    //          width: 1000,
-                                    //          title: "Yandex"
-                                    //      });
-                                    // asdialog.dialog('open');
-                                    // console.log("Id of append obj: ", appendid)
-                                },
-                                error: function (req, status, err) {
-                                    //console.log(req.responseText)
-                                    console.log(req)
-                                    console.log('Something went wrong', status, err);
-                                    console.log(err)
-                                }
-                            });
-                        };
-                        if (window.sourcename == "Вконтакте") {
-                            $.ajax({
-                                data: {
-                                    "username": window.currentUser,
-                                    "accountlogin": window.accountlogin,
-                                },
-                                //dataType: "json",
-                                type: "POST",
-                                url: currentUrl.replace("accounts", "getauthcodevk"),
-                                success: function (data) {
- //$("#" + appendid).empty();
-// VKurl := "https://oauth.vk.com/authorize?client_id=" + appID + "&scope=stats,ads&redirect_uri=" + redirectURL + "&response_type=code"
-// https://oauth.vk.com/authorize?client_id=1&display=page&redirect_uri=http://example.com/callback&scope=friends&response_type=code
-                                    console.log("Data recieved from getauthcodeyandex: ", data)
-                                    var page =data
-                                    window.open(
-                                        page,
-                                        '_blank' // <- This is what makes it open in a new window.
-                                    )
-                                },
-                                error: function (req, status, err) {
-                                    //console.log(req.responseText)
-                                    console.log(req)
-                                    console.log('Something went wrong', status, err);
-                                    console.log(err)
-                                }
-                            });
-                        };
 
-                            //location.reload()
-
-					},
-					error: function (req, status, err) {
-						//console.log(req.responseText)
-						console.log(req)
-
-						console.log('Something went wrong', status, err);
-						console.log(err)
-
-					}
-				});
+                        },
+                        error: function (req, status, err) {
+                            //console.log(req.responseText)
+                            console.log(req)
+                            console.log('Something went wrong', status, err);
+                            console.log(err)
+                        }
+                    });
+                };
+				// $.ajax({
+				// 	data: {
+				// 		"sourcename": window.sourcename,
+				// 		"accountlogin": window.accountlogin,
+				// 		"accrole": window.accrole,
+				// 	},
+				// 	type: "POST",
+                //
+				// 	url: currentUrl.replace("accounts", "addaccount"),
+				// 	success: function (data) {
+				// 		console.log("Data get from server: ", data)
+				// 		console.log("accountlogin: ", accountlogin)
+                 //        // this part makes ajax request on /getauthcodeyandex
+				// 		// endpoint to open YandexDirect oauth.yandex.ru
+                 //        // if (window.sourcename == "Яндекс Директ") {
+                 //         //    $.ajax({
+                 //         //        data: {
+                 //         //            "username": window.currentUser,
+                 //         //            "accountlogin": window.accountlogin,
+                 //         //        },
+                 //         //        //dataType: "json",
+                 //         //        type: "POST",
+                 //         //        url: currentUrl.replace("accounts", "getauthcodeyandex"),
+                 //         //        success: function (data) {
+                 //         //            //$("#" + appendid).empty();
+                 //         //            console.log("Data recieved from getauthcodeyandex: ", data)
+                 //         //            var page ="https://oauth.yandex.ru/authorize?response_type=code&client_id=" + data+"&login_hint="+window.accountlogin+"&force_confirm=yes"
+                 //         //            window.open(
+                 //         //                page,
+                 //         //                '_blank' // <- This is what makes it open in a new window.
+                 //         //            )
+                 //         //            //  console.log("Url to yandex oauth:  ", page)
+                 //         //            //  var asdialog = $("<div></div>").html('<iframe style="border: 0px; " src="' + page + '" width="100%" height="100%"></iframe>').dialog({
+                 //         //            //          autoOpen: false,
+                 //         //            //          modal: true,
+                 //         //            //          height: 800,
+                 //         //            //          width: 1000,
+                 //         //            //          title: "Yandex"
+                 //         //            //      });
+                 //         //            // asdialog.dialog('open');
+                 //         //            // console.log("Id of append obj: ", appendid)
+                 //         //        },
+                 //         //        error: function (req, status, err) {
+                 //         //            //console.log(req.responseText)
+                 //         //            console.log(req)
+                 //         //            console.log('Something went wrong', status, err);
+                 //         //            console.log(err)
+                 //         //        }
+                 //         //    });
+                 //        // };
+                //
+                 //        // if (window.sourcename == "Вконтакте") {
+                 //        //     $.ajax({
+                 //        //         data: {
+                 //        //             "username": window.currentUser,
+                 //        //             "accountlogin": window.accountlogin,
+                 //        //         },
+                 //        //         //dataType: "json",
+                 //        //         type: "POST",
+                 //        //         url: currentUrl.replace("accounts", "getauthcodevk"),
+                 //        //         success: function (data) {
+                 //        //             console.log("Data recieved from getauthcodeyandex: ", data)
+                 //        //             var page =data
+                 //        //             window.open(
+                 //        //                 page,
+                 //        //                 '_blank' // <- This is what makes it open in a new window.
+                 //        //             )
+                 //        //         },
+                 //        //         error: function (req, status, err) {
+                 //        //             //console.log(req.responseText)
+                 //        //             console.log(req)
+                 //        //             console.log('Something went wrong', status, err);
+                 //        //             console.log(err)
+                 //        //         }
+                 //        //     });
+                 //        // };
+                //
+                //
+                 //            //location.reload()
+                //
+				// 	},
+				// 	error: function (req, status, err) {
+				// 		//console.log(req.responseText)
+				// 		console.log(req)
+                //
+				// 		console.log('Something went wrong', status, err);
+				// 		console.log(err)
+                //
+				// 	}
+				// });
 			})
         });
 

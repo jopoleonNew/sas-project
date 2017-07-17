@@ -43,6 +43,11 @@
 			"Rev": "8837942c3e09574accbc5f150e2c5e057189cace"
 		},
 		{
+			"ImportPath": "github.com/sirupsen/logrus",
+			"Comment": "1.0.2-2-g51dc0fc",
+			"Rev": "51dc0fc64317a2861273909081f9c315786533eb"
+		},
+		{
 			"ImportPath": "golang.org/x/crypto/bcrypt",
 			"Rev": "122d919ec1efcfb58483215da23f815853e24b81"
 		},
@@ -57,6 +62,10 @@
 		{
 			"ImportPath": "golang.org/x/net/html/atom",
 			"Rev": "fe686d45ea04bc1bd4eff6a52865ce8757320325"
+		},
+		{
+			"ImportPath": "golang.org/x/sys/unix",
+			"Rev": "6faef541c73732f438fb660a212750a9ba9f9362"
 		},
 		{
 			"ImportPath": "gopkg.in/mgo.v2",

@@ -82,7 +82,7 @@ func genConfig(filename string) error {
 
 	var initjson = ConfigType{
 		Mongourl:      "localhost",
-		DBname:        "ssa",
+		DBname:        "sas",
 		SessionSecret: "secret",
 	}
 
