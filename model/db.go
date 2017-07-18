@@ -18,7 +18,7 @@ func SetDBParams(url, dbname string) error {
 		Database: dbname,
 		Timeout:  3 * time.Second,
 	}
-	log.Println("SetDBParams used")
+	log.Println("SetDBParams of MongoDB used")
 
 	mainSession, err = mgo.DialWithInfo(&info)
 	if err != nil {
@@ -26,7 +26,6 @@ func SetDBParams(url, dbname string) error {
 		mainSession.Close()
 		return err
 	}
-	log.Println("mainSession.Ping(): ", mainSession.Ping())
 	//mainSession.
 	//err =
 	//if err != nil {

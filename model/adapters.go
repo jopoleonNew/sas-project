@@ -12,6 +12,7 @@ func AdaptYandexCampaings(in campaigns.GetResponse) (out []Campaign) {
 		cs[i].Status = string(camp.Status)
 		cs[i].Name = camp.Name
 		cs[i].Type = string(camp.Type)
+		cs[i].Owner = string(camp.ClientInfo)
 	}
 	return cs
 }

@@ -16,7 +16,7 @@ import (
 func MakeYandexOauthRequest(code string) (YandexTokenbody, error) {
 	var token YandexTokenbody
 	yandextokenurl := "https://oauth.yandex.ru/token"
-	log.Println("MakeYandexOauthRequest used")
+	//log.Println("MakeYandexOauthRequest used")
 	form := url.Values{}
 	form.Add("grant_type", "authorization_code")
 	form.Add("code", code)
@@ -37,7 +37,7 @@ func MakeYandexOauthRequest(code string) (YandexTokenbody, error) {
 		log.Println("MakeYandexOauthRequest ioutil.ReadAll(resp.Body) error", err)
 		return token, err
 	}
-	log.Println("MakeYandexOauthRequest response: ", string(body))
+	//log.Println("MakeYandexOauthRequest response: ", string(body))
 	if string(body) == `{"error_description": "Invalid code", "error": "bad_verification_code"}` {
 		log.Println("MakeYandexOauthRequest response: .............................")
 

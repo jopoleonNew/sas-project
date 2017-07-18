@@ -104,7 +104,7 @@ func main() {
 
 	//Block of new handlers with router
 	r.HandleFunc("/getauthlink/{source}", CheckIsUserLogged(userhandlers.GetAuthLink))
-	r.HandleFunc("/gettoken/{source}", userhandlers.GetToken)
+	r.HandleFunc("/gettoken/{source}", CheckIsUserLogged(userhandlers.GetToken))
 
 	r.HandleFunc("/", userhandlers.IndexHandler) // GET
 

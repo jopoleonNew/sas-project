@@ -7,6 +7,11 @@ import (
 
 	"strings"
 
+	"time"
+
+	"fmt"
+
+	"github.com/sirupsen/logrus"
 	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -72,27 +77,31 @@ type Account struct {
 }
 type Account2 struct {
 	//Username of user created this account
-	Username string
+	Creator string `json:"creator" bson:"creator"`
 	//Source is the name of organization which hosts the account.
-	Source string
+	Source string `json:"source" bson:"source"`
 	//Accountlogin is the login or id of account in organization from Source
-	Accountlogin string
+	Accountlogin string `json:"accountlogin" bson:"accountlogin"`
 	//Owners is the list of user's who have access to that account
 	Owners []string `json:"owners" bson:"owners"`
 
-	Email string
+	Email string `json:"email" bson:"email"`
+	//active or notactive
+	Status string `json:"status" bson:"status"`
 
-	Status string //active or notactive
+	// auth token to make request to source API
+	AuthToken string `json:"authtoken" bson:"authtoken"`
 
-	AppID         string
-	AppSecret     string
-	AuthToken     string
-	Role          string
-	AccountType   string
-	AgencyClients []string
+	AppID     string `json:"appid" bson:"appid"`
+	AppSecret string `json:"appsecret" bson:"appsecret"`
+
+	Role          string     `json:"role" bson:"role"`
+	AccountType   string     `json:"accounttype" bson:"accounttype"`
+	AgencyClients []string   `json:"agencyclients" bson:"agencyclients"`
 	CampaignsInfo []Campaign `json:"campaignsinfo" bson:"campaignsinfo"`
-
-	collName string `json:"-"` // mgo Collection name
+	CreatedAt     time.Time  `json:"createdat" bson:"createdat"`
+	LastUpdated   time.Time  `json:"lastupdated" bson:"lastupdated"`
+	collName      string     `json:"-"` // mgo Collection name
 }
 
 func (a *Account) Adapter() {
@@ -107,11 +116,11 @@ func NewAccount() *Account {
 	a.collName = "accountsList"
 	return a
 }
-func NewAccount2(Username, Source, Accountlogin, Email string) *Account2 {
+func NewAccount2(Creator, Source, Accountlogin, Email string) *Account2 {
 	//a := new(Account)
 	//a.collName = "accountsList"
 	return &Account2{
-		Username:     Username,
+		Creator:      Creator,
 		Source:       Source,
 		Accountlogin: Accountlogin,
 		Email:        Email,
@@ -224,33 +233,52 @@ func (a *Account) AdvanceUpdate() error {
 	//log.Printf("\n Account %+v Updated in database ", a)
 	return nil
 }
+func (a *Account2) checkMainFields() error {
+	if a.Source == "" {
+		return errors.New("Account's Source field can't be blank.")
+	}
+	if a.Accountlogin == "" {
+		return errors.New("Account's Accountlogin field can't be blank.")
+	}
+
+	return nil
+}
+
 func (a *Account2) AdvanceUpdate() error {
 
 	//log.Printf("Account.AdvanceUpdate() used with %+v", a)
 	err := a.checkMainFields()
 	if err != nil {
-		return err
+		return fmt.Errorf("Account.AdvanceUpdate() error: %v", err)
 	}
 
 	var changeParams = []bson.DocElem{}
-
+	if a.Creator != "" {
+		changeParams = append(changeParams, bson.DocElem{"creator", a.Creator})
+	}
 	if a.Email != "" {
 		changeParams = append(changeParams, bson.DocElem{"email", a.Email})
 	}
 	if a.AppID != "" {
-		changeParams = append(changeParams, bson.DocElem{"ssaappyandexid", a.AppID})
+		changeParams = append(changeParams, bson.DocElem{"appid", a.AppID})
 	}
 	if a.AppSecret != "" {
-		changeParams = append(changeParams, bson.DocElem{"ssaappyandexsecret", a.AppSecret})
+		changeParams = append(changeParams, bson.DocElem{"appsecret", a.AppSecret})
 	}
 	if a.Status != "" {
 		changeParams = append(changeParams, bson.DocElem{"status", a.Status})
 	}
 	if a.AuthToken != "" {
-		changeParams = append(changeParams, bson.DocElem{"oauthtoken", a.AuthToken})
+		changeParams = append(changeParams, bson.DocElem{"authtoken", a.AuthToken})
 	}
 	if a.Role != "" {
-		changeParams = append(changeParams, bson.DocElem{"yandexrole", a.Role})
+		changeParams = append(changeParams, bson.DocElem{"role", a.Role})
+	}
+	if a.AccountType != "" {
+		changeParams = append(changeParams, bson.DocElem{"accounttype", a.AccountType})
+	}
+	if a.CreatedAt.String() != "0001-01-01 00:00:00 +0000 UTC" {
+		changeParams = append(changeParams, bson.DocElem{"createdat", a.CreatedAt})
 	}
 	if len(a.AgencyClients) != 0 {
 		changeParams = append(changeParams, bson.DocElem{"agencyclients", a.AgencyClients})
@@ -258,17 +286,17 @@ func (a *Account2) AdvanceUpdate() error {
 	if len(a.CampaignsInfo) != 0 {
 		changeParams = append(changeParams, bson.DocElem{"campaignsinfo", a.CampaignsInfo})
 	}
-
+	changeParams = append(changeParams, bson.DocElem{"lastupdated", time.Now()})
 	if len(changeParams) == 0 {
-		return errors.New("Account.AdvanceUpdate() error: Nothing to update")
+		return errors.New("Nothing to update")
 	}
 	a.Accountlogin = strings.ToLower(a.Accountlogin)
-	a.Username = strings.ToLower(a.Username)
+	a.Creator = strings.ToLower(a.Creator)
 	s := mainSession.Clone()
 	defer s.Close()
 	c := s.DB(mainDB.Name).C(a.collName)
 
-	colQuerier := bson.M{"username": a.Username, "accountlogin": a.Accountlogin, "source": a.Source}
+	colQuerier := bson.M{"accountlogin": a.Accountlogin, "source": a.Source}
 
 	change := bson.M{"$set": changeParams}
 	if len(a.Owners) != 0 {
@@ -276,19 +304,16 @@ func (a *Account2) AdvanceUpdate() error {
 		change1 := bson.M{"$push": bson.M{"owners": a.Owners[0]}}
 		_, err := c.Upsert(colQuerier1, change1)
 		if err != nil {
-			log.Println("a.AdvanceUpdate() err: ", err)
+			logrus.Errorf("a.AdvanceUpdate() err: %+v", err)
 			return err
 		}
 	}
 	//omitting changeInfo value
 	_, err = c.Upsert(colQuerier, change)
 	if err != nil {
-		log.Println("a.AdvanceUpdate() err: ", err)
+		logrus.Errorf("a.AdvanceUpdate() err: %+v", err)
 		return err
 	}
-
-	//changeInfostr := fmt.Sprintf("%+v", changeInfo1)
-	//log.Printf("\n Account %+v Updated in database ", a)
 	return nil
 }
 

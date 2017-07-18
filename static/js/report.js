@@ -62,17 +62,17 @@ $(document).ready(function () {
                             CampaignID: "ID РК",
                             ClicksContext:"Количество кликов в РСЯ",
                             ClicksSearch:"Количество кликов на поиске",
-                            SumSearch:"Количество кликов на поиске",
+                            SumSearch:"Стоимость кликов на поиске.",
                             SessionDepthContext:"Глубина просмотра. РСЯ",
-                            SessionDepthSearch:"Стоимость клика на поиске",
+                            SessionDepthSearch:"Глубина просмотра. Поиск",
                             ShowsContext:"Количество показов в РСЯ",
-                            ShowsSearch:"Глубина просмотра. Поиск",
+                            ShowsSearch:"Количество показов в Поиск",
                             StatDate:"Дата",
-                            SumContext:"Количество показов на поиске",
+                            SumContext:"Стоимость кликов в РСЯ.",
                             GoalConversionSearch:"% целевых визитов. Поиск",
-                            GoalConversionContext:"Стоимость клика в РСЯ",
+                            GoalConversionContext:"% целевых визитов. РСЯ",
 							GoalCostSearch:"Стоимость ЛИДа. Поиск",
-                            GoalCostContext:"% целевых визитов. РСЯ"
+                            GoalCostContext:"Стоимость ЛИДа. РСЯ"
                         }
 // 						"<th>ID РК</th>" +
 //						"<th>Количество кликов в РСЯ</th>" +

@@ -8,5 +8,5 @@
 	"vkappsecret": "8JD0UiJ1KJL43DNm816q",
 	"vkredirecturl": "https://sas-dev.itcloud.pro/gettoken/vkontakte",
 	"sessionsecret": "4ivLAq9MTVtdhEDqr9dm",
-	"serverport": "3000"
+	"serverport": "8080"
 }

@@ -24,7 +24,6 @@ type ConfigType struct {
 
 	SessionSecret string       `json:"sessionsecret"`
 	ServerPort    string       `json:"serverport"`
-	filename      string       `json:"-"`
 	Session       *mgo.Session `json:"-"`
 }
 

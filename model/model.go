@@ -36,6 +36,7 @@ type Campaign struct {
 	Name   string `json:"name"`
 	Status string `json:"status"`
 	Type   string `json:"type"`
+	Owner  string `json:"owner"`
 }
 
 // YandexTokenbody is used in MakeYandexOauthRequest()

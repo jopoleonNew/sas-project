@@ -4,6 +4,8 @@ import (
 	"log"
 	"net/http"
 
+	"strings"
+
 	"gogs.itcloud.pro/SAS-project/sas/model"
 	"gogs.itcloud.pro/SAS-project/sas/utils"
 )
@@ -16,7 +18,7 @@ func LoginSubmitHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	r.ParseForm()
-	username := r.FormValue("username")
+	username := strings.ToLower(r.FormValue("username"))
 	password := r.FormValue("password")
 
 	log.Println("LoginSubmitHandler: ", username, password)
