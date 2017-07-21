@@ -4,8 +4,6 @@ import (
 	"log"
 	"strconv"
 	"time"
-
-	mgo "gopkg.in/mgo.v2"
 )
 
 type Members struct {
@@ -20,17 +18,6 @@ type TemplateInfoStruct struct {
 	FullStats   []GetSummaryStatRes
 }
 
-type Configuration struct {
-	Mongourl        string `json:"mongourl"`
-	DBname          string `json:"bdname"`
-	Yandexappid     string `json:"yandexappid"`
-	Yandexappsecret string `json:"yandexappsecret"`
-	Yandexapiurl    string `json:"yandexapiurl"`
-	Sessionsecret   string `json:"sessionsecret"`
-	Serverport      string `json:"serverport"`
-	MongoSession    *mgo.Session
-}
-
 type Campaign struct {
 	ID     int    `json:"id"`
 	Name   string `json:"name"`
@@ -41,35 +28,6 @@ type Campaign struct {
 
 // YandexTokenbody is used in MakeYandexOauthRequest()
 // to unmarshal yandex response body and get AccessToken
-type YandexTokenbody struct {
-	TokenType    string `json:"token_type"`
-	AccessToken  string `json:"access_token"`
-	ExpiresIn    int    `json:"expires_in"`
-	RefreshToken string `json:"refresh_token"`
-}
-type SelectionCriteriaType struct{}
-
-type ParamsType struct {
-	SelectionCriteria SelectionCriteriaType `json:"SelectionCriteria"`
-	FieldNames        []string              `json:"FieldNames"`
-}
-type GetCampaingsList struct {
-	Method string     `json:"method"`
-	Params ParamsType `json:"params"`
-}
-type AgencyInfo struct {
-	Result struct {
-		Clients []struct {
-			Login           string                `json:"login"`
-			Representatives []RepresentativesType `json:"representatives"`
-		} `json:"clients"`
-	} `json:"result"`
-}
-type RepresentativesType struct {
-	Email string `json:"email"`
-	Login string `json:"login"`
-	Role  string `json:"role"`
-}
 
 // "CampaignID": (int),
 //        "StatDate": (date),
@@ -142,6 +100,8 @@ type StatisticDataType struct {
 	GoalCostContext       interface{} `json:"GoalCostContext"`
 	ClicksSearch          int         `json:"ClicksSearch"`
 }
+
+
 type GetSummaryStatRes struct {
 	Data []StatisticDataType `json:"Data"`
 }
@@ -157,19 +117,4 @@ func (p GetSummaryStatRes) Less(i, j int) bool {
 
 func (p GetSummaryStatRes) Swap(i, j int) {
 	p.Data[i], p.Data[j] = p.Data[j], p.Data[i]
-}
-
-//////
-
-//////
-
-type GetCampaingsStatisticType struct {
-	Token  string    `json:"token"`
-	Method string    `json:"method"`
-	Param  ParamType `json:"param"`
-}
-type ParamType struct {
-	CampaignIDS []string `json:"CampaignIDS"`
-	StartDate   string   `json:"StartDate"`
-	EndDate     string   `json:"EndDate"`
 }
