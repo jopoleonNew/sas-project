@@ -7,7 +7,7 @@ import (
 
 	"gogs.itcloud.pro/SAS-project/sas/model"
 	"gogs.itcloud.pro/SAS-project/sas/utils"
-	yad "gogs.itcloud.pro/SAS-project/sas/yandexDirectAPI"
+	"gogs.itcloud.pro/SAS-project/sas/yandexDirectAPI"
 )
 
 // SubmitConfirmationYandexCode handles requests from client to submiting confirmation Yandex Code
@@ -29,7 +29,7 @@ func SubmitConfirmationYandexCode(w http.ResponseWriter, r *http.Request) {
 
 	//log.Println("SubmitConfirmationYandexCode: ", yandexcode, accountlogin)
 
-	oauthresp, err := yad.MakeYandexOauthRequest(yandexcode)
+	oauthresp, err := yad.MakeYandexOauthRequest(yandexcode, yad.API_YANDEX_OAUTH_URL)
 	if err != nil {
 		log.Println("GetYandexAccessToken MakeYandexOauthRequest error: ", err)
 		w.Write([]byte("GetYandexAccessToken MakeYandexOauthRequest error: " + err.Error()))

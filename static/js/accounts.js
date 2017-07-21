@@ -36,10 +36,11 @@
 					window.accountlogin = $("#accountloginyoutube").val()
 				};
 
-				console.log("accountloginyandex: ",window.accountlogin)
-                console.log("accountroleyandex: ",window.accrole)
+
                 console.log("sourcename: ",window.sourcename)
                 if (window.sourcename == "Яндекс Директ") {
+                    console.log("accountloginyandex: ",window.accountlogin)
+                    console.log("accountroleyandex: ",window.accrole)
                     $.ajax({
                         data: {
                             "username": window.currentUser,
@@ -64,6 +65,7 @@
                     });
                 };
                 if (window.sourcename == "Вконтакте") {
+                    console.log("Creating new VK account")
                     $.ajax({
                         data: {
                             "username": window.currentUser,
@@ -73,13 +75,11 @@
                         type: "POST",
                         url: window.location.protocol+"//"+window.location.hostname+":"+window.location.port+"/getauthlink/vkontakte",
                         success: function (data) {
-
+                            console.log(data);
                             window.open(
                                 data,
 								'_blank' // <- This is what makes it open in a new window.
                                        )
-
-
                         },
                         error: function (req, status, err) {
                             //console.log(req.responseText)

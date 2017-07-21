@@ -2,10 +2,13 @@ package vkontakteAPI
 
 import (
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 	"time"
+
+	"fmt"
+
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -49,11 +52,11 @@ type RequestType struct {
 //https://api.vk.com/method/METHOD_NAME?PARAMETERS&access_token=ACCESS_TOKEN&v=V
 // Request makes request to VK API with given method name and parameters
 // You can see full list of them in official docs https://vk.com/dev/manuals
-func Request(token, methodName string, params map[string]string) (string, error) {
+func Request(token, methodName string, params map[string]string) ([]byte, error) {
 	u, err := url.Parse(API_METHOD_URL + methodName)
 	if err != nil {
-		log.Println("VkAPI http.Get(u.String()) error: ", err)
-		return "", err
+		logrus.Errorf("VkAPI Request url.Parse error: %v", err)
+		return nil, fmt.Errorf("url.Parse error: %v", err)
 	}
 
 	q := u.Query()
@@ -65,16 +68,52 @@ func Request(token, methodName string, params map[string]string) (string, error)
 
 	resp, err := http.Get(u.String())
 	if err != nil {
-		log.Println("VkAPI http.Get(u.String()) error: ", err)
-		return "", err
+		logrus.Errorf("VkAPI Request http.Get(u.String() error: %v", err)
+		return nil, fmt.Errorf("http.Get(u.String()) error: %v", err)
 	}
 
 	defer resp.Body.Close()
 	content, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Println("VkAPI http.Get(u.String()) error: ", err)
-		return "", err
+		logrus.Errorf("VkAPI Request ioutil.ReadAll(resp.Body) error: %v", err)
+		return nil, fmt.Errorf("VkAPI Request ioutil.ReadAll(resp.Body) error: %v", err)
 	}
 
-	return string(content), nil
+	return content, nil
+}
+
+type AdsAccounts struct {
+	Response []struct {
+		AccountID     int    `json:"account_id"`
+		AccountType   string `json:"account_type"`
+		AccountStatus int    `json:"account_status"`
+		AccessRole    string `json:"access_role"`
+	} `json:"response"`
+}
+type AdsCampaigns struct {
+	Response []struct {
+		ID         int    `json:"id"`
+		Type       string `json:"type"`
+		Name       string `json:"name"`
+		Status     int    `json:"status"`
+		DayLimit   string `json:"day_limit"`
+		AllLimit   string `json:"all_limit"`
+		StartTime  string `json:"start_time"`
+		StopTime   string `json:"stop_time"`
+		CreateTime string `json:"create_time"`
+		UpdateTime string `json:"update_time"`
+	} `json:"response"`
+}
+
+//id — идентификатор клиента;
+//name — название клиента;
+//day_limit — дневной лимит клиента в рублях;
+//all_limit — общий лимит клиента в рублях.
+type AdsClients struct {
+	Response []struct {
+		ID        int    `json:"client_id"`
+		Name      string `json:"client_name"`
+		day_limit int    `json:"day_limit"`
+		all_limit int    `json:"all_limit"`
+	} `json:"response"`
 }

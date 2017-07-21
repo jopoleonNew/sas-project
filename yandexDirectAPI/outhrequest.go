@@ -13,9 +13,11 @@ import (
 // MakeYandexOauthRequest makes request to Yandex Direct Api with confirmation code
 // (https://oauth.yandex.ru/token) to get access token
 // Обмен кода подтверждения на токен
-func MakeYandexOauthRequest(code string) (YandexTokenbody, error) {
+const API_YANDEX_OAUTH_URL = "https://oauth.yandex.ru/token"
+
+func MakeYandexOauthRequest(code, yandextokenurl string) (YandexTokenbody, error) {
 	var token YandexTokenbody
-	yandextokenurl := "https://oauth.yandex.ru/token"
+
 	//log.Println("MakeYandexOauthRequest used")
 	form := url.Values{}
 	form.Add("grant_type", "authorization_code")

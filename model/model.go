@@ -101,7 +101,6 @@ type StatisticDataType struct {
 	ClicksSearch          int         `json:"ClicksSearch"`
 }
 
-
 type GetSummaryStatRes struct {
 	Data []StatisticDataType `json:"Data"`
 }

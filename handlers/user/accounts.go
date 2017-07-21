@@ -99,6 +99,7 @@ func AccountsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 }
+
 func GetAuthLink(w http.ResponseWriter, r *http.Request) {
 
 	log.Println("GetAuthLink used")

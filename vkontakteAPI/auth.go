@@ -39,6 +39,7 @@ type VKtoken struct {
 	AccessToken string `json:"access_token"`
 	ExpiresIn   int    `json:"expires_in"`
 	UserID      int    `json:"user_id"`
+	Email       string `json:"email"`
 }
 
 type VKtokenErr struct {
@@ -98,6 +99,6 @@ func VkAccessToken(appID, appSecret, redirectURL, code string) (VKtoken, error) 
 		}
 		return token, errors.New("VkAccessToken VK API error: " + vkerr.Error + " " + vkerr.ErrorDesсription)
 	}
-	log.Println("////\n\n TOKEN FROM VKONTAKTE: ", token)
+	//log.Println("////\n\n TOKEN FROM VKONTAKTE: ", token)
 	return token, nil
 }

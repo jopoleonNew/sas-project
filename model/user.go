@@ -215,34 +215,27 @@ func (u *UserInfo) GetInfo() (UserInfo, error) {
 
 func (u *UserInfo) GetAccountList() ([]Account, error) {
 
-	log.Println(" *UserInfo) GetAccountList() used with", u)
+	//log.Println(" *UserInfo) GetAccountList() used with", u)
 	if u.Username == "" {
 		return nil, errors.New("UserInfo.GetAccountList() username field can't be blank.")
 	}
-	//log.Println("UserInfo.GetAccountList() by ", u.Username)
 
+	u.Username = strings.ToLower(u.Username)
 	s := mainSession.Clone()
 	defer s.Close()
 	c := s.DB(mainDB.Name).C("accountsList")
-	//u.Username = strings.ToLower(u.Username)
+
 	result := make([]Account, len(u.AccountList))
-	//db.accountsList.find({ "accountlogin": { $in: [ "123qwe","123sssa" ] }})
-	//log.Println("GetAccountList acclist: ", u.AccountList)
-	//var useracclist []string
 	userinfo, err := u.GetInfo()
 	if err != nil {
 		log.Println("GetAccountList u.GetInfo() err: ", err)
 		return nil, err
 	}
-	log.Println("userinfo, err := u.GetInfo() : ", userinfo)
 	err = c.Find(bson.M{"username": u.Username, "accountlogin": bson.M{"$in": userinfo.AccountList}}).All(&result)
 	if err != nil {
 		log.Println("GetAccountList err: ", err)
 		return nil, err
 	}
-	//log.Println("c.Find(bson.M{accountlogin: bson.M{$in: userinfo.AccountList}}) ", result)
-	//result := []Account{}
-	//u.AccountList
 	return result, nil
 }
 

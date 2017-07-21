@@ -1,0 +1,155 @@
+{
+	Cards: [{
+		Name: 6 Value: 1 Suit: {
+			Name: Hearts IsTrump: false
+		}
+	} {
+		Name: 7 Value: 2 Suit: {
+			Name: Hearts IsTrump: false
+		}
+	} {
+		Name: 8 Value: 3 Suit: {
+			Name: Hearts IsTrump: false
+		}
+	} {
+		Name: 9 Value: 4 Suit: {
+			Name: Hearts IsTrump: false
+		}
+	} {
+		Name: 10 Value: 5 Suit: {
+			Name: Hearts IsTrump: false
+		}
+	} {
+		Name: Jack Value: 6 Suit: {
+			Name: Hearts IsTrump: false
+		}
+	} {
+		Name: Queen Value: 7 Suit: {
+			Name: Hearts IsTrump: false
+		}
+	} {
+		Name: King Value: 8 Suit: {
+			Name: Hearts IsTrump: false
+		}
+	} {
+		Name: Ace Value: 9 Suit: {
+			Name: Hearts IsTrump: false
+		}
+	} {
+		Name: 6 Value: 1 Suit: {
+			Name: Diamonds IsTrump: false
+		}
+	} {
+		Name: 7 Value: 2 Suit: {
+			Name: Diamonds IsTrump: false
+		}
+	} {
+		Name: 8 Value: 3 Suit: {
+			Name: Diamonds IsTrump: false
+		}
+	} {
+		Name: 9 Value: 4 Suit: {
+			Name: Diamonds IsTrump: false
+		}
+	} {
+		Name: 10 Value: 5 Suit: {
+			Name: Diamonds IsTrump: false
+		}
+	} {
+		Name: Jack Value: 6 Suit: {
+			Name: Diamonds IsTrump: false
+		}
+	} {
+		Name: Queen Value: 7 Suit: {
+			Name: Diamonds IsTrump: false
+		}
+	} {
+		Name: King Value: 8 Suit: {
+			Name: Diamonds IsTrump: false
+		}
+	} {
+		Name: Ace Value: 9 Suit: {
+			Name: Diamonds IsTrump: false
+		}
+	} {
+		Name: 6 Value: 1 Suit: {
+			Name: Clubs IsTrump: false
+		}
+	} {
+		Name: 7 Value: 2 Suit: {
+			Name: Clubs IsTrump: false
+		}
+	} {
+		Name: 8 Value: 3 Suit: {
+			Name: Clubs IsTrump: false
+		}
+	} {
+		Name: 9 Value: 4 Suit: {
+			Name: Clubs IsTrump: false
+		}
+	} {
+		Name: 10 Value: 5 Suit: {
+			Name: Clubs IsTrump: false
+		}
+	} {
+		Name: Jack Value: 6 Suit: {
+			Name: Clubs IsTrump: false
+		}
+	} {
+		Name: Queen Value: 7 Suit: {
+			Name: Clubs IsTrump: false
+		}
+	} {
+		Name: King Value: 8 Suit: {
+			Name: Clubs IsTrump: false
+		}
+	} {
+		Name: Ace Value: 9 Suit: {
+			Name: Clubs IsTrump: false
+		}
+	} {
+		Name: 6 Value: 1 Suit: {
+			Name: Spades IsTrump: true
+		}
+	} {
+		Name: 7 Value: 2 Suit: {
+			Name: Spades IsTrump: true
+		}
+	} {
+		Name: 8 Value: 3 Suit: {
+			Name: Spades IsTrump: true
+		}
+	} {
+		Name: 9 Value: 4 Suit: {
+			Name: Spades IsTrump: true
+		}
+	} {
+		Name: 10 Value: 5 Suit: {
+			Name: Spades IsTrump: true
+		}
+	} {
+		Name: Jack Value: 6 Suit: {
+			Name: Spades IsTrump: true
+		}
+	} {
+		Name: Queen Value: 7 Suit: {
+			Name: Spades IsTrump: true
+		}
+	} {
+		Name: King Value: 8 Suit: {
+			Name: Spades IsTrump: true
+		}
+	} {
+		Name: Ace Value: 9 Suit: {
+			Name: Spades IsTrump: true
+		}
+	} {
+		Name: JokerRed Value: 8 Suit: {
+			Name: IsTrump: true
+		}
+	} {
+		Name: JokerBlack Value: 8 Suit: {
+			Name: IsTrump: true
+		}
+	}]
+}

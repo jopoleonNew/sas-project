@@ -8,7 +8,7 @@ import (
 
 	"gogs.itcloud.pro/SAS-project/sas/model"
 	"gogs.itcloud.pro/SAS-project/sas/utils"
-	yad "gogs.itcloud.pro/SAS-project/sas/yandexDirectAPI"
+	"gogs.itcloud.pro/SAS-project/sas/yandexDirectAPI"
 )
 
 // GetYandexAccessToken handles requests from Yandex Direct Api to application
@@ -36,8 +36,8 @@ func GetYandexAccessToken(w http.ResponseWriter, r *http.Request) {
 	accountlogin := al[0]
 	code := s[0]
 	log.Println("Token: ", code, "Accountlogin: ", accountlogin)
-
-	oauthresp, err := yad.MakeYandexOauthRequest(code)
+	//for better testing
+	oauthresp, err := yad.MakeYandexOauthRequest(code, yad.API_YANDEX_OAUTH_URL)
 	if err != nil {
 		log.Println("GetYandexAccessToken MakeYandexOauthRequest error: ", err)
 		w.Write([]byte("GetYandexAccessToken MakeYandexOauthRequest error: " + err.Error()))

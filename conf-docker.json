@@ -4,9 +4,9 @@
 	"yandexappid": "9d1ef373556e4e7ebabd7894f22f37d8",
 	"yandexappsecret": "3b48e964c3fc4ed4b1121313aea4d48a",
 	"yandexapiurl": "https://api.direct.yandex.ru",
-	"vkappid": "https://sas-dev.itcloud.pro",
+	"vkappid": "6082545",
 	"vkappsecret": "8JD0UiJ1KJL43DNm816q",
-	"vkredirecturl": "https://sas-dev.itcloud.pro/gettoken/vkontakte",
+	"vkredirecturl": "https://0cbdadeb.eu.ngrok.io/gettoken/vkontakte",
 	"sessionsecret": "4ivLAq9MTVtdhEDqr9dm",
 	"serverport": "8080"
 }
