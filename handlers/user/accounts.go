@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/gorilla/mux"
+	"github.com/sirupsen/logrus"
 	"gogs.itcloud.pro/SAS-project/sas/app"
 	vkhandlers "gogs.itcloud.pro/SAS-project/sas/handlers/vkontakte"
 	yandexhandlers "gogs.itcloud.pro/SAS-project/sas/handlers/yandex"
@@ -44,15 +45,22 @@ func AccountsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	var data datas
 	data.CurrentUser = username
-	//acc := model.NewAccount()
-	//acc.Username = username
-	//acclist, err := acc.GetInfoList()
+	//acc := model.NewAccount2("", "", "", "")
+	//acc.Owners = []string{username}
+	//acclist, err := acc.GetAccountList()
+	//if err != nil {
+	//	log.Println("AccountsHandler acc.GetAccountList() error:", err)
+	//	w.Write([]byte("AccountsHandler acc.GetAccountList() error: " + err.Error()))
+	//	return
+	//}
+	//logrus.Infof("Inside AccountHandler acc.GetAccountList() res: %+v", acclist)
 	acclist, err := user.GetAccountList()
 	if err != nil {
 		log.Println("AccountsHandler user.GetAccountList() error:", err)
 		w.Write([]byte("AccountsHandler user.GetAccountList() error: " + err.Error()))
 		return
 	}
+
 	for _, uaccount := range acclist {
 		if uaccount.YandexRole == "agency" {
 			acc := model.NewAccount()
@@ -99,7 +107,94 @@ func AccountsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 }
+func AccountsHandler2(w http.ResponseWriter, r *http.Request) {
+	//
+	username := r.Context().Value("username").(string)
+	log.Println("AccountsHandler used with username: ", username)
+	user := model.NewUser()
+	user.Username = username
+	exist, err := user.IsExist()
+	if err != nil {
+		log.Println("AccountsHandler u.IsExist() error:", err)
+		w.Write([]byte("AccountsHandler u.IsExist() error " + err.Error()))
+		return
+	}
 
+	if !exist {
+		w.Write([]byte("No such user found"))
+		//http.Redirect(w, r, "/", 302)
+		return
+	}
+
+	type datas struct {
+		UsingReport string
+		CurrentUser string
+		AccountList []model.Account2
+	}
+	var data datas
+	data.CurrentUser = username
+	acc := model.NewAccount2("", "", "", "")
+	acc.Owners = []string{username}
+	acclist, err := acc.GetAccountList()
+	if err != nil {
+		log.Println("AccountsHandler acc.GetAccountList() error:", err)
+		w.Write([]byte("AccountsHandler acc.GetAccountList() error: " + err.Error()))
+		return
+	}
+	logrus.Infof("Inside AccountHandler acc.GetAccountList() res: %+v", acclist)
+	//acclist, err := user.GetAccountList()
+	//if err != nil {
+	//	log.Println("AccountsHandler user.GetAccountList() error:", err)
+	//	w.Write([]byte("AccountsHandler user.GetAccountList() error: " + err.Error()))
+	//	return
+	//}
+
+	//for _, uaccount := range acclist {
+	//	if uaccount.YandexRole == "agency" {
+	//		acc := model.NewAccount()
+	//		acc.Username = username
+	//		acc.Accountlogin = uaccount.Accountlogin
+	//		agencyInfo, err := acc.GetInfo()
+	//		if err != nil {
+	//			log.Println("AccountsHandler agencyInfo.GetInfo error:", err)
+	//			w.Write([]byte("AccountsHandler agencyInfo.GetInfo error: " + err.Error()))
+	//			return
+	//		}
+	//		for _, agencyAccountLogin := range agencyInfo.AgencyClients {
+	//			agencyAcc := model.NewAccount()
+	//			agencyAcc.Username = username
+	//			agencyAcc.Accountlogin = agencyAccountLogin
+	//			agencyAccInfo, err := agencyAcc.GetInfo()
+	//			if err != nil {
+	//				log.Println("AccountsHandler agencyAccInfo.GetInfo error:", err)
+	//				w.Write([]byte("AccountsHandler agencyAccInfo.GetInfo error: " + err.Error()))
+	//				return
+	//			}
+	//			log.Println("Inside AccountHandler. Agency's AccountInfo : %+v", agencyAccInfo)
+	//			data.AccountList = append(data.AccountList, agencyAccInfo)
+	//		}
+	//	}
+	//}
+	//log.Println("AccountsHandler user.GetAccountList(): ", acclist)
+	data.AccountList = append(data.AccountList, acclist...)
+	//data.AccountList = acclist
+
+	t, err := template.New("accounts_new.tmpl").ParseFiles(
+		"static/templates/header.tmpl",
+		"static/templates/accounts_new.tmpl",
+		"static/templates/login.tmpl")
+	if err != nil {
+		log.Println("AccountsHandler template.New error: ", err)
+		fmt.Fprintf(w, err.Error())
+	}
+
+	err = t.Execute(w, data)
+	if err != nil {
+		log.Println("AccountsHandler t.Execute error: ", err)
+		fmt.Fprintf(w, err.Error())
+	}
+
+}
 func GetAuthLink(w http.ResponseWriter, r *http.Request) {
 
 	log.Println("GetAuthLink used")
@@ -125,6 +220,7 @@ func GetAuthLink(w http.ResponseWriter, r *http.Request) {
 	}
 
 }
+
 func AddAccountHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("AddAccountHandler used")
 	Config = app.GetConfig()
@@ -190,9 +286,6 @@ func AddAccountHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Succsess. Аккаунт добавлен."))
 }
 
-func AddVkAccount(w http.ResponseWriter, r *http.Request) {
-
-}
 func DeleteAccountHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("DeleteAccountHandler used")
 	username, err := utils.GetUsernamefromRequestSession(r)

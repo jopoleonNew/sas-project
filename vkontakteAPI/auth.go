@@ -47,12 +47,6 @@ type VKtokenErr struct {
 	ErrorDesсription string `json:"error_desсription"`
 }
 
-//
-//var (
-//	appID       = "6082545"
-//	redirectURL = "https://sas.itcloud.pro/getauthcodevk"
-//)
-
 var logr = logrus.New()
 
 func VkAccessToken(appID, appSecret, redirectURL, code string) (VKtoken, error) {

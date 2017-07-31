@@ -22,7 +22,6 @@ func AddLinkKey(email, linkkey string) error {
 	s := mainSession.Clone()
 	defer s.Close()
 	c := s.DB(mainDB.Name).C("restoreKeys")
-	//u.collName = "usersList"
 	restoreStruct := &RestorePass{
 		Email:     email,
 		SecretKey: linkkey,

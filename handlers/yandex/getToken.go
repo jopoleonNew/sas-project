@@ -5,7 +5,7 @@ package yandex
 //	fmt.Println("collectCampaingsfromAgency START", time.Now())
 //	resultA, err := collectAgencyClients(login, token)
 //	if err != nil {
-//		logr.Errorln("collectCampaingsfromAgency  error: ", err)
+//		logrus.Errorln("collectCampaingsfromAgency  error: ", err)
 //		return
 //	}
 //	var camps []campaigns.GetResponse
@@ -13,7 +13,7 @@ package yandex
 //		for _, login := range ag.Representatives {
 //			result, err := collectCampaings(login.Login, token)
 //			if err != nil {
-//				logr.Errorln("cant collect campaings with parameters: collectCampaings(%s, %s) error: %v", login.Login, token, err)
+//				logrus.Errorln("cant collect campaings with parameters: collectCampaings(%s, %s) error: %v", login.Login, token, err)
 //				return nil, fmt.Errorf("cant collect campaings with parameters: collectCampaings(%s, %s), error: %v", login.Login, token, err)
 //			}
 //			camps = append(camps, result)
@@ -30,7 +30,7 @@ package yandex
 //	var wg sync.WaitGroup
 //	resultA, err := collectAgencyClients(login, token)
 //	if err != nil {
-//		logr.Errorln("collectCampaingsfromAgency  error: ", err)
+//		logrus.Errorln("collectCampaingsfromAgency  error: ", err)
 //		return
 //	}
 //	logrus.Debug("Debug 2 ")
@@ -49,7 +49,7 @@ package yandex
 //				logrus.Info("Inside gorouitne with login:", login)
 //				result, err := collectCampaings(login.Login, token)
 //				if err != nil {
-//					logr.Errorln("cant collect campaings with parameters: collectCampaings(%s, %s) error: %v", login, token, err)
+//					logrus.Errorln("cant collect campaings with parameters: collectCampaings(%s, %s) error: %v", login, token, err)
 //					//return nil, fmt.Errorf("cant collect campaings with parameters: collectCampaings(%s, %s), error: %v", login.Login, token, err)
 //				}
 //				camps = append(camps, result)
@@ -76,7 +76,7 @@ package yandex
 //	wg.Add(YandexConnectionsLimit)
 //	resultA, err := collectAgencyClients(login, token)
 //	if err != nil {
-//		logr.Errorln("collectCampaingsfromAgency  error: ", err)
+//		logrus.Errorln("collectCampaingsfromAgency  error: ", err)
 //		return
 //	}
 //	var camps []campaigns.GetResponse
@@ -86,7 +86,7 @@ package yandex
 //				for _, login := range ag.Representatives {
 //					result, err := collectCampaings(login.Login, token)
 //					if err != nil {
-//						logr.Errorln("cant collect campaings with parameters: collectCampaings(%s, %s) error: %v", login.Login, token, err)
+//						logrus.Errorln("cant collect campaings with parameters: collectCampaings(%s, %s) error: %v", login.Login, token, err)
 //						//return nil, fmt.Errorf("cant collect campaings with parameters: collectCampaings(%s, %s), error: %v", login.Login, token, err)
 //					}
 //					camps = append(camps, result)

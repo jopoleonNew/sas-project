@@ -90,6 +90,12 @@ type AdsAccounts struct {
 		AccessRole    string `json:"access_role"`
 	} `json:"response"`
 }
+type AdsAccountsResponse struct {
+	AccountID     int    `json:"account_id"`
+	AccountType   string `json:"account_type"`
+	AccountStatus int    `json:"account_status"`
+	AccessRole    string `json:"access_role"`
+}
 type AdsCampaigns struct {
 	Response []struct {
 		ID         int    `json:"id"`

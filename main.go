@@ -118,7 +118,7 @@ func main() {
 	r.HandleFunc("/loginsubmit", userhandlers.LoginSubmitHandler)
 	r.HandleFunc("/logoutsubmit", userhandlers.LogoutSubmitHandler)
 
-	r.HandleFunc("/accounts", CheckIsUserLogged(userhandlers.AccountsHandler))
+	r.HandleFunc("/accounts", CheckIsUserLogged(userhandlers.AccountsHandler2))
 	//http.HandleFunc("/addaccount", userhandlers.AddAccountHandler)
 	r.HandleFunc("/deleteaccount", userhandlers.DeleteAccountHandler)
 

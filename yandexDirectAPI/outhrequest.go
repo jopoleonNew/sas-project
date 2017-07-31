@@ -10,15 +10,15 @@ import (
 	"strings"
 )
 
-// MakeYandexOauthRequest makes request to Yandex Direct Api with confirmation code
+// OauthRequset makes request to Yandex Direct Api with confirmation code
 // (https://oauth.yandex.ru/token) to get access token
 // Обмен кода подтверждения на токен
 const API_YANDEX_OAUTH_URL = "https://oauth.yandex.ru/token"
 
-func MakeYandexOauthRequest(code, yandextokenurl string) (YandexTokenbody, error) {
+func OauthRequset(code, yandextokenurl string) (YandexTokenbody, error) {
 	var token YandexTokenbody
 
-	//log.Println("MakeYandexOauthRequest used")
+	//log.Println("OauthRequset used")
 	form := url.Values{}
 	form.Add("grant_type", "authorization_code")
 	form.Add("code", code)
@@ -31,17 +31,17 @@ func MakeYandexOauthRequest(code, yandextokenurl string) (YandexTokenbody, error
 
 	resp, err := client.Do(r)
 	if err != nil {
-		log.Println("MakeYandexOauthRequest client.Do(r) error: ", err)
+		log.Println("OauthRequset client.Do(r) error: ", err)
 		return token, err
 	}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Println("MakeYandexOauthRequest ioutil.ReadAll(resp.Body) error", err)
+		log.Println("OauthRequset ioutil.ReadAll(resp.Body) error", err)
 		return token, err
 	}
-	//log.Println("MakeYandexOauthRequest response: ", string(body))
+	//log.Println("OauthRequset response: ", string(body))
 	if string(body) == `{"error_description": "Invalid code", "error": "bad_verification_code"}` {
-		log.Println("MakeYandexOauthRequest response: .............................")
+		log.Println("OauthRequset response: .............................")
 
 		errcode := errors.New(`{"error_description": "Invalid code", "error": "bad_verification_code"}`)
 		return token, errcode
@@ -49,11 +49,11 @@ func MakeYandexOauthRequest(code, yandextokenurl string) (YandexTokenbody, error
 
 	err = json.Unmarshal(body, &token)
 	if err != nil {
-		log.Println("MakeYandexOauthRequest bad request repsonse body, trying to unmarshal err ", err)
+		log.Println("OauthRequset bad request repsonse body, trying to unmarshal err ", err)
 		var yaderr YandexV5Error
 		err = json.Unmarshal(body, &yaderr)
 		if err != nil {
-			log.Println("response MakeYandexOauthRequest YandexOauthError json.Unmarshal: \n Indefined body: ", err, string(body))
+			log.Println("response OauthRequset YandexOauthError json.Unmarshal: \n Indefined body: ", err, string(body))
 			return token, err
 		}
 		return token, errors.New("YandexDirectAPI error: " + yaderr.ErrorString + " " + yaderr.ErrorDescription)

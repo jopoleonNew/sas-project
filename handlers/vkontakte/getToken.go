@@ -35,12 +35,6 @@ func GetVKAuthCode(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetVKToken(w http.ResponseWriter, r *http.Request) {
-
-	//logrus.Infof("GetVKToken incoming request: %+v", r)
-	//logrus.Infof("GetVKToken incoming URL.Fragment: %+v", r.URL.Fragment)
-	//log.Println("GetYandexAccessToken income URL query: ", r.URL.Query())
-	//API := vk.Api{}
-	//API.Request()
 	query := r.URL.Query()
 	if query["code"] == nil || len(query["code"]) == 0 {
 		logrus.Warn("Request from Vkontakte received without code. Making ")
@@ -103,117 +97,142 @@ func GetVKToken(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, acc := range accounts.Response {
-		//creating new account for adding VK account in DB
 
 		// Depending on what type of account is it, collecting campaings from Vk API:
 		// basic account
 		if acc.AccountType == "general" {
-			a := model.NewAccount2(creator, "Vkontakte", strconv.Itoa(acc.AccountID), userInfo.Email)
-			p := make(map[string]string)
-			p["account_id"] = strconv.Itoa(acc.AccountID)
-			resp, err := vk.Request(vktoken.AccessToken, "ads.getCampaigns", p)
+			err := addGeneralAccount(acc, vktoken.AccessToken, creator, userInfo.Email)
 			if err != nil {
-				logrus.Println("VKauthorize vk.Request error: ", err)
+				logrus.Errorf("addGeneralAccount error: %v", creator, err)
+				http.Error(w, fmt.Sprintf("can't add VK account %v, \n error: %+v:", acc, err), http.StatusBadRequest)
 				return
 			}
-			logrus.Errorf("VK response from ads.getCampaigns, error: &+v", string(resp))
-			var camps vk.AdsCampaigns
-			if err := json.Unmarshal(resp, &camps); err != nil {
-				logrus.Errorf("can't unmarshal VK response from ads.getCampaigns, error: &v", err)
-				http.Error(w, fmt.Sprintf("can't unmarshal VK response from ads.getCampaigns error: %+v:", err), http.StatusBadRequest)
-				return
-			}
-			a.CampaignsInfo = model.AdaptVKCampaings(camps, strconv.Itoa(acc.AccountID))
-			a.CreatedAt = time.Now()
-			if acc.AccountType == "general" {
-				a.Role = "client"
-			}
-			if acc.AccountType == "agency" {
-				a.Role = "agency"
-			}
-			a.Owners = append([]string{}, creator)
-			a.AuthToken = vktoken.AccessToken
-			a.AppID = Config.VKAppID
-			a.AppSecret = Config.VKAppSecret
-			err = a.AdvanceUpdate()
-			if err != nil {
-				logrus.Println("a.AdvanceUpdate() for AccountType = general error: ", err)
-				return
-			}
-			return
 		}
 		// agency account
 		if acc.AccountType == "agency" {
-			p := make(map[string]string)
-			p["account_id"] = strconv.Itoa(acc.AccountID)
-			resp, err := vk.Request(vktoken.AccessToken, "ads.getClients", p)
-			if err != nil {
-				logrus.Println("VKauthorize vk.Request error: ", err)
-				return
-			}
-			var clients vk.AdsClients
-			if err := json.Unmarshal(resp, &clients); err != nil {
-				logrus.Errorf("can't unmarshal VK response from ads.getClients, error: &v", err)
-				http.Error(w, fmt.Sprintf("can't unmarshal VK response from ads.getClients error: %+v:", err), http.StatusBadRequest)
-				return
-			}
-			for _, client := range clients.Response {
-				p := make(map[string]string)
-				p["account_id"] = strconv.Itoa(acc.AccountID)
-				p["client_id"] = strconv.Itoa(client.ID)
-				campaigns, err := vk.Request(vktoken.AccessToken, "ads.getCampaigns", nil)
-				if err != nil {
-					logrus.Println("VKauthorize vk.Request error: ", err)
-					return
-				}
-				var camps vk.AdsCampaigns
-				if err := json.Unmarshal(campaigns, &camps); err != nil {
-					logrus.Errorf("can't unmarshal VK response from ads.getCampaigns, error: &v", err)
-					http.Error(w, fmt.Sprintf("can't unmarshal VK response from ads.getCampaigns error: %+v:", err), http.StatusBadRequest)
-					return
-				}
-				a := model.NewAccount2(creator, "Vkontakte", strconv.Itoa(acc.AccountID), userInfo.Email)
-				a.CampaignsInfo = model.AdaptVKCampaings(camps, client.Name)
-				a.CreatedAt = time.Now()
-				if acc.AccountType == "general" {
-					a.Role = "client"
-				}
-				if acc.AccountType == "agency" {
-					a.Role = "agency"
-				}
-				a.Owners = append([]string{}, client.Name, strconv.Itoa(acc.AccountID))
-				a.AuthToken = vktoken.AccessToken
-				a.AppID = Config.VKAppID
-				a.AppSecret = Config.VKAppSecret
-				err = a.AdvanceUpdate()
-				if err != nil {
-					logrus.Println("a.AdvanceUpdate() AccountType = agency error: ", err)
-					return
-				}
-				return
-			}
-			a := model.NewAccount2(creator, "Vkontakte", strconv.Itoa(acc.AccountID), userInfo.Email)
-			a.CampaignsInfo = model.AdaptVKCampaings(vk.AdsCampaigns{}, strconv.Itoa(acc.AccountID))
-			a.CreatedAt = time.Now()
-			if acc.AccountType == "general" {
-				a.Role = "client"
-			}
-			if acc.AccountType == "agency" {
-				a.Role = "agency"
-			}
-			a.Owners = append([]string{}, creator)
-			a.AuthToken = vktoken.AccessToken
-			a.AppID = Config.VKAppID
-			a.AppSecret = Config.VKAppSecret
-			err = a.AdvanceUpdate()
-			if err != nil {
-				logrus.Println("a.AdvanceUpdate() AccountType = agency error: ", err)
-				return
-			}
-			return
+
 		}
 	}
+	http.Redirect(w, r, "/accounts", http.StatusSeeOther)
 	return
-	//{"response":[{"account_id":1604082246,"account_type":"general","account_status":1,"access_role":"reports"}]}
 
+}
+
+func CollectAccountsandAddToDB() {
+
+}
+func addAgencyAccount(acc vk.AdsAccountsResponse, token, creator, email string) error {
+	p := make(map[string]string)
+	p["account_id"] = strconv.Itoa(acc.AccountID)
+	//getting the list of agency clients
+	resp, err := vk.Request(token, "ads.getClients", p)
+	if err != nil {
+		logrus.Errorf("VKauthorize vk.Request error: %v", err)
+		return err
+	}
+	var clients vk.AdsClients
+	if err := json.Unmarshal(resp, &clients); err != nil {
+		logrus.Errorf("can't unmarshal VK response from ads.getClients, error: %v", err)
+		return err
+	}
+	var agencyClients []string
+	for _, client := range clients.Response {
+		agencyClients = append(agencyClients, strconv.Itoa(client.ID))
+		p := make(map[string]string)
+		p["account_id"] = strconv.Itoa(acc.AccountID)
+		p["client_id"] = strconv.Itoa(client.ID)
+		camps, err := collectCampaigns(token, p)
+		if err != nil {
+			logrus.Errorf("VKauthorize vk.Request error: %v", err)
+			return fmt.Errorf("can't get ads.getCampaigns from VK, error: %v", err)
+		}
+
+		a := model.NewAccount2(creator, "Vkontakte", strconv.Itoa(acc.AccountID), email)
+		a.CampaignsInfo = model.AdaptVKCampaings(camps, client.Name)
+		a.CreatedAt = time.Now()
+		if acc.AccountType == "general" {
+			a.Role = "client"
+		}
+		if acc.AccountType == "agency" {
+			a.Role = "agency"
+		}
+		a.Owners = append([]string{}, client.Name, strconv.Itoa(acc.AccountID))
+		a.AuthToken = token
+		a.AppID = Config.VKAppID
+		a.AppSecret = Config.VKAppSecret
+		err = a.AdvanceUpdate()
+		if err != nil {
+			logrus.Errorf("a.AdvanceUpdate() AccountType = agency error: ", err)
+			return fmt.Errorf("can't a.AdvanceUpdate() account: %v, \n error: %v", a, err)
+		}
+	}
+	a := model.NewAccount2(creator, "Vkontakte", strconv.Itoa(acc.AccountID), email)
+	a.CampaignsInfo = model.AdaptVKCampaings(vk.AdsCampaigns{}, strconv.Itoa(acc.AccountID))
+	a.CreatedAt = time.Now()
+	if acc.AccountType == "general" {
+		a.Role = "client"
+	}
+	if acc.AccountType == "agency" {
+		a.Role = "agency"
+	}
+	a.AgencyClients = agencyClients
+	a.Owners = append([]string{}, creator)
+	a.AuthToken = token
+	a.AppID = Config.VKAppID
+	a.AppSecret = Config.VKAppSecret
+	err = a.AdvanceUpdate()
+	if err != nil {
+		logrus.Errorf("a.AdvanceUpdate() AccountType = agency error: ", err)
+		return fmt.Errorf("can't a.AdvanceUpdate() account: %v, \n error: %v", a, err)
+	}
+	return nil
+}
+
+//addGeneralAccount creates new account for adding VK general account in DB
+func addGeneralAccount(acc vk.AdsAccountsResponse, token, creator, email string) error {
+	a := model.NewAccount2(creator, "Vkontakte", strconv.Itoa(acc.AccountID), email)
+	p := make(map[string]string)
+	p["account_id"] = strconv.Itoa(acc.AccountID)
+	camps, err := collectCampaigns(token, p)
+	if err != nil {
+		logrus.Errorf("can't collectCampaigns for account %v, \n error: %v", acc, err)
+		return err
+	}
+	a.CampaignsInfo = model.AdaptVKCampaings(camps, strconv.Itoa(acc.AccountID))
+	a.CreatedAt = time.Now()
+	if acc.AccountType == "general" {
+		a.Role = "client"
+	}
+	if acc.AccountType == "agency" {
+		a.Role = "agency"
+	}
+	a.Owners = append([]string{}, creator)
+	a.AuthToken = token
+	a.AppID = Config.VKAppID
+	a.AppSecret = Config.VKAppSecret
+	err = a.AdvanceUpdate()
+	if err != nil {
+		logrus.Errorf("can't a.AdvanceUpdate() for %a, \n error: %v", acc, err)
+		return err
+	}
+	return nil
+}
+
+//collectCampaigns collects advertisement campaigns from VK API
+func collectCampaigns(token string, params map[string]string) (vk.AdsCampaigns, error) {
+
+	var camps vk.AdsCampaigns
+	resp, err := vk.Request(token, "ads.getCampaigns", params)
+	if err != nil {
+		logrus.Errorf("VKauthorize vk.Request error: %v", err)
+		return camps, fmt.Errorf("collectCampaigns vk.Request error: %v", err)
+	}
+	logrus.Errorf("VK response from ads.getCampaigns, error: &+v", string(resp))
+
+	if err := json.Unmarshal(resp, &camps); err != nil {
+		logrus.Errorf("can't unmarshal VK response from ads.getCampaigns, error: &v", err)
+
+		return camps, fmt.Errorf("collectCampaigns json.Unmarshal error: %v", err)
+	}
+	return camps, nil
 }

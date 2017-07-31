@@ -144,14 +144,15 @@ func (a *Account2) GetInfo() (Account2, error) {
 
 func (a *Account2) GetAccountList() ([]Account2, error) {
 
-	if a.Accountlogin == "" {
-		return []Account2{}, fmt.Errorf("GetAccountList() error: Some field in Account are empty")
+	if a.Owners == nil || len(a.Owners) == 0 {
+		return []Account2{}, fmt.Errorf("GetAccountList() error: a.Owners field is empty")
 	}
 	result := []Account2{}
 	s := mainSession.Clone()
 	defer s.Close()
 	c := s.DB(mainDB.Name).C(a.collName)
-	err = c.Find(bson.M{"accountlogin": bson.M{"$in": a.Owners}}).All(&result)
+	//err = c.Find(bson.M{"username": u.Username, "accountlogin": bson.M{"$in": userinfo.AccountList}}).All(&result)
+	err = c.Find(bson.M{"owners": bson.M{"$in": a.Owners}}).All(&result)
 	if err != nil {
 		logrus.Printf("a.GetAccountList() c.Find with login %s, error: %v", a.Accountlogin, err)
 		return result, err
