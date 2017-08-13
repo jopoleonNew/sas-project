@@ -11,7 +11,7 @@ import (
 )
 
 // SubmitConfirmationYandexCode handles requests from client to submiting confirmation Yandex Code
-// then parses client's accountlogin in Yandex and uses OauthRequset to get access token
+// then parses client's accountlogin in Yandex and uses GetYandexToken to get access token
 // @impotrant This method is used for manual receiving of confirmation Yandex Code
 func SubmitConfirmationYandexCode(w http.ResponseWriter, r *http.Request) {
 
@@ -29,10 +29,10 @@ func SubmitConfirmationYandexCode(w http.ResponseWriter, r *http.Request) {
 
 	//log.Println("SubmitConfirmationYandexCode: ", yandexcode, accountlogin)
 
-	oauthresp, err := yad.OauthRequset(yandexcode, yad.API_YANDEX_OAUTH_URL)
+	oauthresp, err := yad.GetYandexToken(yandexcode, yad.API_YANDEX_OAUTH_URL)
 	if err != nil {
-		log.Println("GetYandexAccessToken OauthRequset error: ", err)
-		w.Write([]byte("GetYandexAccessToken OauthRequset error: " + err.Error()))
+		log.Println("GetYandexAccessToken GetYandexToken error: ", err)
+		w.Write([]byte("GetYandexAccessToken GetYandexToken error: " + err.Error()))
 		return
 	}
 	username, err := utils.GetUsernamefromRequestSession(r)

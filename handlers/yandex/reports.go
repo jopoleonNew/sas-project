@@ -11,14 +11,6 @@ import (
 )
 
 func ReportTemplateHandler(w http.ResponseWriter, r *http.Request) {
-
-	session, err := store.Get(r, "sessionSSA")
-	if err != nil {
-		log.Println("ReportTemplateHandler store.Get error:", err)
-		w.Write([]byte("ReportTemplateHandler store.Get error " + err.Error()))
-		return
-	}
-	log.Println("Session values Report: ", session.Values)
 	username, err := utils.GetUsernamefromRequestSession(r)
 	log.Println("ReportTemplateHandler used by ", username)
 	if err != nil {

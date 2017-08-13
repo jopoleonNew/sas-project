@@ -49,20 +49,21 @@ type VKtokenErr struct {
 
 var logr = logrus.New()
 
-func VkAccessToken(appID, appSecret, redirectURL, code string) (VKtoken, error) {
+func GetVKAccessToken(appID, appSecret, redirectURL, authURL, code string) (VKtoken, error) {
 	//https://oauth.vk.com/access_token?
 	//client_id=APP_ID&
 	//client_secret=APP_SECRET&
 	//code=7a6fa4dff77a228eeda56603b8f53806c883f011c40b72630bb50df056f6479e52a&
 	//redirect_uri=REDIRECT_URI&
 	var token VKtoken
-	VKurl := "https://oauth.vk.com/access_token?" +
-		"client_id=" + appID +
+
+	VKurl := authURL +
+		"?client_id=" + appID +
 		"&client_secret=" + appSecret +
 		"&code=" + code +
 		"&redirect_uri=" + redirectURL
 
-	logr.Infoln("VkAccessToken used")
+	logr.Infoln("GetVKAccessToken used")
 
 	client := &http.Client{}
 	r, err := http.NewRequest("POST", VKurl, nil)
@@ -91,7 +92,7 @@ func VkAccessToken(appID, appSecret, redirectURL, code string) (VKtoken, error) 
 			logr.Fatalf("response VkAuthorize YandexOauthError json.Unmarshal: \n Indefined body: %s %s", err, string(body))
 			return token, err
 		}
-		return token, errors.New("VkAccessToken VK API error: " + vkerr.Error + " " + vkerr.ErrorDesсription)
+		return token, errors.New("GetVKAccessToken VK API error: " + vkerr.Error + " " + vkerr.ErrorDesсription)
 	}
 	//log.Println("////\n\n TOKEN FROM VKONTAKTE: ", token)
 	return token, nil

@@ -47,18 +47,6 @@ func init() {
 		panic(err)
 	}
 
-	//host = "localhost"
-	//port = 5432
-	//user = "postgres"
-	//password = "qwe"
-	//dbname = "test"
-
-	//initiation of PostgreSQL driver
-	//modelPostgre.SetDBParams("localhost", 5432, "postgres", "qwe", "test")
-	//if err != nil {
-	//	panic(err)
-	//}
-	//log.Println("Debug1")
 	err = yad.SetParams(Config.YandexDirectAppID, Config.YandexDirectAppSecret)
 	if err != nil {
 		log.Fatal(err)
@@ -71,7 +59,6 @@ func init() {
 
 func CheckIsUserLogged(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
 		var store = sessions.NewCookieStore([]byte(app.GetConfig().SessionSecret))
 		session, err := store.Get(r, "sessionSSA")
 		if err != nil {
@@ -92,7 +79,6 @@ func CheckIsUserLogged(next http.HandlerFunc) http.HandlerFunc {
 			//http.Redirect(w, r, "/", http.StatusSeeOther)
 			return
 		}
-
 		log.Println("Executing CheckIsUserLogged again")
 	})
 }
@@ -102,9 +88,22 @@ func main() {
 	//making new gorilla router
 	r := mux.NewRouter()
 
-	//Block of new handlers with router
+	// Block of new handlers with gorilla mux router
+	//
+	// getting auth links for redirecting user in browser to give permision to his account
+	// on {source} service
 	r.HandleFunc("/getauthlink/{source}", CheckIsUserLogged(userhandlers.GetAuthLink))
+	//
 	r.HandleFunc("/gettoken/{source}", CheckIsUserLogged(userhandlers.GetToken))
+
+	// collect statistic for one account
+	//TODO:  spread logic in two places like this:
+	//TODO: mux := mux.NewRouter() mux.Handle("/", myHandler(???)).Methods("GET")
+	r.HandleFunc("/getaccountstat/{source}", CheckIsUserLogged(userhandlers.GetAccountStat))
+	//r.HandleFunc("/getstatistic/{source}", CheckIsUserLogged(userhandlers.GetStatistic))
+
+	// parse template with input forms for {accountlogin} account
+	r.HandleFunc("/reports/{accountlogin}", CheckIsUserLogged(userhandlers.ReportTemplateHandler))
 
 	r.HandleFunc("/", userhandlers.IndexHandler) // GET
 
@@ -131,7 +130,7 @@ func main() {
 	r.HandleFunc("/getcampaingstats", yandexhandlers.GetCampaingStatsHandler) //POST
 	r.HandleFunc("/refreshdbcampaign", yandexhandlers.RefreshCampaignsListHandler)
 	r.HandleFunc("/getreport", yandexhandlers.GetStatSliceHandler)
-	r.HandleFunc("/report", yandexhandlers.ReportTemplateHandler)
+	r.HandleFunc("/fullreport", yandexhandlers.ReportTemplateHandler)
 
 	//"/getauthcodevk", vkhandlers.GetVKAuthCode uses for getting VKapp info from server
 	r.HandleFunc("/getauthcodevk", vkhandlers.GetVKAuthCode)

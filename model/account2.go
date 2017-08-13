@@ -11,6 +11,12 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+type MongoAccount interface {
+	Update() error
+	GetInfo() (Account2, error)
+	GetAccountList() ([]Account2, error)
+	Remove() error
+}
 type Account2 struct {
 	//Username of user created this account
 	Creator string `json:"creator" bson:"creator"`
@@ -50,12 +56,10 @@ func NewAccount2(Creator, Source, Accountlogin, Email string) *Account2 {
 	}
 }
 
-func (a *Account2) AdvanceUpdate() error {
-
-	//log.Printf("Account.AdvanceUpdate() used with %+v", a)
+func (a *Account2) Update() error {
 	err := a.checkMainFields()
 	if err != nil {
-		return fmt.Errorf("Account.AdvanceUpdate() error: %v", err)
+		return fmt.Errorf("Account.Update() error: %v", err)
 	}
 
 	var changeParams = []bson.DocElem{}
@@ -107,25 +111,23 @@ func (a *Account2) AdvanceUpdate() error {
 	change := bson.M{"$set": changeParams}
 	if len(a.Owners) != 0 {
 		colQuerier := bson.M{"accountlogin": a.Accountlogin, "source": a.Source}
-		change1 := bson.M{"$push": bson.M{"owners": a.Owners[0]}}
+		change1 := bson.M{"$addToSet": bson.M{"owners": a.Owners[0]}}
 		_, err := c.Upsert(colQuerier, change1)
 		if err != nil {
-			logrus.Errorf("a.AdvanceUpdate() err: %+v", err)
+			logrus.Errorf("a.Update() err: %+v", err)
 			return err
 		}
 	}
 	//omitting changeInfo value
 	_, err = c.Upsert(colQuerier, change)
 	if err != nil {
-		logrus.Errorf("a.AdvanceUpdate() err: %+v", err)
+		logrus.Errorf("a.Update() err: %+v", err)
 		return err
 	}
 	return nil
 }
 
 func (a *Account2) GetInfo() (Account2, error) {
-
-	//log.Println("GetInfo used by ", a.Username, " ", a.Accountlogin)
 	if a.Accountlogin == "" {
 		return Account2{}, fmt.Errorf("GetInfo() error: Some field in Account are empty")
 	}
@@ -143,7 +145,6 @@ func (a *Account2) GetInfo() (Account2, error) {
 }
 
 func (a *Account2) GetAccountList() ([]Account2, error) {
-
 	if a.Owners == nil || len(a.Owners) == 0 {
 		return []Account2{}, fmt.Errorf("GetAccountList() error: a.Owners field is empty")
 	}
@@ -151,7 +152,6 @@ func (a *Account2) GetAccountList() ([]Account2, error) {
 	s := mainSession.Clone()
 	defer s.Close()
 	c := s.DB(mainDB.Name).C(a.collName)
-	//err = c.Find(bson.M{"username": u.Username, "accountlogin": bson.M{"$in": userinfo.AccountList}}).All(&result)
 	err = c.Find(bson.M{"owners": bson.M{"$in": a.Owners}}).All(&result)
 	if err != nil {
 		logrus.Printf("a.GetAccountList() c.Find with login %s, error: %v", a.Accountlogin, err)
@@ -187,6 +187,5 @@ func (a *Account2) checkMainFields() error {
 	if a.Accountlogin == "" {
 		return errors.New("Account's Accountlogin field can't be blank.")
 	}
-
 	return nil
 }

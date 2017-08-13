@@ -36,7 +36,7 @@ func NewUser() *UserInfo {
 func (u *UserInfo) Create() error {
 	// We store only lowercase username
 	u.Username = strings.ToLower(u.Username)
-	//log.Println("User.AdvanceUpdate() used with ", u)
+	//log.Println("User.Update() used with ", u)
 	if u.Username == "" {
 		return errors.New("UserInfo.Update() username field can't be empty")
 	}
@@ -64,9 +64,9 @@ func (u *UserInfo) Create() error {
 
 func (u *UserInfo) AdvanceUpdate() error {
 
-	log.Println("User.AdvanceUpdate() used with ", u)
+	log.Println("User.Update() used with ", u)
 	if u.Username == "" && u.Email == "" {
-		return errors.New("UserInfo.AdvanceUpdate() username and email field can't be empty simultaneously")
+		return errors.New("UserInfo.Update() username and email field can't be empty simultaneously")
 	}
 	var changeParams = []bson.DocElem{}
 
@@ -99,7 +99,7 @@ func (u *UserInfo) AdvanceUpdate() error {
 		change1 := bson.M{"$push": bson.M{"accountlist": u.AccountList[0]}}
 		_, err := c.Upsert(colQuerier1, change1)
 		if err != nil {
-			log.Println("a.AdvanceUpdate() err: ", err)
+			log.Println("a.Update() err: ", err)
 			return err
 		}
 	}
@@ -111,10 +111,10 @@ func (u *UserInfo) AdvanceUpdate() error {
 			},
 		}
 		change := bson.M{"$set": changeParams}
-		log.Println("UserInfo) AdvanceUpdate() query: ", colQuerier, " and cahnge: ", change)
+		log.Println("UserInfo) Update() query: ", colQuerier, " and cahnge: ", change)
 		_, err := c.Upsert(colQuerier, change)
 		if err != nil {
-			log.Println("a.AdvanceUpdate() err: ", err)
+			log.Println("a.Update() err: ", err)
 			return err
 		}
 	}

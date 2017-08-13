@@ -13,7 +13,7 @@ import (
 
 // GetYandexAccessToken handles requests from Yandex Direct Api to application
 // and parsing URL of yandex request to extract confirmation code and accountlogin, then makes
-// OauthRequset() to get access token and then saves access token to database.
+// GetYandexToken() to get access token and then saves access token to database.
 // /getyandexaccesstoken endpoint
 func GetYandexAccessToken(w http.ResponseWriter, r *http.Request) {
 	log.Println("GetYandexAccessToken used")
@@ -37,10 +37,10 @@ func GetYandexAccessToken(w http.ResponseWriter, r *http.Request) {
 	code := s[0]
 	log.Println("Token: ", code, "Accountlogin: ", accountlogin)
 	//for better testing
-	oauthresp, err := yad.OauthRequset(code, yad.API_YANDEX_OAUTH_URL)
+	oauthresp, err := yad.GetYandexToken(code, yad.API_YANDEX_OAUTH_URL)
 	if err != nil {
-		log.Println("GetYandexAccessToken OauthRequset error: ", err)
-		w.Write([]byte("GetYandexAccessToken OauthRequset error: " + err.Error()))
+		log.Println("GetYandexAccessToken GetYandexToken error: ", err)
+		w.Write([]byte("GetYandexAccessToken GetYandexToken error: " + err.Error()))
 		return
 	}
 	username, err := utils.GetUsernamefromRequestSession(r)

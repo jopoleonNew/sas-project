@@ -149,7 +149,7 @@ func BenchmarkUserInfo_GetAccountList(b *testing.B) {
 //	user := NewUser()
 //	user.Username = "test"
 //	user.AccountList = []string{"tbttd", "tbrbe", "taert", "tcbac", "tdggc", "ttcac", "ttdta", "trtga", "tdtge", "tbtgc", "tgccd", "tbdre", "ttbgb", "tgtab", "tactd", "tdrge", "tcebc", "ttcda", "tcrtr", "tbtee"}
-//	user.AdvanceUpdate()
+//	user.Update()
 //	for i := 0; i < b.N; i++ {
 //		_, err := user.GetAccountListV2()
 //		if err != nil {
@@ -161,7 +161,7 @@ func BenchmarkUserInfo_GetAccountList(b *testing.B) {
 //	user := NewUser()
 //	user.Username = "test"
 //	user.AccountList = []string{"tbttd", "tbrbe", "taert", "tcbac", "tdggc", "ttcac", "ttdta", "trtga", "tdtge", "tbtgc", "tgccd", "tbdre", "ttbgb", "tgtab", "tactd", "tdrge", "tcebc", "ttcda", "tcrtr", "tbtee"}
-//	user.AdvanceUpdate()
+//	user.Update()
 //	for i := 0; i < b.N; i++ {
 //		_, err := user.GetAccountListV3()
 //		if err != nil {

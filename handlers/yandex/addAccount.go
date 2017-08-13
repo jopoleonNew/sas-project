@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	api "github.com/nk2ge5k/goyad"
+	"github.com/nk2ge5k/goyad"
 	"github.com/nk2ge5k/goyad/agencyclients"
 	"github.com/nk2ge5k/goyad/campaigns"
 	"github.com/nk2ge5k/goyad/clients"
@@ -32,11 +32,11 @@ func GetYandexAuthLink(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-// GetYandexToken
-func GetYandexToken(w http.ResponseWriter, r *http.Request) {
-	logrus.Info("GetYandexToken used with request: ", r)
+// AddYandexAccount
+func AddYandexAccount(w http.ResponseWriter, r *http.Request) {
+	logrus.Info("AddYandexAccount used with request: ", r)
 	query := r.URL.Query()
-	logrus.Info("GetYandexToken income URL query: ", r.URL.Query())
+	logrus.Info("AddYandexAccount income URL query: ", r.URL.Query())
 
 	s := query["code"]
 	if s == nil || len(s) == 0 {
@@ -61,20 +61,20 @@ func GetYandexToken(w http.ResponseWriter, r *http.Request) {
 	} else {
 		authURL = r.Context().Value("authurl").(string)
 	}
-	oauthresp, err := yad.OauthRequset(code, authURL)
+	oauthresp, err := yad.GetYandexToken(code, authURL)
 	if err != nil {
-		logrus.Println("GetYandexAccessToken OauthRequset error: ", err)
+		logrus.Println("GetYandexAccessToken GetYandexToken error: ", err)
 		http.Error(w, fmt.Sprintf("cant get auth token from yandex with code: %s, error: %v", code, err), http.StatusBadRequest)
 		return
 	}
 	creator := r.Context().Value("username").(string)
 	if creator == "" {
-		logrus.Errorf("GetYandexToken r.Context().Value(username) is empty: ", creator)
+		logrus.Errorf("AddYandexAccount r.Context().Value(username) is empty: ", creator)
 		http.Error(w, fmt.Sprintf("Can't identify username inside request context: %s", creator), http.StatusBadRequest)
 		return
 	}
-	client := api.NewClient()
-	client.Token = api.Token{Value: oauthresp.AccessToken}
+	client := goyad.NewClient()
+	client.Token = goyad.Token{Value: oauthresp.AccessToken}
 	client.Login = accountlogin
 	//for testing
 	//apiURL := r.Context().Value("apiurl").(string)
@@ -97,11 +97,11 @@ type CreateInfo struct {
 	CampaignsAmount int
 }
 
-func CollectAccountandAddtoBD(client api.Client, creator string) (info CreateInfo, err error) {
+func CollectAccountandAddtoBD(client goyad.Client, creator string) (info CreateInfo, err error) {
 	resultCamps, err := collectCampaings(client)
 	if err != nil {
-		//if that error occurs, this means, that the new account user trying
-		// to add is agency, so we must collect agency's clienst and then
+		//if that error occurs, this means, that the new account that user trying
+		// to add is agency, so we must collect agency's clients and then
 		// add new account in DB for each of agency client
 		if strings.Contains(err.Error(), "53") {
 			_, err := addYandexAgencyAccounts(client, creator)
@@ -120,7 +120,7 @@ func CollectAccountandAddtoBD(client api.Client, creator string) (info CreateInf
 	}
 	resultClientInfo, err := collectClientInfo(client)
 	if err != nil {
-		logrus.Println("GetYandexAccessToken OauthRequset error: ", err)
+		logrus.Println("GetYandexAccessToken GetYandexToken error: ", err)
 		return info, fmt.Errorf("cant collectClientInfo from yandex with login: %s, error: %v", client.Login, err)
 	}
 	logrus.Infof("Information about Client: %+v", resultClientInfo)
@@ -139,15 +139,15 @@ func CollectAccountandAddtoBD(client api.Client, creator string) (info CreateInf
 	a.AppSecret = Config.YandexDirectAppSecret
 	a.CampaignsInfo = model.AdaptYandexCampaings(resultCamps)
 	a.CreatedAt = time.Now()
-	err = a.AdvanceUpdate()
+	err = a.Update()
 	if err != nil {
-		logrus.Errorf("cant a.AdvanceUpdate() to DB %v \n error: %v", a.Accountlogin, err)
+		logrus.Errorf("cant a.Update() to DB %v \n error: %v", a.Accountlogin, err)
 		return info, fmt.Errorf("cant add account to DB %v \n error: %v", a.Accountlogin, err)
 	}
 	return info, nil
 }
 
-func addYandexAgencyAccounts(client api.Client, creator string) (info CreateInfo, err error) {
+func addYandexAgencyAccounts(client goyad.Client, creator string) (info CreateInfo, err error) {
 
 	var YandexConnectionsLimit = 5
 	chAC := make(chan gc.ClientGetItem, 4) // channel's buffer is the number of simultaneous gorouitenes
@@ -155,7 +155,7 @@ func addYandexAgencyAccounts(client api.Client, creator string) (info CreateInfo
 	resultA, err := collectAgencyClients(client)
 	if err != nil {
 		logrus.Errorln("collectCampaingsfromAgency  error: ", err)
-		return
+		return info, err
 	}
 	for i := 0; i < YandexConnectionsLimit; i++ {
 		wg.Add(1)
@@ -168,9 +168,9 @@ func addYandexAgencyAccounts(client api.Client, creator string) (info CreateInfo
 				}
 				for _, c := range ac.Representatives {
 					//collecting ads campaigns from Yandex for every agency client
-					ci := api.NewClient()
+					ci := goyad.NewClient()
 					ci.Login = c.Login
-					ci.Token = api.Token{Value: client.Token.GetToken()}
+					ci.Token = goyad.Token{Value: client.Token.GetToken()}
 					result, err := collectCampaings(ci)
 					if err != nil {
 						logrus.Errorf("cant collect campaings with parameters: collectCampaings(%s, %s) error: %v", ci.Login, ci.Token.GetToken(), err)
@@ -192,9 +192,9 @@ func addYandexAgencyAccounts(client api.Client, creator string) (info CreateInfo
 					a.AppSecret = Config.YandexDirectAppSecret
 					a.CampaignsInfo = model.AdaptYandexCampaings(result)
 					a.CreatedAt = time.Now()
-					err = a.AdvanceUpdate()
+					err = a.Update()
 					if err != nil {
-						logrus.Errorf("addYandexAgencyAccounts a.AdvanceUpdate(%s) error: %v", c.Login, err)
+						logrus.Errorf("addYandexAgencyAccounts a.Update(%s) error: %v", c.Login, err)
 						return
 					}
 				}
@@ -227,17 +227,17 @@ func addYandexAgencyAccounts(client api.Client, creator string) (info CreateInfo
 	a.AppID = Config.YandexDirectAppID
 	a.AppSecret = Config.YandexDirectAppSecret
 	a.CreatedAt = time.Now()
-	err = a.AdvanceUpdate()
+	err = a.Update()
 	if err != nil {
 		logrus.Errorf("cant add account to DB %v \n error: %v", client.Login, err)
-		return
+		return info, err
 	}
 	close(chAC) // This tells the goroutines there's nothing else to do
 	wg.Wait()   // Wait for the threads to finish
 	return info, nil
 }
 
-func collectAgencyClients(client api.Client) (res agencyclients.GetResponse, err error) {
+func collectAgencyClients(client goyad.Client) (res agencyclients.GetResponse, err error) {
 	clientInfo := agencyclients.GetRequest{
 		FieldNames: []agencyclients.AgencyClientFieldEnum{
 			"AccountQuality", "ClientId", "ClientInfo", "Login", "Phone", "Representatives", "Restrictions", "Type",
@@ -251,7 +251,7 @@ func collectAgencyClients(client api.Client) (res agencyclients.GetResponse, err
 	return result, nil
 }
 
-func collectClientInfo(client api.Client) (res clients.GetResponse, err error) {
+func collectClientInfo(client goyad.Client) (res clients.GetResponse, err error) {
 	clientInfo := clients.GetRequest{
 		FieldNames: []clients.ClientFieldEnum{
 			"ClientId", "ClientInfo", "CountryId", "CreatedAt", "Login", "Representatives", "Type",
@@ -265,7 +265,7 @@ func collectClientInfo(client api.Client) (res clients.GetResponse, err error) {
 	return result, nil
 }
 
-func collectCampaings(client api.Client) (res campaigns.GetResponse, err error) {
+func collectCampaings(client goyad.Client) (res campaigns.GetResponse, err error) {
 
 	//DRAFT Кампания создана и еще не отправлена на модерацию.
 	//MODERATION	Кампания находится на модерации.

@@ -113,7 +113,7 @@ func (a *Account) IsExist() (bool, error) {
 	return true, nil
 }
 
-// AdvanceUpdate() updates account in DB. Upgraded versiof of Update() method.
+// Update() updates account in DB. Upgraded versiof of Update() method.
 // Checks all internal fields of method receiver and updates document in DB appropriate with
 // given values.
 func (a *Account) AdvanceUpdate() error {
@@ -154,7 +154,7 @@ func (a *Account) AdvanceUpdate() error {
 	}
 
 	if len(changeParams) == 0 {
-		return errors.New("Account.AdvanceUpdate() error: Nothing to update")
+		return errors.New("Account.Update() error: Nothing to update")
 	}
 	a.Accountlogin = strings.ToLower(a.Accountlogin)
 	a.Username = strings.ToLower(a.Username)
@@ -170,14 +170,14 @@ func (a *Account) AdvanceUpdate() error {
 		change1 := bson.M{"$push": bson.M{"owners": a.Owners[0]}}
 		_, err := c.Upsert(colQuerier1, change1)
 		if err != nil {
-			log.Println("a.AdvanceUpdate() err: ", err)
+			log.Println("a.Update() err: ", err)
 			return err
 		}
 	}
 	//omitting changeInfo value
 	_, err = c.Upsert(colQuerier, change)
 	if err != nil {
-		log.Println("a.AdvanceUpdate() err: ", err)
+		log.Println("a.Update() err: ", err)
 		return err
 	}
 

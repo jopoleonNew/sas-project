@@ -1,3 +1,5 @@
+//Integration tests for Account methods
+
 package model
 
 import (
@@ -10,12 +12,15 @@ import (
 
 func init() {
 
-	app.InitConf("../configuration.json")
+	err := app.InitConf("../configuration.json")
+	if err != nil {
+		log.Fatalf("Reading test config file error: %v", err)
+	}
 	var Config = app.GetConfig()
 	log.Printf("TESTING CONFIG FILE MAIN: %+v", Config)
-	err := SetDBParams(Config.Mongourl, Config.DBname)
+	err = SetDBParams(Config.Mongourl, Config.DBname)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Test init SetDBParams error: %v", err)
 	}
 
 }

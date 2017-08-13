@@ -123,3 +123,17 @@ type AdsClients struct {
 		all_limit int    `json:"all_limit"`
 	} `json:"response"`
 }
+type CampaignsStat struct {
+	Response []struct {
+		ID    int    `json:"id"`
+		Type  string `json:"type"`
+		Stats []struct {
+			Overall     int    `json:"overall"`
+			DayFrom     string `json:"day_from"`
+			DayTo       string `json:"day_to"`
+			Spent       string `json:"spent"`
+			Impressions int    `json:"impressions"`
+			Clicks      int    `json:"clicks"`
+		} `json:"stats"`
+	} `json:"response"`
+}

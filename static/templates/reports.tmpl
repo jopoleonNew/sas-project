@@ -52,7 +52,16 @@
 	<div id="currentusername" class="{{ .CurrentUser }}" style="margin: 20px; padding-top: 50px;  text-align: center;">
 
 		<button style="float: left" type="button" class="btn btn-default" data-toggle="modal" data-target="#helpModal">Справка</button>
+		{{ if .CurrentUser }}
+		{{ if .CurrentAccount }}
+		<button user="{{ .CurrentUser }}" result="resultstat" type="button" name="" id="yandex" class="btn btn-lg btn-success refreshstatistic">Получить статистику по аккаунту {{ .CurrentAccount.Accountlogin }}</button></div>
+	{{- else}}
 		<button user="{{ .CurrentUser }}" result="resultstat" type="button" name="" id="yandex" class="btn btn-lg btn-success refreshstatistic">Обновляем статистику по пользователю {{ .CurrentUser }}</button></div>
+	{{- end}}
+	{{- end}}
+	<div>
+
+	</div>
 		<div id="dateerror"></div>
 	<div>
 		Start date: <input type="text" id="cal_1">
@@ -78,6 +87,7 @@
 	
 	<div class="ajaxloader" style="margin: 0 auto; padding-top: 5px;  text-align: center; display:none">
 	<img id='imgcode' src='../static/img/loader.gif'/><p>Загружаем</p>
+
 	</div>
 	
 	</div>

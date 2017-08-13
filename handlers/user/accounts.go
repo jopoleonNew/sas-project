@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	"github.com/gorilla/mux"
-	"github.com/sirupsen/logrus"
 	"gogs.itcloud.pro/SAS-project/sas/app"
 	vkhandlers "gogs.itcloud.pro/SAS-project/sas/handlers/vkontakte"
 	yandexhandlers "gogs.itcloud.pro/SAS-project/sas/handlers/yandex"
@@ -87,7 +86,7 @@ func AccountsHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
-	log.Println("AccountsHandler user.GetAccountList(): ", acclist)
+	//log.Println("AccountsHandler user.GetAccountList(): ", acclist)
 	data.AccountList = append(data.AccountList, acclist...)
 	//data.AccountList = acclist
 
@@ -141,44 +140,8 @@ func AccountsHandler2(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("AccountsHandler acc.GetAccountList() error: " + err.Error()))
 		return
 	}
-	logrus.Infof("Inside AccountHandler acc.GetAccountList() res: %+v", acclist)
-	//acclist, err := user.GetAccountList()
-	//if err != nil {
-	//	log.Println("AccountsHandler user.GetAccountList() error:", err)
-	//	w.Write([]byte("AccountsHandler user.GetAccountList() error: " + err.Error()))
-	//	return
-	//}
-
-	//for _, uaccount := range acclist {
-	//	if uaccount.YandexRole == "agency" {
-	//		acc := model.NewAccount()
-	//		acc.Username = username
-	//		acc.Accountlogin = uaccount.Accountlogin
-	//		agencyInfo, err := acc.GetInfo()
-	//		if err != nil {
-	//			log.Println("AccountsHandler agencyInfo.GetInfo error:", err)
-	//			w.Write([]byte("AccountsHandler agencyInfo.GetInfo error: " + err.Error()))
-	//			return
-	//		}
-	//		for _, agencyAccountLogin := range agencyInfo.AgencyClients {
-	//			agencyAcc := model.NewAccount()
-	//			agencyAcc.Username = username
-	//			agencyAcc.Accountlogin = agencyAccountLogin
-	//			agencyAccInfo, err := agencyAcc.GetInfo()
-	//			if err != nil {
-	//				log.Println("AccountsHandler agencyAccInfo.GetInfo error:", err)
-	//				w.Write([]byte("AccountsHandler agencyAccInfo.GetInfo error: " + err.Error()))
-	//				return
-	//			}
-	//			log.Println("Inside AccountHandler. Agency's AccountInfo : %+v", agencyAccInfo)
-	//			data.AccountList = append(data.AccountList, agencyAccInfo)
-	//		}
-	//	}
-	//}
-	//log.Println("AccountsHandler user.GetAccountList(): ", acclist)
+	//logrus.Infof("Inside AccountHandler acc.GetAccountList() res: %+v", acclist)
 	data.AccountList = append(data.AccountList, acclist...)
-	//data.AccountList = acclist
-
 	t, err := template.New("accounts_new.tmpl").ParseFiles(
 		"static/templates/header.tmpl",
 		"static/templates/accounts_new.tmpl",
@@ -195,6 +158,7 @@ func AccountsHandler2(w http.ResponseWriter, r *http.Request) {
 	}
 
 }
+
 func GetAuthLink(w http.ResponseWriter, r *http.Request) {
 
 	log.Println("GetAuthLink used")
@@ -230,11 +194,6 @@ func AddAccountHandler(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("AddAccountHandler GetUsernamefromRequestSession err: " + err.Error()))
 		return
 	}
-
-	//accountlogin := r.FormValue("accountlogin")
-	//sourcename := r.FormValue("sourcename")
-	//accrole := r.FormValue("accrole")
-
 	err = r.ParseForm()
 	if err != nil {
 		log.Println("AddAccountHandler r.ParseForm() err: ", err)
@@ -271,14 +230,14 @@ func AddAccountHandler(w http.ResponseWriter, r *http.Request) {
 	user.AccountList = append(user.AccountList, acc.Accountlogin)
 	err = user.AdvanceUpdate()
 	if err != nil {
-		log.Println("AddAccountHandler user.AdvanceUpdate() error ", err)
-		w.Write([]byte("AddAccountHandler user.AdvanceUpdate() error " + err.Error()))
+		log.Println("AddAccountHandler user.Update() error ", err)
+		w.Write([]byte("AddAccountHandler user.Update() error " + err.Error()))
 		return
 	}
 	err = acc.AdvanceUpdate()
 	if err != nil {
-		log.Println("AddAccountHandler acc.AdvanceUpdate error ", err)
-		w.Write([]byte("AddAccountHandler acc.AdvanceUpdate error " + err.Error()))
+		log.Println("AddAccountHandler acc.Update error ", err)
+		w.Write([]byte("AddAccountHandler acc.Update error " + err.Error()))
 		return
 	}
 
