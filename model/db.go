@@ -5,12 +5,24 @@ import (
 
 	"time"
 
+	"os/exec"
+
+	"github.com/sirupsen/logrus"
+	"gogs.itcloud.pro/SAS-project/sas/app"
 	mgo "gopkg.in/mgo.v2"
 )
 
 var mainSession *mgo.Session
 var mainDB mgo.Database
 var err error
+
+func StartMongoDB(configType app.ConfigType) {
+	err := exec.Command("mongod", "--config", "F:\\MongoDB\\bin\\mongodb.config").Run()
+	if err != nil {
+		logrus.Fatal("StartMongoDB error: ", err)
+	}
+	//mongod --config F:\MongoDB\bin\mongodb.config
+}
 
 func SetDBParams(url, dbname string) error {
 	info := mgo.DialInfo{

@@ -1,0 +1,68 @@
+{
+	"result": {
+		"ApiObject": {
+			"ForceFields": [],
+			"NullFields": []
+		},
+		"GetResponseGeneral": {
+			"ApiObject": {
+				"ForceFields": [],
+				"NullFields": []
+			},
+			"LimitedBy": "nil"
+		},
+		"Clients": [{
+				"ApiObject": {
+					"ForceFields": [],
+					"NullFields": []
+				},
+				"ClientBaseItem": {
+					"ApiObject": {
+						"ForceFields": [],
+						"NullFields": []
+					},
+					"ClientInfo": "Цветы мытищи",
+					"Phone": "8(903)755 -49 -29"
+				},
+				"AccountQuality": 6,
+				"Archived": "",
+				"ClientId": 15334232,
+				"CountryId": 0,
+				"CreatedAt": "sa",
+				"Currency": "",
+				"Grants": [],
+				"Login": "flokolibri -	direct",
+				"Notification": {
+					"ApiObject": {
+						"ForceFields": [],
+						"NullFields": []
+					},
+					"NotificationGeneralClients": {
+						"ApiObject": {
+							"ForceFields": [],
+							"NullFields": []
+						},
+						"Email": "es@123.ru",
+						"EmailSubscriptions": [],
+						"Lang": "ru"
+					}
+				},
+				"Representatives": [
+					{
+						"ApiObject": {
+							"ForceFields": [],
+							"NullFields": []
+						},
+						"Email": " flokolibri@yandex.ru",
+						"Login": "flokolibri -direct",
+						"Role": "CHIEF"
+					}
+				],
+				"Restrictions": [],
+				"Settings": [],
+				"Type": "client",
+				"SUBCLIENT": "sad",
+				"VatRate": 0
+			}]
+			}
+		}

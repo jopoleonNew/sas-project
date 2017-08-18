@@ -29,7 +29,7 @@ func VKauthorize(w http.ResponseWriter, r *http.Request) {
 
 	code := query["code"]
 	if code != nil || len(code) != 0 {
-		vktoken, err := vk.GetVKAccessToken(Config.VKAppID, Config.VKAppSecret, Config.VKRedirectURL, code[0])
+		vktoken, err := vk.GetVKAccessToken(Config.VKAppID, Config.VKAppSecret, Config.VKRedirectURL, "https://oauth.vk.com/access_token", code[0])
 		if err != nil {
 			log.Println("VKauthorize vk.GetVKAccessToken error: ", err)
 			return

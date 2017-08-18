@@ -106,11 +106,11 @@ func CollectAccountandAddtoBD(client goyad.Client, creator string) (info CreateI
 		if strings.Contains(err.Error(), "53") {
 			_, err := addYandexAgencyAccounts(client, creator)
 			if err != nil {
-				logrus.Errorf("CollectAccountandAddtoBD addYandexAgencyAccounts(%s, %s, %s) error: %v", client.Login, client.Token.GetToken(), creator, err)
+				logrus.Errorf("CollectAccountandAddtoBD AddYandexAgencyAccounts(%s, %s, %s) error: %v", client.Login, client.Token.GetToken(), creator, err)
 				return info, fmt.Errorf("cant recieve campaings from Yandex.Direct with parametrs %s %s error: ", client.Login, creator, err)
 
 			}
-			logrus.Info("addYandexAgencyAccounts SUCCESS")
+			logrus.Info("AddYandexAgencyAccounts SUCCESS")
 			return info, nil
 		} else {
 			logrus.Errorln("CollectAccountandAddtoBD unknow error: ", err)
@@ -194,7 +194,7 @@ func addYandexAgencyAccounts(client goyad.Client, creator string) (info CreateIn
 					a.CreatedAt = time.Now()
 					err = a.Update()
 					if err != nil {
-						logrus.Errorf("addYandexAgencyAccounts a.Update(%s) error: %v", c.Login, err)
+						logrus.Errorf("AddYandexAgencyAccounts a.Update(%s) error: %v", c.Login, err)
 						return
 					}
 				}
@@ -203,7 +203,7 @@ func addYandexAgencyAccounts(client goyad.Client, creator string) (info CreateIn
 	}
 	var agencyClients []string
 	for _, c := range resultA.Clients {
-		logrus.Infof("for resultA.Clients c: %v", c)
+		//logrus.Infof("for resultA.Clients c: %v", c)
 		for _, info := range c.Representatives {
 			agencyClients = append(agencyClients, info.Login)
 		}
@@ -248,6 +248,7 @@ func collectAgencyClients(client goyad.Client) (res agencyclients.GetResponse, e
 	if err != nil {
 		return res, fmt.Errorf("collectAgencyClients service.Get error %v", err)
 	}
+	logrus.Infof("Inside collectClientInfo result: %+v", result)
 	return result, nil
 }
 
@@ -262,6 +263,7 @@ func collectClientInfo(client goyad.Client) (res clients.GetResponse, err error)
 	if err != nil {
 		return res, fmt.Errorf("collectClientInfo service.Get error %v", err)
 	}
+	logrus.Infof("Inside collectClientInfo result: %+v", result)
 	return result, nil
 }
 

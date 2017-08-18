@@ -15,11 +15,15 @@ import (
 
 	"fmt"
 
+	"errors"
+
 	"github.com/nk2ge5k/goyad"
 	"github.com/nk2ge5k/goyad/agencyclients"
 	"github.com/nk2ge5k/goyad/campaigns"
+	"github.com/nk2ge5k/goyad/clients"
 	"github.com/nk2ge5k/goyad/gc"
 	"github.com/sirupsen/logrus"
+	"gogs.itcloud.pro/SAS-project/sas/model"
 	"gogs.itcloud.pro/SAS-project/sas/yandexDirectAPI"
 )
 
@@ -202,6 +206,7 @@ func TestYclient_CollectCampaigns(t *testing.T) {
 		w.Header().Add("Requestid", "12344")
 		fmt.Fprintln(w, string(testAccount))
 	}))
+	defer ts.Close()
 	var tcli yclient
 	tcli.ApiUrl = ts.URL + "/"
 	tcli.Login = "t"
@@ -231,35 +236,38 @@ func TestYclient_CollectCampaigns(t *testing.T) {
 	}
 }
 func TestYclient_CollectAgencyClients(t *testing.T) {
-	testAgency := agencyclients.GetResponse{
-		Clients: []gc.ClientGetItem{
+	testAgency := map[string]agencyclients.GetResponse{
+		"result": {Clients: []gc.ClientGetItem{
+
 			{
-				Login:    "qwe",
-				ClientId: int64(123),
-				Type:     "client",
+				Login: "qwe",
+				Type:  "client",
 				Representatives: []gc.Representative{
 					{
 						Email: "e",
 						Login: "e",
 						Role:  "e",
 					},
-					{
-						Email: "a",
-						Login: "a",
-						Role:  "a",
-					},
 				},
 			},
 		},
-	}
+		}}
+
+	//testAgency, err := ioutil.ReadFile("testClients.json")
+	//if err != nil {
+	//	t.Fatalf("cant read file with test json, error: %v", err)
+	//}
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Requestid", "12344")
-		b, err := json.Marshal(testAgency)
+
+		b, err := json.Marshal(&testAgency)
 		if err != nil {
 			t.Fatalf("json.Marshal error: %v", err)
 		}
+		logrus.Info("Inside test handler:", string(b))
 		fmt.Fprintln(w, b)
 	}))
+	defer ts.Close()
 	var tcli yclient
 	tcli.ApiUrl = ts.URL + "/"
 	tcli.Login = "t"
@@ -270,3 +278,171 @@ func TestYclient_CollectAgencyClients(t *testing.T) {
 	}
 	logrus.Info("Is Equal Agency? : ", reflect.DeepEqual(resp, testAgency))
 }
+func TestYclient_CollectClientInfo(t *testing.T) {
+	testClientInfo := map[string]clients.GetResponse{
+		"result": {Clients: []gc.ClientGetItem{
+			{
+				Login: "qwe",
+				Type:  "client",
+				Representatives: []gc.Representative{
+					{
+						Email: "e",
+						Login: "e",
+						Role:  "e",
+					},
+				},
+			},
+		},
+		},
+	}
+
+	//testClientInfo, err := ioutil.ReadFile("testClients.json")
+	//if err != nil {
+	//	t.Fatalf("cant read file with test json, error: %v", err)
+	//}
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Requestid", "12344")
+
+		b, err := json.Marshal(testAgencyClients)
+		if err != nil {
+			t.Fatalf("json.Marshal error: %v", err)
+		}
+		logrus.Info("Inside test handler:", string(b))
+		fmt.Fprintln(w, b)
+	}))
+	defer ts.Close()
+	var tcli yclient
+	tcli.ApiUrl = ts.URL + "/"
+	tcli.Login = "t"
+	tcli.Token = goyad.Token{Value: "123"}
+	resp, err := tcli.CollectClientInfo()
+	if err != nil {
+		t.Fatalf("tcli.CollectCampaigns() error: %v", err)
+	}
+	logrus.Info("Is Equal Agency? : ", reflect.DeepEqual(resp, testClientInfo))
+}
+
+type FakeAdder struct{}
+
+func (f *FakeAdder) AddAccToDB(a model.Account2) error {
+	logrus.Info("Facing adding to DB")
+	return nil
+}
+func (f *FakeAdder) AddYandexAgencyAccounts(db AccountAdder) (info CreateInfo, err error) {
+	return info, nil
+}
+func (f *FakeAdder) CollectAgencyClients() (res agencyclients.GetResponse, err error) {
+	res = agencyclients.GetResponse{
+		Clients: []gc.ClientGetItem{
+
+			{
+				Login: "qwe",
+				Type:  "client",
+				Representatives: []gc.Representative{
+					{
+						Email: "e",
+						Login: "e",
+						Role:  "e",
+					},
+				},
+			},
+		},
+	}
+	return res, nil
+}
+func (f *FakeAdder) CollectClientInfo() (res clients.GetResponse, err error) {
+	return
+}
+func (f *FakeAdder) CollectCampaigns() (res campaigns.GetResponse, err error) {
+
+	return res, errors.New("53")
+}
+
+func TestYclient_CollectAccountandAddtoBD(t *testing.T) {
+	var tcli yclient
+	//}
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Requestid", "12344")
+		fmt.Fprintln(w, "{\"result\":{53}}")
+	}))
+	defer ts.Close()
+	//tcli.Token = goyad.Token{Value: "123"}
+	tcli.ApiUrl = ts.URL + "/"
+	tcli.Login = "t"
+	tcli.Token = goyad.Token{Value: "123"}
+	fakeDb := FakeAdder{}
+	_, err := tcli.CollectAccountandAddtoBD(&fakeDb)
+	if err != nil {
+		t.Fatalf("tcli.CollectAccountandAddtoBD() error: %v", err)
+	}
+}
+
+var testAgencyClients = `{
+	"result": {
+		"ApiObject": {
+			"ForceFields": [],
+			"NullFields": []
+		},
+		"GetResponseGeneral": {
+			"ApiObject": {
+				"ForceFields": [],
+				"NullFields": []
+			},
+			"LimitedBy": "nil"
+		},
+		"Clients": [
+			{
+				"ApiObject": {
+					"ForceFields": [],
+					"NullFields": []
+				},
+				"ClientBaseItem": {
+					"ApiObject": {
+						"ForceFields": [],
+						"NullFields": []
+					},
+					"ClientInfo": "Цветы мытищи",
+					"Phone": "8(903)755 -49 -29"
+				},
+				"AccountQuality": 6,
+				"Archived": "",
+				"ClientId": 15334232,
+				"CountryId": 0,
+				"CreatedAt": "sa",
+				"Currency": "",
+				"Grants": [],
+				"Login": "flokolibri -	direct",
+				"Notification": {
+					"ApiObject": {
+						"ForceFields": [],
+						"NullFields": []
+					},
+					"NotificationGeneralClients": {
+						"ApiObject": {
+							"ForceFields": [],
+							"NullFields": []
+						},
+						"Email": "es@123.ru",
+						"EmailSubscriptions": [],
+						"Lang": "ru"
+					}
+				},
+				"Representatives": [
+					{
+						"ApiObject": {
+							"ForceFields": [],
+							"NullFields": []
+						},
+						"Email": " flokolibri@yandex.ru",
+						"Login": "flokolibri -direct",
+						"Role": "CHIEF"
+					}
+				],
+				"Restrictions": [],
+				"Settings": [],
+				"Type": "client",
+				"SUBCLIENT": "sad",
+				"VatRate": 0
+			}]
+	}
+}`

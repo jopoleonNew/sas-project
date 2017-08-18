@@ -202,9 +202,32 @@
                             {{- range $campi, $camp := .CampaignsInfo }}
                             <div class="col-md-5">
                                 <li class="onecamp{{$acc.Accountlogin}}">
-                                    <div class=" campaingdiv" id='{{ $camp.ID}}' style="border-radius: 6px;font-size: 18px; border: solid 1px; background-color: white; padding: 5px; margin: 5px; text-align: left;">
+                                    <div class="campaingdiv" id='{{ $camp.ID}}' style="border-radius: 6px;font-size: 18px; border: solid 1px; background-color: white; padding: 5px; margin: 5px; text-align: left;">
                                         <p>Имя кампании: {{$camp.Name}}</p>
                                         <p>Номер(ID) кампаниии:{{$camp.ID}}</p>
+
+                                        <button style="display: block;  white-space: normal; float: left; margin: 5px; padding:2px;" title="Click to show/hide advertisements of that campaign" type="button" class="btn btn-primary btn-sm" onclick="
+        if(document.getElementById('spoiler{{$acc.Accountlogin }}{{$camp.ID}}').style.display=='none')
+        {document.getElementById('spoiler{{$acc.Accountlogin }}{{$camp.ID}}').style.display=''}
+        else{document.getElementById('spoiler{{$acc.Accountlogin }}{{$camp.ID}}').style.display='none'}">
+                                            <span style="margin: 5px; font-size: 18px"><span class="glyphicon glyphicon-triangle-bottom"></span>  Показать рекламные записи: <strong>{{$camp.Name}}</strong></span>
+                                        </button>
+                                        <div id="spoiler{{$acc.Accountlogin }}{{$camp.ID}}" style="display: none;">
+                                        {{- range $adi, $ad := $camp.Ads }}
+
+                                            <div class="col-sm-6">
+                                                <div class="addiv{{$ad.ID}}" style="border-radius: 3px;font-size: 12px; border: solid 1px; background-color: white; padding: 1px; margin: 1px; text-align: left;">
+
+                                                    <p><strong>Объявление:</strong> {{$ad.Name}}</p>
+                                                    <p><strong>Цена за 1000 показов в копейках.:</strong> {{$ad.CPM}}</p>
+                                                    <p><strong>Номер(ID):</strong>{{$ad.ID}}</p>
+                                                </div>
+                                                <script>var monkeyList = new List('list{{$acc.Accountlogin}}2', {valueNames: ['addiv{{$ad.ID}}'],page: 4,pagination: true});	</script>
+                                            </div>
+
+
+                                        {{- end}}
+                                        </div>
                                         <div style="margin: 0 auto;text-align: center;">
                                             <button result="{{$camp.ID}}result" type="button" name="{{$acc.Accountlogin}}" id="{{$camp.ID}}" class="btn btn-primary btn-sm getcampaingstatistic">Получить статистику</button><br>
                                         </div>

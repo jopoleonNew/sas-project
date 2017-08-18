@@ -87,7 +87,7 @@ type VKCollector interface {
 func CollectAccountsandAddToDB() {
 
 }
-func addAgencyAccount(acc vk.AdsAccountsResponse, token, creator, email string) error {
+func addAgencyAccount(acc vk.AccountList, token, creator, email string) error {
 	p := make(map[string]string)
 	p["account_id"] = strconv.Itoa(acc.AccountID)
 	//getting the list of agency clients
@@ -155,7 +155,7 @@ func addAgencyAccount(acc vk.AdsAccountsResponse, token, creator, email string) 
 }
 
 //addGeneralAccount creates new account for adding VK general account in DB
-func addGeneralAccount(acc vk.AdsAccountsResponse, token, creator, email string) error {
+func addGeneralAccount(acc vk.AccountList, token, creator, email string) error {
 	a := model.NewAccount2(creator, "Vkontakte", strconv.Itoa(acc.AccountID), email)
 	p := make(map[string]string)
 	p["account_id"] = strconv.Itoa(acc.AccountID)
@@ -164,7 +164,22 @@ func addGeneralAccount(acc vk.AdsAccountsResponse, token, creator, email string)
 		logrus.Errorf("can't collectCampaigns for account %v, \n error: %v", acc, err)
 		return err
 	}
+
 	a.CampaignsInfo = model.AdaptVKCampaings(camps, strconv.Itoa(acc.AccountID))
+
+	for i, c := range a.CampaignsInfo {
+		time.Sleep(700 * time.Millisecond)
+		p["campaign_id"] = "{\"" + strconv.Itoa(c.ID) + "\"}"
+		ads, err := collectAds(token, p)
+		if err != nil {
+			logrus.Errorf("can't collectAds for account %v, \n error: %v", acc, err)
+			return err
+		}
+		logrus.Infof("Collected Ads for campaing %v , : \n %s", c, ads)
+		c.Ads = model.AdaptVKAds(ads)
+		a.CampaignsInfo[i] = c
+	}
+
 	a.CreatedAt = time.Now()
 	if acc.AccountType == "general" {
 		a.Role = "client"
@@ -221,12 +236,18 @@ func collectCampaigns(token string, params map[string]string) (vk.AdsCampaigns, 
 //целое число
 //offsetсмещение. Используется в тех же случаях, что и параметр limit.
 //целое число
-func collectAds(token string, params map[string]string) ([]byte, error) {
+func collectAds(token string, params map[string]string) (vk.Ads, error) {
+	var ads vk.Ads
 	resp, err := vk.Request(token, "ads.getAds", params)
 	if err != nil {
 		logrus.Errorf("collectAds vk.Request error: %v", err)
-		return resp, fmt.Errorf("collectAds vk.Request error: %v", err)
+		return ads, fmt.Errorf("collectAds vk.Request error: %v", err)
 	}
 
-	return resp, nil
+	if err := json.Unmarshal(resp, &ads); err != nil {
+		logrus.Errorf("can't unmarshal VK response from ads.getAds, error: &v", err)
+
+		return ads, fmt.Errorf("collectAds json.Unmarshal error: %v", err)
+	}
+	return ads, nil
 }

@@ -6,7 +6,7 @@
 	"yandexapiurl": "https://api.direct.yandex.ru",
 	"vkappid": "6082545",
 	"vkappsecret": "8JD0UiJ1KJL43DNm816q",
-	"vkredirecturl": "https://e305edef.eu.ngrok.io/gettoken/vkontakte",
+	"vkredirecturl": "https://9a192e46.eu.ngrok.io/gettoken/vkontakte",
 	"sessionsecret": "4ivLAq9MTVtdhEDqr9dm",
 	"serverport": "8080"
 }

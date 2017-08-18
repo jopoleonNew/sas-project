@@ -11,8 +11,6 @@ import (
 	"sync"
 	"time"
 
-	"log"
-
 	"github.com/nk2ge5k/goyad"
 	"github.com/nk2ge5k/goyad/ads"
 	"github.com/nk2ge5k/goyad/agencyclients"
@@ -27,12 +25,12 @@ import (
 type YandexAccountAdder interface {
 	ParseURL(url *url.URL) (map[string]string, error)
 	GetToken(code string) (yad.YandexTokenbody, error)
-	CollectAccountandAddtoBD() (info CreateInfo, err error)
-	CollectAgencyClients() (res agencyclients.GetResponse, err error)
+	CollectAccountandAddtoBD(db AccountAdder) (info CreateInfo, err error)
+	CollectAgencyClients(db AccountAdder) (res agencyclients.GetResponse, err error)
 	CollectClientInfo() (res clients.GetResponse, err error)
 	CollectCampaigns() (res campaigns.GetResponse, err error)
 	CollectAds() (res ads.GetResponse, err error)
-	AddAccToDB(a model.Account2) error
+	//AddAccToDB(a model.Account2) error
 }
 
 type yclient struct {
@@ -69,7 +67,9 @@ func (c *yclient) AddYandexAccount(w http.ResponseWriter, r *http.Request) {
 	c.Creator = creator
 	c.Login = urlValues["accountlogin"]
 	c.Token = goyad.Token{Value: token.AccessToken}
-	_, err = c.CollectAccountandAddtoBD()
+	//db := DBstruct{}
+	newCli := yclient{}
+	_, err = c.CollectAccountandAddtoBD(&newCli)
 	if err != nil {
 		logrus.Errorf("AddYandexAccount r.Context().Value(username) is empty: ", creator)
 		http.Error(w, fmt.Sprintf("Can't identify username inside request context: %s", creator), http.StatusBadRequest)
@@ -127,7 +127,7 @@ func (c *yclient) GetToken(code string) (yad.YandexTokenbody, error) {
 		logrus.Error("GetYandexToken ioutil.ReadAll(resp.Body) error", err)
 		return token, err
 	}
-	log.Println("GetYandexToken response: ", string(body))
+	//log.Println("GetYandexToken response: ", string(body))
 	if string(body) == `{"error_description": "Invalid code", "error": "bad_verification_code"}` {
 		logrus.Error("Error from yandexDirect API: Invalid code, bad_verification_code: ", string(body))
 		return token, fmt.Errorf("Error from yandexDirect API: Invalid code, bad_verification_code")
@@ -151,7 +151,7 @@ func (c *yclient) GetToken(code string) (yad.YandexTokenbody, error) {
 	return token, nil
 }
 
-func (c *yclient) CollectAccountandAddtoBD() (info CreateInfo, err error) {
+func (c *yclient) CollectAccountandAddtoBD(db AccountAdder) (info CreateInfo, err error) {
 	resultCamps, err := c.CollectCampaigns()
 	if err != nil {
 		//if that error occurs, this means, that the new account that user trying
@@ -162,17 +162,17 @@ func (c *yclient) CollectAccountandAddtoBD() (info CreateInfo, err error) {
 			client.Token = c.Token
 			client.Login = c.Login
 			client.ApiUrl = c.ApiUrl
-			_, err := c.addYandexAgencyAccounts()
+			_, err := db.AddYandexAgencyAccounts(db)
 			if err != nil {
-				logrus.Errorf("CollectAccountandAddtoBD addYandexAgencyAccounts(%s, %s, %s) error: %v", client.Login, client.Token.GetToken(), c, err)
+				logrus.Errorf("CollectAccountandAddtoBD AddYandexAgencyAccounts(%s, %s, %s) error: %v", client.Login, client.Token.GetToken(), c, err)
 				return info, fmt.Errorf("cant recieve campaings from Yandex.Direct with parametrs %s %s error: ", client.Login, c, err)
 
 			}
-			logrus.Info("addYandexAgencyAccounts SUCCESS")
+			logrus.Info("AddYandexAgencyAccounts SUCCESS")
 			return info, nil
 		} else {
-			logrus.Errorln("CollectAccountandAddtoBD unknow error: ", err)
-			return info, fmt.Errorf("cant recieve campaings from Yandex.Direct inside CollectAccountandAddtoBD function, error: %v", err)
+			logrus.Errorln("CollectAccountandAddtoBD unknown error: ", err)
+			return info, fmt.Errorf("cant recieve campaings from Yandex.Direct inside CollectAccountandAddtoBD function, unknown error: %v", err)
 		}
 		return
 	}
@@ -197,7 +197,7 @@ func (c *yclient) CollectAccountandAddtoBD() (info CreateInfo, err error) {
 	a.AppSecret = Config.YandexDirectAppSecret
 	a.CampaignsInfo = model.AdaptYandexCampaings(resultCamps)
 	a.CreatedAt = time.Now()
-	err = c.AddAccToDB(*a)
+	err = db.AddAccToDB(*a)
 	if err != nil {
 		logrus.Errorf("cant a.Update() to DB %v \n error: %v", a.Accountlogin, err)
 		return info, fmt.Errorf("cant add account to DB %v \n error: %v", a.Accountlogin, err)
@@ -206,54 +206,21 @@ func (c *yclient) CollectAccountandAddtoBD() (info CreateInfo, err error) {
 	return info, nil
 }
 
-func (c *yclient) NewYandexAdder(cc YandexAccountAdder) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		urlValues, err := cc.ParseURL(r.URL)
-		if err != nil {
-			logrus.Error("Request from YandexOuath received without values")
-			http.Error(w, fmt.Sprintf("Request from Yandex received without values %s", urlValues), http.StatusBadRequest)
-			return
-		}
+func (c *yclient) AddYandexAgencyAccounts(db AccountAdder) (info CreateInfo, err error) {
 
-		code := urlValues["code"]
-		token, err := cc.GetToken(code)
-		if err != nil {
-			logrus.Println("AddYandexAccount GetToken error: ", err)
-			http.Error(w, fmt.Sprintf("cant get auth token from Yandex with code: %s, error: %v", code, err), http.StatusBadRequest)
-			return
-		}
-		creator := r.Context().Value("username").(string)
-		if creator == "" {
-			logrus.Errorf("AddYandexAccount r.Context().Value(username) is empty: ", creator)
-			http.Error(w, fmt.Sprintf("Can't identify username inside request context: %s", creator), http.StatusBadRequest)
-			return
-		}
-		c.Creator = creator
-		c.Login = urlValues["accountlogin"]
-		c.Token = goyad.Token{Value: token.AccessToken}
-		_, err = cc.CollectAccountandAddtoBD()
-		if err != nil {
-			logrus.Errorf("AddYandexAccount r.Context().Value(username) is empty: ", creator)
-			http.Error(w, fmt.Sprintf("Can't identify username inside request context: %s", creator), http.StatusBadRequest)
-			return
-		}
-	})
-}
-func (c *yclient) addYandexAgencyAccounts() (info CreateInfo, err error) {
-
-	var YandexConnectionsLimit = 5
+	var connectionsLimit = 5
 	chAC := make(chan gc.ClientGetItem, 4) // channel's buffer is the number of simultaneous gorouitenes
 	var wg sync.WaitGroup
 	var client goyad.Client
 	client.Token = c.Token
 	client.Login = c.Login
 	client.ApiUrl = c.ApiUrl
-	resultA, err := collectAgencyClients(client)
+	resultA, err := c.CollectAgencyClients()
 	if err != nil {
-		logrus.Errorln("collectCampaingsfromAgency  error: ", err)
+		logrus.Errorln("c.CollectAgencyClients()  error: ", err)
 		return info, err
 	}
-	for i := 0; i < YandexConnectionsLimit; i++ {
+	for i := 0; i < connectionsLimit; i++ {
 		wg.Add(1)
 		go func() {
 			for {
@@ -288,9 +255,9 @@ func (c *yclient) addYandexAgencyAccounts() (info CreateInfo, err error) {
 					a.AppSecret = Config.YandexDirectAppSecret
 					a.CampaignsInfo = model.AdaptYandexCampaings(result)
 					a.CreatedAt = time.Now()
-					err = c.AddAccToDB(*a)
+					err = db.AddAccToDB(*a)
 					if err != nil {
-						logrus.Errorf("addYandexAgencyAccounts a.Update(%s) error: %v", agencyClient.Login, err)
+						logrus.Errorf("AddYandexAgencyAccounts a.Update(%s) error: %v", agencyClient.Login, err)
 						return
 					}
 				}
@@ -323,7 +290,7 @@ func (c *yclient) addYandexAgencyAccounts() (info CreateInfo, err error) {
 	a.AppID = Config.YandexDirectAppID
 	a.AppSecret = Config.YandexDirectAppSecret
 	a.CreatedAt = time.Now()
-	err = c.AddAccToDB(*a)
+	err = db.AddAccToDB(*a)
 	if err != nil {
 		logrus.Errorf("cant add account to DB %v \n error: %v", client.Login, err)
 		return info, err
@@ -390,12 +357,59 @@ func (c *yclient) CollectAgencyClients() (res agencyclients.GetResponse, err err
 	yc.ApiUrl = c.ApiUrl
 	service2 := agencyclients.New(&yc)
 	result, err := service2.Get(clientInfo)
+	logrus.Infof("CollectAgencyClients get result: %+v", result)
 	if err != nil {
-		return res, fmt.Errorf("collectAgencyClients service.Get error %v", err)
+		logrus.Errorf("collectAgencyClients service.Get error: %v ", err)
+		return res, fmt.Errorf("collectAgencyClients service.Get error: %v", err)
 	}
 	return result, nil
 }
-func (c *yclient) AddAccToDB(a model.Account2) error {
 
+type AccountAdder interface {
+	AddAccToDB(model.Account2) error
+	AddYandexAgencyAccounts(db AccountAdder) (info CreateInfo, err error)
+	CollectAgencyClients() (res agencyclients.GetResponse, err error)
+	CollectClientInfo() (res clients.GetResponse, err error)
+	CollectCampaigns() (res campaigns.GetResponse, err error)
+	//CollectAds() (res ads.GetResponse, err error)
+}
+
+func (c *yclient) AddAccToDB(a model.Account2) error {
 	return a.Update()
 }
+
+//
+//func (c *yclient) NewYandexAdder(cc YandexAccountAdder) http.Handler {
+//	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+//		urlValues, err := cc.ParseURL(r.URL)
+//		if err != nil {
+//			logrus.Error("Request from YandexOuath received without values")
+//			http.Error(w, fmt.Sprintf("Request from Yandex received without values %s", urlValues), http.StatusBadRequest)
+//			return
+//		}
+//
+//		code := urlValues["code"]
+//		token, err := cc.GetToken(code)
+//		if err != nil {
+//			logrus.Println("AddYandexAccount GetToken error: ", err)
+//			http.Error(w, fmt.Sprintf("cant get auth token from Yandex with code: %s, error: %v", code, err), http.StatusBadRequest)
+//			return
+//		}
+//		creator := r.Context().Value("username").(string)
+//		if creator == "" {
+//			logrus.Errorf("AddYandexAccount r.Context().Value(username) is empty: ", creator)
+//			http.Error(w, fmt.Sprintf("Can't identify username inside request context: %s", creator), http.StatusBadRequest)
+//			return
+//		}
+//		c.Creator = creator
+//		c.Login = urlValues["accountlogin"]
+//		c.Token = goyad.Token{Value: token.AccessToken}
+//	//	db := DBstruct{}
+//		_, err = cc.CollectAccountandAddtoBD(c)
+//		if err != nil {
+//			logrus.Errorf("AddYandexAccount r.Context().Value(username) is empty: ", creator)
+//			http.Error(w, fmt.Sprintf("Can't identify username inside request context: %s", creator), http.StatusBadRequest)
+//			return
+//		}
+//	})
+//}

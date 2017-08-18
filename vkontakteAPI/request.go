@@ -8,6 +8,10 @@ import (
 
 	"fmt"
 
+	"bytes"
+
+	"encoding/json"
+
 	"github.com/sirupsen/logrus"
 )
 
@@ -78,8 +82,32 @@ func Request(token, methodName string, params map[string]string) ([]byte, error)
 		logrus.Errorf("VkAPI Request ioutil.ReadAll(resp.Body) error: %v", err)
 		return nil, fmt.Errorf("VkAPI Request ioutil.ReadAll(resp.Body) error: %v", err)
 	}
+	if bytes.Compare(content[:9], []byte("{\"error\":")) == 0 {
+		error := VKAPIError{}
+		if err := json.Unmarshal(content, &error); err != nil {
+			logrus.Errorf("ERROR OF VKAPIError STRUCT inside VKAPI value: %s err:%+v", string(content), err)
+			return content, err
+		} else {
+			return content, &error
+		}
+	}
 
 	return content, nil
+}
+
+type VKAPIError struct {
+	Error_ struct {
+		ErrorCode     int    `json:"error_code"`
+		ErrorMsg      string `json:"error_msg"`
+		RequestParams []struct {
+			Key   string `json:"key"`
+			Value string `json:"value"`
+		} `json:"request_params"`
+	} `json:"error"`
+}
+
+func (e *VKAPIError) Error() string {
+	return fmt.Sprintf("Error of VK API : %+v ", e.Error_)
 }
 
 type AdsAccounts struct {
@@ -90,7 +118,7 @@ type AdsAccounts struct {
 		AccessRole    string `json:"access_role"`
 	} `json:"response"`
 }
-type AdsAccountsResponse struct {
+type AccountList struct {
 	AccountID     int    `json:"account_id"`
 	AccountType   string `json:"account_type"`
 	AccountStatus int    `json:"account_status"`
@@ -108,6 +136,28 @@ type AdsCampaigns struct {
 		StopTime   string `json:"stop_time"`
 		CreateTime string `json:"create_time"`
 		UpdateTime string `json:"update_time"`
+	} `json:"response"`
+}
+type Ads struct {
+	Response []struct {
+		ID               string      `json:"id"`
+		CampaignID       int         `json:"campaign_id"`
+		Name             string      `json:"name"`
+		Status           int         `json:"status"`
+		Approved         string      `json:"approved"`
+		AllLimit         string      `json:"all_limit"`
+		CreateTime       string      `json:"create_time"`
+		UpdateTime       string      `json:"update_time"`
+		AgeRestriction   string      `json:"age_restriction"`
+		Category1ID      string      `json:"category1_id"`
+		Category2ID      string      `json:"category2_id"`
+		CostType         int         `json:"cost_type"`
+		AdFormat         int         `json:"ad_format"`
+		Cpm              string      `json:"cpm"`
+		Cpc              string      `json:"cpc"`
+		Video            int         `json:"video"`
+		ImpressionsLimit interface{} `json:"impressions_limit"`
+		AdPlatform       string      `json:"ad_platform"`
 	} `json:"response"`
 }
 

@@ -134,7 +134,6 @@ func main() {
 
 	//"/getauthcodevk", vkhandlers.GetVKAuthCode uses for getting VKapp info from server
 	r.HandleFunc("/getauthcodevk", vkhandlers.GetVKAuthCode)
-	r.HandleFunc("/vkauth", vkhandlers.VKauthorize)
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
 	log.Println("Server started at port: " + Config.ServerPort)
 	//srv := &http.Server{
