@@ -110,6 +110,19 @@ func (e *VKAPIError) Error() string {
 	return fmt.Sprintf("Error of VK API : %+v ", e.Error_)
 }
 
+type AdStatistic struct {
+	Response []struct {
+		ID    int    `json:"id"`
+		Type  string `json:"type"`
+		Stats []struct {
+			Day         string `json:"day"`
+			Spent       string `json:"spent,omitempty"`
+			Impressions int    `json:"impressions"`
+			Clicks      int    `json:"clicks,omitempty"`
+			Reach       int    `json:"reach"`
+		} `json:"stats"`
+	} `json:"response"`
+}
 type AdsAccounts struct {
 	Response []struct {
 		AccountID     int    `json:"account_id"`

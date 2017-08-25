@@ -58,7 +58,7 @@ type Token struct {
 }
 
 //func (vka *VKAccount) GetAccessToken(appID, appSecret, code string) ([]byte, error) {
-//	vkontakteAPI.GetVKAccessToken(Config.VKAppID, Config.VKAppSecret, Config.VKRedirectURL, vka.AuthURL, code[0])
+//	vkontakteAPI.GetAccessToken(Config.VKAppID, Config.VKAppSecret, Config.VKRedirectURL, vka.AuthURL, code[0])
 //
 //}
 //func (vka *VKAccount) CollectCampaings(token string, params map[string]string) ([]byte, error) {}

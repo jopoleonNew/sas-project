@@ -29,16 +29,16 @@ func VKauthorize(w http.ResponseWriter, r *http.Request) {
 
 	code := query["code"]
 	if code != nil || len(code) != 0 {
-		vktoken, err := vk.GetVKAccessToken(Config.VKAppID, Config.VKAppSecret, Config.VKRedirectURL, "https://oauth.vk.com/access_token", code[0])
+		vktoken, err := vk.GetAccessToken(Config.VKAppID, Config.VKAppSecret, Config.VKRedirectURL, "https://oauth.vk.com/access_token", code[0])
 		if err != nil {
-			log.Println("VKauthorize vk.GetVKAccessToken error: ", err)
+			log.Println("VKauthorize vk.GetAccessToken error: ", err)
 			return
 		}
 
 		//42f17cfb678d3008ad04df046815c5fdfa3663d984771b92db47955675f7a224c1f259b125062ecfdb04b
 		tempToken := "42f17cfb678d3008ad04df046815c5fdfa3663d984771b92db47955675f7a224c1f259b125062ecfdb04b"
 
-		log.Println("Inside VKauthorize vk.GetVKAccessToken result:::::: ", vktoken)
+		log.Println("Inside VKauthorize vk.GetAccessToken result:::::: ", vktoken)
 		response, err := vk.Request(tempToken, "ads.getAccounts", nil)
 		if err != nil {
 			log.Println("VKauthorize vk.Request error: ", err)
@@ -70,5 +70,5 @@ func VKauthorize(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("YandexDirectAPI error: " + vkerr.Error + " " + vkerr.ErrorDesсription))
 		return
 	}
-	log.Println("Inside VKauthorize vk.GetVKAccessToken result:::::: ", token)
+	log.Println("Inside VKauthorize vk.GetAccessToken result:::::: ", token)
 }

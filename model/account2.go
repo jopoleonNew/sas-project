@@ -24,7 +24,7 @@ type Account2 struct {
 	Source string `json:"source" bson:"source"`
 	//Accountlogin is the login or id of account in organization from Source
 	Accountlogin string `json:"accountlogin" bson:"accountlogin"`
-	//Owners is the list of user's who have access to that account
+	//Owners is the list of user's usernames who have access to that account
 	Owners []string `json:"owners" bson:"owners"`
 
 	Email string `json:"email" bson:"email"`
@@ -160,7 +160,7 @@ func (a *Account2) GetAccountList() ([]Account2, error) {
 	return result, nil
 }
 
-//Remove() removes user who called it from Owners field inside account
+//Remove() removes accountlogin who called it from Owners field inside account
 func (a *Account2) Remove() error {
 	log.Println("Remove used: ", a.Creator, " ", a.Accountlogin)
 	s := mainSession.Clone()

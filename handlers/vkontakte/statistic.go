@@ -13,6 +13,8 @@ import (
 
 	"time"
 
+	"encoding/json"
+
 	"github.com/sirupsen/logrus"
 	"gogs.itcloud.pro/SAS-project/sas/model"
 	vk "gogs.itcloud.pro/SAS-project/sas/vkontakteAPI"
@@ -99,23 +101,26 @@ func CollectVKStatistic(w http.ResponseWriter, r *http.Request) {
 		}
 		accountlogin := query["login"][0]
 		logrus.Infof("CollectVKStatistic used with POST: ", username, accountlogin)
-		a := model.NewAccount2("", "", "", "")
-		a.Accountlogin = accountlogin
+		a := model.NewAccount2("", "", accountlogin, "")
 		info, err := a.GetInfo()
 		if err != nil {
 			logrus.Errorf("ReportTemplateHandler a.GetInfo() %v error: %v", a, err)
 			http.Error(w, fmt.Sprintf("can't find in db Yandex account %v \n error: %+v:", a, err), http.StatusBadRequest)
 			return
 		}
-		var ids []string
+		var adids []string
 		for _, c := range info.CampaignsInfo {
-			ids = append(ids, strconv.Itoa(c.ID))
+			for _, ad := range c.Ads {
+				adids = append(adids, strconv.Itoa(ad.ID))
+			}
+
 		}
-		if len(ids) < 1900 {
+		if len(adids) < 1999 {
 			p := make(map[string]string)
 			p["account_id"] = a.Accountlogin
-			p["ids"] = strings.Join(ids, ",")
-			p["ids_type"] = "campaign"
+			p["ids_type"] = "ad"
+			p["ids"] = strings.Join(adids, ", ")
+			//p["ids_type"] = "campaign"
 			p["period"] = "day"
 			p["date_from"] = fomrmatstart
 			p["date_to"] = formatend
@@ -125,61 +130,31 @@ func CollectVKStatistic(w http.ResponseWriter, r *http.Request) {
 				w.Write([]byte("CollectVKStatistic collectStatistic error: " + err.Error()))
 				return
 			}
-			logrus.Infof("Result from Statistic: %s", res)
+			//logrus.Infof("Result from Statistic: %s", res)
 			w.Write(res)
 		} else {
-			logrus.Errorf("Amount of campings IDs is more than 1900: %d", len(ids))
+			logrus.Errorf("Amount of campings IDs is more than 2000: %d", len(adids))
 		}
 	}
 
 }
-
-//account_idидентификатор рекламного кабинета.
-//обязательный параметр, целое число
-//ids_typeТип запрашиваемых объектов, которые перечислены в параметре ids:
-//ad — объявления;
-//campaign — кампании;
-//client — клиенты;
-//office — кабинет.
-//обязательный параметр, строка
-//idsПеречисленные через запятую id запрашиваемых объявлений, кампаний, клиентов или кабинета, в зависимости от того, что указано в параметре ids_type. Максимум 2000 объектов.
-//обязательный параметр, строка
-//period Способ группировки данных по датам:
-//day — статистика по дням;
-//month — статистика по месяцам;
-//overall — статистика за всё время;
-//Временные ограничения задаются параметрами date_from и date_to.
-//обязательный параметр, строка
-//date_from Начальная дата выводимой статистики. Используется разный формат дат для разного значения параметра period:
-//day: YYYY-MM-DD, пример: 2011-09-27 - 27 сентября 2011
-//0 — день создания;
-//month: YYYY-MM, пример: 2011-09 - сентябрь 2011
-//0 — месяц создания;
-//overall: 0
-//обязательный параметр, строка
-//date_to Конечная дата выводимой статистики. Используется разный формат дат для разного значения параметра period:
-//day: YYYY-MM-DD, пример: 2011-09-27 - 27 сентября 2011
-//0 — текущий день;
-//month: YYYY-MM, пример: 2011-09 - сентябрь 2011
-//0 — текущий месяц;
-//overall: 0
-//обязательный параметр, строка
-//Результат
-func collectStatistic(token string, params map[string]string) ([]byte, error) {
+func collectStatistic(token string, params map[string]string) (vk.AdStatistic, error) {
+	var stats vk.AdStatistic
 	if token == "" {
-		return []byte{}, fmt.Errorf("Token is empty")
+		return stats, fmt.Errorf("Token is empty")
 	}
 	//var camps vk.AdsCampaigns
 	resp, err := vk.Request(token, "ads.getStatistics", params)
 	if err != nil {
 		logrus.Errorf("collectStatistic vk.Request error: %v", err)
-		return resp, fmt.Errorf("collectStatistic vk.Request error: %v", err)
+		return stats, fmt.Errorf("collectStatistic vk.Request error: %v", err)
 	}
-	//logrus.Errorf("VK response from ads.getCampaigns, error: &+v", string(resp))
-	//if err := json.Unmarshal(resp, &camps); err != nil {
-	//	logrus.Errorf("can't unmarshal VK response from ads.getStatistics, error: &v", err)
-	//
-	//	return camps, fmt.Errorf("collectStatistic json.Unmarshal error: %v", err)
-	//}
-	return resp, nil
+
+	if err := json.Unmarshal(resp, &stats); err != nil {
+		logrus.Errorf("can't unmarshal VK response from ads.getAds, error: &v", err)
+
+		return stats, fmt.Errorf("collectAds json.Unmarshal error: %v", err)
+	}
+
+	return stats, nil
 }

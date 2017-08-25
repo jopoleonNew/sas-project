@@ -4,6 +4,8 @@ import (
 	"log"
 	"testing"
 
+	"reflect"
+
 	"gogs.itcloud.pro/SAS-project/sas/app"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -139,7 +141,7 @@ func TestAccount2_GetAccountList(t *testing.T) {
 func TestAccount2_Remove(t *testing.T) {
 	a := NewAccount2("qwe123test", "test", "test1", "test1")
 	a.Owners = append(a.Owners, "test1")
-	err := a.Remove()
+	err := a.Update()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -147,7 +149,20 @@ func TestAccount2_Remove(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	log.Printf("Not equal: %+v ", res)
+	log.Printf("TestAccount2_Remove BEFORE remove: \n %+v \n", res)
+	err = a.Remove()
+	if err != nil {
+		t.Fatal(err)
+	}
+	res1, err := a.GetAccountList()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if reflect.DeepEqual(res1, res) {
+		t.Error("Results from base are equal, but they should not.")
+	}
+	log.Printf("TestAccount2_Remove AFTER remove: \n %+v \n", res)
+}
+func cleanUpTest() {
 
 }

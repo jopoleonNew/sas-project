@@ -23,9 +23,9 @@ func AddVKAccount(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	code := query["code"]
-	vktoken, err := vk.GetVKAccessToken(Config.VKAppID, Config.VKAppSecret, Config.VKRedirectURL, "https://oauth.vk.com/access_token", code[0])
+	vktoken, err := vk.GetAccessToken(Config.VKAppID, Config.VKAppSecret, Config.VKRedirectURL, "https://oauth.vk.com/access_token", code[0])
 	if err != nil {
-		logrus.Errorf("AddVKAccount vk.GetVKAccessToken error: %v", err)
+		logrus.Errorf("AddVKAccount vk.GetAccessToken error: %v", err)
 		return
 	}
 	creator := r.Context().Value("username").(string)
@@ -34,7 +34,7 @@ func AddVKAccount(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("Can't identify username inside AddVKAccount request context: %s", creator), http.StatusBadRequest)
 		return
 	}
-	logrus.Info("Inside VKauthorize vk.GetVKAccessToken result:::::: ", vktoken)
+	logrus.Info("Inside VKauthorize vk.GetAccessToken result:::::: ", vktoken)
 	response, err := vk.Request(vktoken.AccessToken, "ads.getAccounts", nil)
 	if err != nil {
 		logrus.Errorf("VKauthorize vk.Request error: %v", err)
@@ -166,19 +166,38 @@ func addGeneralAccount(acc vk.AccountList, token, creator, email string) error {
 	}
 
 	a.CampaignsInfo = model.AdaptVKCampaings(camps, strconv.Itoa(acc.AccountID))
-
-	for i, c := range a.CampaignsInfo {
-		time.Sleep(700 * time.Millisecond)
-		p["campaign_id"] = "{\"" + strconv.Itoa(c.ID) + "\"}"
-		ads, err := collectAds(token, p)
-		if err != nil {
-			logrus.Errorf("can't collectAds for account %v, \n error: %v", acc, err)
-			return err
-		}
-		logrus.Infof("Collected Ads for campaing %v , : \n %s", c, ads)
-		c.Ads = model.AdaptVKAds(ads)
-		a.CampaignsInfo[i] = c
+	//var ids []string
+	//for _, cm := range a.CampaignsInfo {
+	//	ids = append(ids, strconv.Itoa(cm.ID))
+	//}
+	//idsstr := strings.Join(ids, ", ")
+	time.Sleep(700 * time.Millisecond)
+	//p["campaign_id"] = "{\"" + idsstr + "\"}"
+	ads, err := collectAds(token, p)
+	if err != nil {
+		logrus.Errorf("can't collectAds for account %v, \n error: %v", acc, err)
+		return err
 	}
+	adaptedAds := model.AdaptVKAds(ads)
+	for _, c := range a.CampaignsInfo {
+		for _, ad := range adaptedAds {
+			if c.ID == ad.CampID {
+				c.Ads = append(c.Ads, ad)
+			}
+		}
+	}
+	//for i, c := range a.CampaignsInfo {
+	//	time.Sleep(700 * time.Millisecond)
+	//	p["campaign_id"] = "{\"" + strconv.Itoa(c.ID) + "\"}"
+	//	ads, err := collectAds(token, p)
+	//	if err != nil {
+	//		logrus.Errorf("can't collectAds for account %v, \n error: %v", acc, err)
+	//		return err
+	//	}
+	//	logrus.Infof("Collected Ads for campaing %v , : \n %s", c, ads)
+	//	c.Ads = model.AdaptVKAds(ads)
+	//	a.CampaignsInfo[i] = c
+	//}
 
 	a.CreatedAt = time.Now()
 	if acc.AccountType == "general" {
@@ -208,8 +227,6 @@ func collectCampaigns(token string, params map[string]string) (vk.AdsCampaigns, 
 		logrus.Errorf("VKauthorize vk.Request error: %v", err)
 		return camps, fmt.Errorf("collectCampaigns vk.Request error: %v", err)
 	}
-	//logrus.Errorf("VK response from ads.getCampaigns, error: &+v", string(resp))
-
 	if err := json.Unmarshal(resp, &camps); err != nil {
 		logrus.Errorf("can't unmarshal VK response from ads.getCampaigns, error: &v", err)
 

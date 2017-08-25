@@ -30,7 +30,7 @@ func (t *vkToken) GetExpiresIn() int { return t.ExpiresIn }
 func (t *vkToken) GetEmail() string  { return t.Email }
 
 func (vka *VKAccount) GetAccessToken(code string) (vkToken, error) {
-	vt, err := vkontakteAPI.GetVKAccessToken(Config.VKAppID, Config.VKAppSecret, Config.VKRedirectURL, vka.AuthURL, code)
+	vt, err := vkontakteAPI.GetAccessToken(Config.VKAppID, Config.VKAppSecret, Config.VKRedirectURL, vka.AuthURL, code)
 	if err != nil {
 		logrus.Errorln("VkAuthorize client.Do(r) error: ", err)
 		return vkToken{}, fmt.Errorf("VkAuthorize client.Do(r) error: %s", err)
@@ -60,36 +60,3 @@ func (vka *VKAccount) ParseURL(url *url.URL) (map[string]string, error) {
 	p["accountlogin"] = al[0]
 	return p, nil
 }
-
-//var VkAddHanler = NewAdderHandler()
-
-//func NewAdderHandler(cc AccountAdder) http.Handler {
-//	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-//		if req.Method != http.MethodGet {
-//			w.WriteHeader(http.StatusMethodNotAllowed)
-//			return
-//		}
-//
-//		location := req.URL.Query().Get("location")
-//
-//		if location == "" {
-//			w.WriteHeader(http.StatusBadRequest)
-//			w.Write([]byte("location must be set"))
-//			return
-//		}
-//		result, err := cc.collectCamps(location)
-//
-//		if err == errNotFound {
-//			w.WriteHeader(http.StatusNotFound)
-//			w.Write([]byte(fmt.Sprintf("Location '%s' not found", location)))
-//		} else if err != nil {
-//			w.WriteHeader(http.StatusBadGateway)
-//		}
-//
-//		// for example purposes only, just assume
-//		// this won't fail
-//		b, _ := json.Marshal(result)
-//
-//		w.Write(b)
-//	})
-//}
