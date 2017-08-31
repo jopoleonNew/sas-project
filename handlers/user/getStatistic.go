@@ -52,7 +52,7 @@ func GetAccountStat(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "YouTube accounts are not availiable now: %s", vars["source"])
 		return
 	case "adwords", "Adwords", "AdWords":
-		fmt.Fprintf(w, "adwords accounts are not availiable now: %s", vars["source"])
+		fmt.Fprintf(w, "AdWords accounts are not availiable now: %s", vars["source"])
 		return
 	case "":
 		logrus.Error("AddAccount Error: no source")

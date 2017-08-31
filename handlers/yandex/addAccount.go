@@ -144,71 +144,94 @@ func CollectAccountandAddtoBD(client goyad.Client, creator string) (info CreateI
 		logrus.Errorf("cant a.Update() to DB %v \n error: %v", a.Accountlogin, err)
 		return info, fmt.Errorf("cant add account to DB %v \n error: %v", a.Accountlogin, err)
 	}
+	var ids []int
+	for _, c := range a.CampaignsInfo {
+		ids = append(ids, c.ID)
+	}
+	account := yad.NewAccount(resultClientInfo.Clients[0].Login, client.Token.GetToken())
+	startTime := time.Now()
+	endTime := startTime.AddDate(-1, 0, 0)
+	statres, err := account.GetStatisticsConc(ids, endTime, startTime)
+	if err != nil {
+		logrus.Errorf("CollectAccountandAddtoBD account.GetStatisticsConc %v error: %v", account, err)
+		return info, fmt.Errorf("CollectAccountandAddtoBD account.GetStatisticsConc %v error: %v", account, err)
+	}
+	err = model.SaveYandexStatistic(resultClientInfo.Clients[0].Login, statres)
+	if err != nil {
+		logrus.Errorf("CollectAccountandAddtoBD SaveYandexStatistic %v error: %v", account, err)
+		return info, fmt.Errorf("CollectAccountandAddtoBD SaveYandexStatistic %v error: %v", account, err)
+	}
 	return info, nil
 }
 
 func addYandexAgencyAccounts(client goyad.Client, creator string) (info CreateInfo, err error) {
-
-	var YandexConnectionsLimit = 5
-	chAC := make(chan gc.ClientGetItem, 4) // channel's buffer is the number of simultaneous gorouitenes
-	var wg sync.WaitGroup
 	resultA, err := collectAgencyClients(client)
 	if err != nil {
-		logrus.Errorln("collectCampaingsfromAgency  error: ", err)
+		logrus.Errorln("addYandexAgencyAccounts collectAgencyClients  error: ", err)
 		return info, err
 	}
-	for i := 0; i < YandexConnectionsLimit; i++ {
-		wg.Add(1)
-		go func() {
-			for {
-				ac, ok := <-chAC
-				if !ok { // if there is nothing to do and the channel has been closed then end the goroutine
-					wg.Done()
-					return
-				}
-				for _, c := range ac.Representatives {
-					//collecting ads campaigns from Yandex for every agency client
-					ci := goyad.NewClient()
-					ci.Login = c.Login
-					ci.Token = goyad.Token{Value: client.Token.GetToken()}
-					result, err := collectCampaings(ci)
-					if err != nil {
-						logrus.Errorf("cant collect campaings with parameters: collectCampaings(%s, %s) error: %v", ci.Login, ci.Token.GetToken(), err)
-					}
-
-					//creating new account for each of agency clients
-					a := model.NewAccount2(
-						creator,
-						"Яндекс Директ",
-						c.Login,
-						c.Email,
-					)
-					a.Role = "client"
-					a.Status = "active"
-					a.Owners = append([]string{}, creator)
-					a.AccountType = ac.Type
-					a.AuthToken = client.Token.GetToken()
-					a.AppID = Config.YandexDirectAppID
-					a.AppSecret = Config.YandexDirectAppSecret
-					a.CampaignsInfo = model.AdaptYandexCampaings(result)
-					a.CreatedAt = time.Now()
-					err = a.Update()
-					if err != nil {
-						logrus.Errorf("AddYandexAgencyAccounts a.Update(%s) error: %v", c.Login, err)
-						return
-					}
-				}
-			}
-		}()
-	}
 	var agencyClients []string
+	// iterating through all agency clients to from a slice of clients and add to DB to agency account filed 'AgencyClients'
 	for _, c := range resultA.Clients {
 		//logrus.Infof("for resultA.Clients c: %v", c)
 		for _, info := range c.Representatives {
 			agencyClients = append(agencyClients, info.Login)
 		}
-		chAC <- c // add client to the queue
 	}
+	for _, ac := range resultA.Clients {
+		// iterating through all agency clients to add every client account to DB with appropriate info
+		for _, c := range ac.Representatives {
+			ci := goyad.NewClient()
+			ci.Login = c.Login
+			ci.Token = goyad.Token{Value: client.Token.GetToken()}
+			//collecting ads campaigns from Yandex for every agency client
+			result, err := collectCampaings(ci)
+			if err != nil {
+				logrus.Errorf("cant collect campaings with parameters: collectCampaings(%s, %s) error: %v", ci.Login, ci.Token.GetToken(), err)
+				return info, fmt.Errorf("cant collect campaings with parameters: collectCampaings(%s, %s) error: %v", ci.Login, ci.Token.GetToken(), err)
+			}
+
+			//creating new account for each of agency clients
+			a := model.NewAccount2(
+				creator,
+				"Яндекс Директ",
+				c.Login,
+				c.Email,
+			)
+			a.Role = "client"
+			a.Status = "active"
+			a.Owners = append([]string{}, creator)
+			a.AccountType = ac.Type
+			a.AuthToken = client.Token.GetToken()
+			a.AppID = Config.YandexDirectAppID
+			a.AppSecret = Config.YandexDirectAppSecret
+			a.CampaignsInfo = model.AdaptYandexCampaings(result)
+			a.CreatedAt = time.Now()
+			err = a.Update()
+			if err != nil {
+				logrus.Errorf("addYandexAgencyAccounts a.Update(%s) error: %v", c.Login, err)
+				return info, fmt.Errorf("addYandexAgencyAccounts a.Update(%s) error: %v", c.Login, err)
+			}
+			var ids []int
+			for _, c := range a.CampaignsInfo {
+				ids = append(ids, c.ID)
+			}
+			account := yad.NewAccount(c.Login, client.Token.GetToken())
+			startTime := time.Now()
+			endTime := startTime.AddDate(-1, 0, 0)
+			statres, err := account.GetStatisticsConc(ids, endTime, startTime)
+			if err != nil {
+				logrus.Errorf("addYandexAgencyAccounts account.GetStatisticsConc %v error: %v", account, err)
+				return info, fmt.Errorf("addYandexAgencyAccounts account.GetStatisticsConc %v error: %v", account, err)
+			}
+			err = model.SaveYandexStatistic(c.Login, statres)
+			if err != nil {
+				logrus.Errorf("addYandexAgencyAccounts account.GetStatisticsConc %v error: %v", account, err)
+				return info, fmt.Errorf("addYandexAgencyAccounts account.GetStatisticsConc %v error: %v", account, err)
+			}
+		}
+	}
+	// after finishing iterating through all agency client adding to DB the agency account itself
 	a := model.NewAccount2(
 		creator,
 		"Яндекс Директ",
@@ -232,8 +255,6 @@ func addYandexAgencyAccounts(client goyad.Client, creator string) (info CreateIn
 		logrus.Errorf("cant add account to DB %v \n error: %v", client.Login, err)
 		return info, err
 	}
-	close(chAC) // This tells the goroutines there's nothing else to do
-	wg.Wait()   // Wait for the threads to finish
 	return info, nil
 }
 
@@ -294,4 +315,112 @@ func collectCampaings(client goyad.Client) (res campaigns.GetResponse, err error
 	}
 
 	return result, nil
+}
+
+// addYandexAgencyAccounts_old adding all of agency clients as accounts to DB concurrently
+func addYandexAgencyAccounts_old(client goyad.Client, creator string) (info CreateInfo, err error) {
+
+	var YandexConnectionsLimit = 5
+	chAC := make(chan gc.ClientGetItem, 4) // channel's buffer is the number of simultaneous gorouitenes
+	var wg sync.WaitGroup
+	resultA, err := collectAgencyClients(client)
+	if err != nil {
+		logrus.Errorln("addYandexAgencyAccounts collectAgencyClients  error: ", err)
+		return info, err
+	}
+	for i := 0; i < YandexConnectionsLimit; i++ {
+		wg.Add(1)
+		go func() {
+			for {
+				ac, ok := <-chAC
+				if !ok { // if there is nothing to do and the channel has been closed then end the goroutine
+					wg.Done()
+					return
+				}
+				for _, c := range ac.Representatives {
+					//collecting ads campaigns from Yandex for every agency client
+					ci := goyad.NewClient()
+					ci.Login = c.Login
+					ci.Token = goyad.Token{Value: client.Token.GetToken()}
+					result, err := collectCampaings(ci)
+					if err != nil {
+						logrus.Errorf("cant collect campaings with parameters: collectCampaings(%s, %s) error: %v", ci.Login, ci.Token.GetToken(), err)
+					}
+
+					//creating new account for each of agency clients
+					a := model.NewAccount2(
+						creator,
+						"Яндекс Директ",
+						c.Login,
+						c.Email,
+					)
+					a.Role = "client"
+					a.Status = "active"
+					a.Owners = append([]string{}, creator)
+					a.AccountType = ac.Type
+					a.AuthToken = client.Token.GetToken()
+					a.AppID = Config.YandexDirectAppID
+					a.AppSecret = Config.YandexDirectAppSecret
+					a.CampaignsInfo = model.AdaptYandexCampaings(result)
+					a.CreatedAt = time.Now()
+					err = a.Update()
+					if err != nil {
+						logrus.Errorf("addYandexAgencyAccounts a.Update(%s) error: %v", c.Login, err)
+						return
+					}
+					var ids []int
+					for _, c := range a.CampaignsInfo {
+						ids = append(ids, c.ID)
+					}
+					account := yad.NewAccount(c.Login, client.Token.GetToken())
+					startTime := time.Now()
+					endTime := startTime.AddDate(-1, 0, 0)
+					statres, err := account.GetStatisticsConc(ids, endTime, startTime)
+					if err != nil {
+						logrus.Errorf("addYandexAgencyAccounts account.GetStatisticsConc %v error: %v", account, err)
+						return
+					}
+					err = model.SaveYandexStatistic(c.Login, statres)
+					if err != nil {
+						logrus.Errorf("addYandexAgencyAccounts account.GetStatisticsConc %v error: %v", account, err)
+						return
+					}
+				}
+			}
+		}()
+	}
+	var agencyClients []string
+	for _, c := range resultA.Clients {
+		//logrus.Infof("for resultA.Clients c: %v", c)
+		for _, info := range c.Representatives {
+			agencyClients = append(agencyClients, info.Login)
+		}
+		chAC <- c // add client to the queue
+	}
+	a := model.NewAccount2(
+		creator,
+		"Яндекс Директ",
+		client.Login,
+		client.Login+"@yandex.ru",
+	)
+	a.Creator = creator
+	a.Source = "Яндекс Директ"
+	a.Accountlogin = client.Login
+	a.Email = client.Login + "@yandex.ru"
+	a.Role = "agency"
+	a.Status = "active"
+	a.AgencyClients = agencyClients
+	a.Owners = []string{creator}
+	a.AuthToken = client.Token.GetToken()
+	a.AppID = Config.YandexDirectAppID
+	a.AppSecret = Config.YandexDirectAppSecret
+	a.CreatedAt = time.Now()
+	err = a.Update()
+	if err != nil {
+		logrus.Errorf("cant add account to DB %v \n error: %v", client.Login, err)
+		return info, err
+	}
+	close(chAC) // This tells the goroutines there's nothing else to do
+	wg.Wait()   // Wait for the threads to finish
+	return info, nil
 }

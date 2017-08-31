@@ -57,33 +57,35 @@
 		<button user="{{ .CurrentUser }}" result="resultstat" type="button" name="" id="yandex" class="btn btn-lg btn-success refreshstatistic">Получить статистику по аккаунту {{ .CurrentAccount.Accountlogin }}</button></div>
 	{{- else}}
 		<button user="{{ .CurrentUser }}" result="resultstat" type="button" name="" id="yandex" class="btn btn-lg btn-success refreshstatistic">Обновляем статистику по пользователю {{ .CurrentUser }}</button></div>
+</br>
+	<div>
+		Start date: <input type="text" id="cal_1">
+		End date: <input type="text" id="cal_2">
+
+		<script>
+            var picker = new Pikaday({
+                field: document.getElementById("cal_1"),
+                format: 'YYYY-MM-DD',
+                onSelect: function() {
+                    console.log(this.getMoment().format('YYYY-MM-DD'));
+                }
+            });
+            var picker2 = new Pikaday({
+                field: document.getElementById("cal_2"),
+                format: 'YYYY-MM-DD',
+                onSelect: function() {
+                    console.log(this.getMoment().format('YYYY-MM-DD'));
+                }
+            });
+		</script>
+	</div>
 	{{- end}}
 	{{- end}}
 	<div>
 
 	</div>
 		<div id="dateerror"></div>
-	<div>
-		Start date: <input type="text" id="cal_1">
-		End date: <input type="text" id="cal_2">
 
-<script>
-    var picker = new Pikaday({
-        field: document.getElementById("cal_1"),
-        format: 'YYYY-MM-DD',
-        onSelect: function() {
-            console.log(this.getMoment().format('YYYY-MM-DD'));
-        }
-    });
-	 var picker2 = new Pikaday({
-        field: document.getElementById("cal_2"),
-        format: 'YYYY-MM-DD',
-        onSelect: function() {
-            console.log(this.getMoment().format('YYYY-MM-DD'));
-        }
-    });
-</script>
-	</div>
 	
 	<div class="ajaxloader" style="margin: 0 auto; padding-top: 5px;  text-align: center; display:none">
 	<img id='imgcode' src='../static/img/loader.gif'/><p>Загружаем</p>

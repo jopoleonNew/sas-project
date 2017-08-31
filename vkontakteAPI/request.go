@@ -110,16 +110,32 @@ func (e *VKAPIError) Error() string {
 	return fmt.Sprintf("Error of VK API : %+v ", e.Error_)
 }
 
+//day (если period равен day) — день в формате YYYY-MM-DD
+//month (если period равен month) — день в формате YYYY-MM
+//overall (если period равен overall) — 1
+//spent — потраченные средства
+//impressions — просмотры
+//clicks — клики
+//reach (если ids_type равен ad или campaign и period равен day или month) — охват
+//video_views (если ids_type равен ad) — просмотры видеоролика (для видеорекламы)
+//video_views_half (если ids_type равен ad) — просмотры половины видеоролика (для видеорекламы)
+//video_views_full (если ids_type равен ad) — просмотры целого видеоролика (для видеорекламы)
+//video_clicks_site (если ids_type равен ad) — переходы на сайт рекламодателя из видеорекламы (для видеорекламы)
+//join_rate (если ids_type равен ad или campaign) — вступления в группу, событие, подписки на публичную страницу или установки приложения (только если в объявлении указана прямая ссылка на соответствующую страницу ВКонтакте)
 type AdStatistic struct {
 	Response []struct {
 		ID    int    `json:"id"`
 		Type  string `json:"type"`
 		Stats []struct {
-			Day         string `json:"day"`
-			Spent       string `json:"spent,omitempty"`
-			Impressions int    `json:"impressions"`
-			Clicks      int    `json:"clicks,omitempty"`
-			Reach       int    `json:"reach"`
+			Day              string      `json:"day"`
+			Spent            string      `json:"spent,omitempty"`
+			Impressions      interface{} `json:"impressions,omitempty"`
+			Clicks           int         `json:"clicks,omitempty"`
+			VideoViews       int         `json:"video_views,omitempty"`
+			VideoViews_half  int         `json:"video_views_half,omitempty"`
+			VideoViews_full  int         `json:"video_views_full,omitempty"`
+			VideoClicks_site int         `json:"video_clicks_site,omitempty"`
+			JoinRate         int         `json:"join_rate,omitempty"`
 		} `json:"stats"`
 	} `json:"response"`
 }

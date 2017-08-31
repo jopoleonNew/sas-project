@@ -56,63 +56,19 @@ $(document).ready(function () {
                         //     }
                         // }
                         console.log('Type of that data: ', typeof data);
-                        data = data.response;
-                        var m = []
-                        for (i in data) {
-                        	var objs2 = data[i];
-                            for (y in objs2.stats) {
-                                m.push(objs2.stats[y])
-							}
-                        }
-                        console.log("Debug m ",m);
+                        //data = data.response;
+                        // var m = []
+                        // for (i in data) {
+                        // 	var objs2 = data[i];
+                        //     for (y in objs2.stats) {
+                        //         m.push(objs2.stats[y])
+							// }
+                        // }
+                        // console.log("Debug m ",m);
                         var table = new KingTable({
                             element: document.getElementById("yandextable"),
-                            data: m,
-                            //columns: { id: data.id,}
-                            //     CampaignID: "ID РК",
-                            //     ClicksContext:"Количество кликов в РСЯ",
-                            //     ClicksSearch:"Количество кликов на поиске",
-                            //     SumSearch:"Стоимость кликов на поиске.",
-                            //     SessionDepthContext:"Глубина просмотра. РСЯ",
-                            //     SessionDepthSearch:"Глубина просмотра. Поиск",
-                            //     ShowsContext:"Количество показов в РСЯ",
-                            //     ShowsSearch:"Количество показов в Поиск",
-                            //     StatDate:"Дата",
-                            //     SumContext:"Стоимость кликов в РСЯ.",
-                            //     GoalConversionSearch:"% целевых визитов. Поиск",
-                            //     GoalConversionContext:"% целевых визитов. РСЯ",
-                            //     GoalCostSearch:"Стоимость ЛИДа. Поиск",
-                            //     GoalCostContext:"Стоимость ЛИДа. РСЯ"
-                            // }
-// 						"<th>ID РК</th>" +
-//						"<th>Количество кликов в РСЯ</th>" +
-//						"<th>Количество кликов на поиске</th>" +
-//						"<th>Стоимость клика на поиске</th>" +
-//						"<th>Глубина просмотра. РСЯ</th>" +
-//						"<th>Глубина просмотра. Поиск</th>" +
-//						"<th>Количество показов в РСЯ</th>" +
-//						"<th>Количество показов на поиске</th>" +
-//						"<th>Дата</th>" +
-//						"<th>Стоимость клика в РСЯ</th>" +
-//						"<th>% целевых визитов. Поиск</th>" +
-//						"<th>% целевых визитов. РСЯ</th>" +
-//						"<th>Стоимость ЛИДа. Поиск</th>" +
-//						"<th>Стоимость ЛИДа. РСЯ</th>" +
-//						"</tr></thead><tbody>"
-//                         "<td>" + objsd.CampaignID + "</td>" +
-//								"<td>" + objsd.ClicksContext + "</td>" +
-//								"<td>" + objsd.ClicksSearch + "</td>" +
-//								"<td>" + objsd.SumSearch + "</td>" +
-//								"<td>" + objsd.SessionDepthContext + "</td>" +
-//								"<td>" + objsd.SessionDepthSearch + "</td>" +
-//								"<td>" + objsd.ShowsContext + "</td>" +
-//								"<td>" + objsd.ShowsSearch + "</td>" +
-//								"<td>" + objsd.StatDate + "</td>" +
-//								"<td>" + objsd.SumContext + "</td>" +
-//								"<td>" + objsd.GoalConversionSearch + "</td>" +
-//								"<td>" + objsd.GoalConversionContext + "</p>" +
-//								"<td>" + objsd.GoalCostSearch + "</td>" +
-//								"<td>" + objsd.GoalCostContext + "</td>" + "</tr>")
+                            data: data,
+
                         });
                         table.render();
 
@@ -201,35 +157,6 @@ $(document).ready(function () {
 							GoalCostSearch:"Стоимость ЛИДа. Поиск",
                             GoalCostContext:"Стоимость ЛИДа. РСЯ"
                         }
-// 						"<th>ID РК</th>" +
-//						"<th>Количество кликов в РСЯ</th>" +
-//						"<th>Количество кликов на поиске</th>" +
-//						"<th>Стоимость клика на поиске</th>" +
-//						"<th>Глубина просмотра. РСЯ</th>" +
-//						"<th>Глубина просмотра. Поиск</th>" +
-//						"<th>Количество показов в РСЯ</th>" +
-//						"<th>Количество показов на поиске</th>" +
-//						"<th>Дата</th>" +
-//						"<th>Стоимость клика в РСЯ</th>" +
-//						"<th>% целевых визитов. Поиск</th>" +
-//						"<th>% целевых визитов. РСЯ</th>" +
-//						"<th>Стоимость ЛИДа. Поиск</th>" +
-//						"<th>Стоимость ЛИДа. РСЯ</th>" +
-//						"</tr></thead><tbody>"
-//                         "<td>" + objsd.CampaignID + "</td>" +
-//								"<td>" + objsd.ClicksContext + "</td>" +
-//								"<td>" + objsd.ClicksSearch + "</td>" +
-//								"<td>" + objsd.SumSearch + "</td>" +
-//								"<td>" + objsd.SessionDepthContext + "</td>" +
-//								"<td>" + objsd.SessionDepthSearch + "</td>" +
-//								"<td>" + objsd.ShowsContext + "</td>" +
-//								"<td>" + objsd.ShowsSearch + "</td>" +
-//								"<td>" + objsd.StatDate + "</td>" +
-//								"<td>" + objsd.SumContext + "</td>" +
-//								"<td>" + objsd.GoalConversionSearch + "</td>" +
-//								"<td>" + objsd.GoalConversionContext + "</p>" +
-//								"<td>" + objsd.GoalCostSearch + "</td>" +
-//								"<td>" + objsd.GoalCostContext + "</td>" + "</tr>")
 					});
 					table.render();
 					console.log('All data : ', data)

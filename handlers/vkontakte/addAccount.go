@@ -10,6 +10,8 @@ import (
 
 	"time"
 
+	"strings"
+
 	"github.com/sirupsen/logrus"
 	"gogs.itcloud.pro/SAS-project/sas/model"
 	vk "gogs.itcloud.pro/SAS-project/sas/vkontakteAPI"
@@ -56,14 +58,13 @@ func AddVKAccount(w http.ResponseWriter, r *http.Request) {
 		logrus.Errorf("AddVKAccount user.GetInfo(%s) error: %v", creator, err)
 		userInfo.Email = vktoken.Email
 	}
-
 	for _, acc := range accounts.Response {
 		// Depending on what type of account is it, collecting campaings from Vk API:
 		// basic account
 		if acc.AccountType == "general" {
 			err := addGeneralAccount(acc, vktoken.AccessToken, creator, userInfo.Email)
 			if err != nil {
-				logrus.Errorf("addGeneralAccount error: %v", creator, err)
+				logrus.Errorf("addGeneralAccount for creator %v error: %v", creator, err)
 				http.Error(w, fmt.Sprintf("can't add VK account %v, \n error: %+v:", acc, err), http.StatusBadRequest)
 				return
 			}
@@ -71,12 +72,13 @@ func AddVKAccount(w http.ResponseWriter, r *http.Request) {
 		// agency account
 		if acc.AccountType == "agency" {
 			logrus.Errorf("\n\n Adding Agency account is not implemented yet.")
+			http.Error(w, fmt.Sprintf("can't add VK account %v, \n error: %+v:", acc, "Adding Agency accounts is not implemented yet."), http.StatusBadRequest)
+			return
 		}
 	}
 	logrus.Infof("\n\n __New Account from Vk added successfully!")
 	http.Redirect(w, r, "/accounts", http.StatusSeeOther)
 	return
-
 }
 
 type VKCollector interface {
@@ -164,41 +166,40 @@ func addGeneralAccount(acc vk.AccountList, token, creator, email string) error {
 		logrus.Errorf("can't collectCampaigns for account %v, \n error: %v", acc, err)
 		return err
 	}
-
 	a.CampaignsInfo = model.AdaptVKCampaings(camps, strconv.Itoa(acc.AccountID))
 	//var ids []string
 	//for _, cm := range a.CampaignsInfo {
 	//	ids = append(ids, strconv.Itoa(cm.ID))
 	//}
 	//idsstr := strings.Join(ids, ", ")
-	time.Sleep(700 * time.Millisecond)
+	time.Sleep(1000 * time.Millisecond)
 	//p["campaign_id"] = "{\"" + idsstr + "\"}"
-	ads, err := collectAds(token, p)
+	var ads vk.Ads
+	ads, err = collectAds(token, p)
 	if err != nil {
 		logrus.Errorf("can't collectAds for account %v, \n error: %v", acc, err)
+		if strings.Contains(err.Error(), "ErrorCode:9") {
+			for i := 0; i < 3; i++ {
+				logrus.Warnf("Error of VK API Flood Control occurred. Making %v attempt to request VK API.", i)
+				time.Sleep(1000 * time.Millisecond)
+				ads, err = collectAds(token, p)
+				if err == nil {
+					break
+				}
+			}
+		}
 		return err
 	}
+	logrus.Infof("addGeneralAccount ADS: %+v", ads)
 	adaptedAds := model.AdaptVKAds(ads)
-	for _, c := range a.CampaignsInfo {
+	for i, c := range a.CampaignsInfo {
 		for _, ad := range adaptedAds {
 			if c.ID == ad.CampID {
-				c.Ads = append(c.Ads, ad)
+				a.CampaignsInfo[i].Ads = append(a.CampaignsInfo[i].Ads, ad)
 			}
 		}
 	}
-	//for i, c := range a.CampaignsInfo {
-	//	time.Sleep(700 * time.Millisecond)
-	//	p["campaign_id"] = "{\"" + strconv.Itoa(c.ID) + "\"}"
-	//	ads, err := collectAds(token, p)
-	//	if err != nil {
-	//		logrus.Errorf("can't collectAds for account %v, \n error: %v", acc, err)
-	//		return err
-	//	}
-	//	logrus.Infof("Collected Ads for campaing %v , : \n %s", c, ads)
-	//	c.Ads = model.AdaptVKAds(ads)
-	//	a.CampaignsInfo[i] = c
-	//}
-
+	logrus.Infof("addGeneralAccount adapted ADS: %+v", ads)
 	a.CreatedAt = time.Now()
 	if acc.AccountType == "general" {
 		a.Role = "client"
@@ -215,12 +216,40 @@ func addGeneralAccount(acc vk.AccountList, token, creator, email string) error {
 		logrus.Errorf("can't a.Update() for %a, \n error: %v", acc, err)
 		return err
 	}
+	// collecting statistic for ads of new account
+	var adids []string
+	for _, ad := range ads.Response {
+		adids = append(adids, ad.ID)
+	}
+	if len(adids) < 1999 {
+		p := make(map[string]string)
+		p["account_id"] = a.Accountlogin
+		p["ids_type"] = "ad"
+		p["ids"] = strings.Join(adids, ", ")
+		//p["ids_type"] = "campaign"
+		p["period"] = "day"
+		p["date_from"] = "0"
+		p["date_to"] = "0"
+		time.Sleep(700 * time.Millisecond)
+		res, err := collectStatistic(a.AuthToken, p)
+		if err != nil {
+			logrus.Errorf("addGeneralAccount collectStatistic error: %v", err)
+			//w.Write([]byte("CollectVKStatistic collectStatistic error: " + err.Error()))
+			return err
+		}
+		//logrus.Infof("Result from Statistic: %s", res)
+		err = model.SaveVKStatistic(a.Accountlogin, res)
+		if err != nil {
+			logrus.Errorf("addGeneralAccount model.SaveVKStatistic error: %v", err)
+			//w.Write([]byte("CollectVKStatistic model.SaveVKStatistic error: " + err.Error()))
+			return err
+		}
+	}
 	return nil
 }
 
 //collectCampaigns collects advertisement campaigns from VK API
 func collectCampaigns(token string, params map[string]string) (vk.AdsCampaigns, error) {
-
 	var camps vk.AdsCampaigns
 	resp, err := vk.Request(token, "ads.getCampaigns", params)
 	if err != nil {
@@ -229,7 +258,6 @@ func collectCampaigns(token string, params map[string]string) (vk.AdsCampaigns, 
 	}
 	if err := json.Unmarshal(resp, &camps); err != nil {
 		logrus.Errorf("can't unmarshal VK response from ads.getCampaigns, error: &v", err)
-
 		return camps, fmt.Errorf("collectCampaigns json.Unmarshal error: %v", err)
 	}
 	return camps, nil
@@ -263,7 +291,6 @@ func collectAds(token string, params map[string]string) (vk.Ads, error) {
 
 	if err := json.Unmarshal(resp, &ads); err != nil {
 		logrus.Errorf("can't unmarshal VK response from ads.getAds, error: &v", err)
-
 		return ads, fmt.Errorf("collectAds json.Unmarshal error: %v", err)
 	}
 	return ads, nil
