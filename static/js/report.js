@@ -47,14 +47,14 @@ $(document).ready(function () {
                             $("#yandextable").append("<p style='text-align: center; padding: 2px; font-size: 24px;'>В Яндексе нет данных за эти даты</p>");
                             return
                         }
-                        // for (accindex in data) {
-                        //     var objsd = data[accindex]
-                        //     for (field in objsd) {
-                        //         if (null === objsd[field] || objsd[field] == undefined || objsd[field] == "") {
-                        //             objsd[field] = 0;
-                        //         }
-                        //     }
-                        // }
+                        for (accindex in data) {
+                            var objsd = data[accindex]
+                            for (field in objsd) {
+                                if (null === objsd[field] || objsd[field] == undefined || objsd[field] == "") {
+                                    objsd[field] = 0;
+                                }
+                            }
+                        }
                         console.log('Type of that data: ', typeof data);
                         //data = data.response;
                         // var m = []

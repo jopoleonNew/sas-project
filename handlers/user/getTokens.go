@@ -8,6 +8,7 @@ import (
 
 	"github.com/gorilla/mux"
 
+	"github.com/sirupsen/logrus"
 	vkhandlers "gogs.itcloud.pro/SAS-project/sas/handlers/vkontakte"
 	yandexhandlers "gogs.itcloud.pro/SAS-project/sas/handlers/yandex"
 )
@@ -22,10 +23,13 @@ func GetToken(w http.ResponseWriter, r *http.Request) {
 	case "vkontakte":
 		ctx := context.WithValue(r.Context(), "source", "Вконтакте")
 		vkhandlers.AddVKAccount(w, r.WithContext(ctx))
+	case "adwords":
+		logrus.Warn("Something from AdWords: \n,", r)
 	case "youtube":
 		//ctx := context.WithValue(r.Context(), "source", "YouTube")
 		fmt.Fprintf(w, "YouTube account are not availiable now: %s", vars["source"])
 		return
+
 	case "":
 		log.Println("AddAccount Error: no source")
 		return

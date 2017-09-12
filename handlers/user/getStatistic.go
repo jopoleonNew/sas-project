@@ -39,6 +39,10 @@ func GetStatistic(w http.ResponseWriter, r *http.Request) {
 // GetAccountStat redirecting to handler for getting single account statistic
 func GetAccountStat(w http.ResponseWriter, r *http.Request) {
 	log.Println("GetAccountStat used")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+	w.Header().Set("Access-Control-Allow-Headers",
+		"Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	switch vars := mux.Vars(r); vars["source"] {
 	case "yandex", "Яндекс Директ", "Yandex":
 		ctx := context.WithValue(r.Context(), "source", "Яндекс Директ")
@@ -47,13 +51,14 @@ func GetAccountStat(w http.ResponseWriter, r *http.Request) {
 	case "vkontakte", "Вконтакте", "Vkontakte":
 		ctx := context.WithValue(r.Context(), "source", "Вконтакте")
 		vkhandlers.CollectVKStatistic(w, r.WithContext(ctx))
+	case "adwords", "Adwords", "AdWords":
+		fmt.Fprintf(w, "AdWords accounts are not availiable now: %s", vars["source"])
+		return
 	case "youtube":
 		//ctx := context.WithValue(r.Context(), "source", "YouTube")
 		fmt.Fprintf(w, "YouTube accounts are not availiable now: %s", vars["source"])
 		return
-	case "adwords", "Adwords", "AdWords":
-		fmt.Fprintf(w, "AdWords accounts are not availiable now: %s", vars["source"])
-		return
+
 	case "":
 		logrus.Error("AddAccount Error: no source")
 		return

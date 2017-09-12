@@ -34,7 +34,10 @@ type ss struct {
 func CollectVKStatistic(w http.ResponseWriter, r *http.Request) {
 	username := r.Context().Value("username").(string)
 	logrus.Println("CollectVKStatistic used with username: ", username)
-
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+	w.Header().Set("Access-Control-Allow-Headers",
+		"Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	//if request method is GET - parsing html template and sending it to response
 	if r.Method == "GET" {
 		logrus.Info("CollectVKStatistic  GET ", username)
@@ -73,7 +76,7 @@ func CollectVKStatistic(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprintf(w, err.Error())
 		}
 	}
-	//if request method is GET - getting statistic from db "statistic"
+	//if request method is POST - getting statistic from db "statistic"
 	if r.Method == "POST" {
 		logrus.Info("CollectVKStatistic  POST ", username)
 		query := r.URL.Query()
@@ -83,14 +86,6 @@ func CollectVKStatistic(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		accountlogin := query["login"][0]
-		//logrus.Infof("CollectVKStatistic used with POST: %v %v", username, accountlogin)
-		//a := model.NewAccount2("", "", accountlogin, "")
-		//_, err := a.GetInfo()
-		//if err != nil {
-		//	logrus.Errorf("ReportTemplateHandler a.GetInfo() %v error: %v", a, err)
-		//	http.Error(w, fmt.Sprintf("can't find in db Yandex account %v \n error: %+v:", a, err), http.StatusBadRequest)
-		//	return
-		//}
 		res, err := model.GetVKStatistic(accountlogin)
 		accinfo, err := model.NewAccount2("", "Vkontakte", accountlogin, "").GetInfo()
 		if err != nil {
@@ -98,6 +93,7 @@ func CollectVKStatistic(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte("CollectVKStatistic GetInfo() error: " + err.Error()))
 			return
 		}
+		//forming struct to return to user on his request
 		giveaway := []struct {
 			ID               int
 			Name             string

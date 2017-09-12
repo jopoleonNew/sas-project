@@ -118,11 +118,12 @@ func GetStatSliceHandler(w http.ResponseWriter, r *http.Request) {
 	//log.Println("GetStatSliceHandler AFTER for loop statsslice reqbytes: ", string(reqbytes))
 	w.Write(reqbytes)
 }
+
 func CollectYandexStatistic(w http.ResponseWriter, r *http.Request) {
 	username := r.Context().Value("username").(string)
 	log.Println("GetAccountStatistic used by", username)
 	if r.Method == "GET" {
-		logrus.Info("CollectVKStatistic  GET ", username)
+		logrus.Info("CollectYandexStatistic  GET ", username)
 		//vars := mux.Vars(r)
 		username := r.Context().Value("username").(string)
 		query := r.URL.Query()
@@ -151,7 +152,6 @@ func CollectYandexStatistic(w http.ResponseWriter, r *http.Request) {
 			log.Println(err)
 			fmt.Fprintf(w, err.Error())
 		}
-
 		err = t.Execute(w, data)
 		if err != nil {
 			log.Println(err)
@@ -159,22 +159,6 @@ func CollectYandexStatistic(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	if r.Method == "POST" {
-		//startdate := r.FormValue("startdate")
-		//enddate := r.FormValue("enddate")
-		//sttime, err := time.Parse(ctLayout, startdate)
-		//if err != nil {
-		//	logrus.Error("CollectYandexStatistic time.Parse error: ", err)
-		//	http.Error(w, fmt.Sprintf("cant parse recieved time value, :%v", err), http.StatusConflict)
-		//	return
-		//}
-		//endtime, err := time.Parse(ctLayout, enddate)
-		//if err != nil {
-		//	logrus.Error("CollectYandexStatistic time.Parse error: ", err)
-		//	http.Error(w, fmt.Sprintf("cant parse recieved time value, :%v", err), http.StatusConflict)
-		//	return
-		//}
-		//var data model.TemplateInfoStruct
-		//data.CurrentUser = username
 		query := r.URL.Query()
 		if query["login"] == nil || len(query["login"]) == 0 {
 			logrus.Error("CollectYandexStatistic GET request recieved without acclount login. ")
@@ -196,15 +180,60 @@ func CollectYandexStatistic(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, fmt.Sprintf("can't find in db 'statistic' stats of account %v \n error: %+v:", a, err), http.StatusBadRequest)
 			return
 		}
-		reqbytes, err := json.Marshal(statres)
+		type giveawayStat struct {
+			CampaignID            int            `json:"CampaignID"`
+			Name                  string         `json:"CampName"`
+			SessionDepthSearch    interface{}    `json:"SessionDepthSearch"`
+			SumSearch             float32        `json:"SumSearch"`
+			ClicksContext         int            `json:"ClicksContext"`
+			SessionDepthContext   interface{}    `json:"SessionDepthContext"`
+			StatDate              yad.YandexTime `json:"StatDate"`
+			GoalCostSearch        interface{}    `json:"GoalCostSearch"`
+			GoalConversionContext interface{}    `json:"GoalConversionContext"`
+			ShowsContext          interface{}    `json:"ShowsContext"`
+			SumContext            interface{}    `json:"SumContext"`
+			GoalConversionSearch  interface{}    `json:"GoalConversionSearch"`
+			ShowsSearch           interface{}    `json:"ShowsSearch"`
+			GoalCostContext       interface{}    `json:"GoalCostContext"`
+			ClicksSearch          int            `json:"ClicksSearch"`
+		}
+		giveaway := []giveawayStat{}
+
+		for _, mc := range info.CampaignsInfo {
+			for _, stat := range statres {
+				if mc.ID == stat.CampaignID {
+					giveaway = append(giveaway, giveawayStat{
+						CampaignID:            stat.CampaignID,
+						Name:                  mc.Name,
+						SessionDepthSearch:    stat.SessionDepthSearch,
+						SumSearch:             stat.SumSearch,
+						ClicksContext:         stat.ClicksContext,
+						SessionDepthContext:   stat.SessionDepthContext,
+						StatDate:              stat.StatDate,
+						GoalCostSearch:        stat.GoalCostSearch,
+						GoalConversionContext: stat.GoalConversionContext,
+						ShowsContext:          stat.ShowsContext,
+						SumContext:            stat.SumContext,
+						GoalConversionSearch:  stat.GoalConversionSearch,
+						ShowsSearch:           stat.ShowsSearch,
+						GoalCostContext:       stat.GoalCostContext,
+						ClicksSearch:          stat.ClicksSearch,
+					})
+				}
+			}
+		}
+		reqbytes, err := json.Marshal(giveaway)
 		if err != nil {
 			logrus.Errorf("GetYandexAccStat json.Marshal %v error: %v", statres, err)
 			http.Error(w, fmt.Sprintf("can't json.Marshal response from Yandex statistic \n error: %+v:", err), http.StatusBadRequest)
 			return
 		}
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+		w.Header().Set("Access-Control-Allow-Headers",
+			"Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 		w.Write(reqbytes)
 	}
-
 }
 
 func CollectYandexStatistic_old(w http.ResponseWriter, r *http.Request) {
