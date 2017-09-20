@@ -74,7 +74,7 @@ func GetYandexAccessToken(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		YandexConnectionsLimit := 10
-		chAC := make(chan yad.Client, 3) // This number 3 can be anything as long as it's larger than YandexConnectionsLimit
+		chAC := make(chan yad.ClientAg, 3) // This number 3 can be anything as long as it's larger than YandexConnectionsLimit
 		var wg sync.WaitGroup
 		// This starts number of goroutines that wait for add new account
 		// of agency and its campaings to DB

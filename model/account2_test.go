@@ -6,26 +6,49 @@ import (
 
 	"reflect"
 
-	"gogs.itcloud.pro/SAS-project/sas/app"
+	"time"
+
+	"fmt"
+
+	"github.com/sirupsen/logrus"
+	"gogs.itcloud.pro/SAS-project/sas/shared/config"
+	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
 
-func init() {
+var (
+	testDB  = "testDB"
+	cleanDB = make(chan bool)
+	done    = make(chan bool)
+)
 
-	err := app.InitConf("../configuration.json")
+func init() {
+	err := config.InitConf("../configuration.json")
 	if err != nil {
-		log.Fatalf("Reading test config file error: %v", err)
+		logrus.Fatalf("Reading test config file error: %v ", err)
 	}
-	var Config = app.GetConfig()
+	var Config = config.GetConfig()
 	log.Printf("TESTING CONFIG FILE MAIN: %+v", Config)
-	//StartMongoDB(*Config)
+	//StartMongoDB(*cfg)
 	//time.Sleep(5 * time.Second)
-	err = SetDBParams(Config.Mongourl, Config.DBname)
+	err = SetDBParams(Config.Mongourl, testDB)
 	if err != nil {
 		log.Fatalf("Test init SetDBParams error: %v", err)
 	}
 
+	go func() {
+		for {
+			<-cleanDB
+			fmt.Println("Inside gorutine loop")
+			cleanUpTest()
+			<-done
+			close(cleanDB)
+			break
+		}
+
+	}()
 }
+
 func TestNewAccount2(t *testing.T) {
 	newAcc := NewAccount2("t", "t", "t", "t")
 
@@ -43,6 +66,9 @@ func TestNewAccount2(t *testing.T) {
 
 	if newAcc.Accountlogin != "t" {
 		t.Fatalf("Wrong Accountlogin, got %s, expecte %s", newAcc.Accountlogin, "t")
+	}
+	if newAcc.Owners[0] != "t" {
+		t.Fatalf("Wrong Owners, got %s, expecte %s", newAcc.Owners[0], "t")
 	}
 	if newAcc.collName != "accountsList" {
 		t.Fatalf("Wrong Accountlogin, got %s, expecte %s", newAcc.Accountlogin, "t")
@@ -149,7 +175,7 @@ func TestAccount2_Remove(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	log.Printf("TestAccount2_Remove BEFORE remove: \n %+v \n", res)
+	//log.Printf("TestAccount2_Remove BEFORE remove: \n %+v \n", res)
 	err = a.Remove()
 	if err != nil {
 		t.Fatal(err)
@@ -161,8 +187,27 @@ func TestAccount2_Remove(t *testing.T) {
 	if reflect.DeepEqual(res1, res) {
 		t.Error("Results from base are equal, but they should not.")
 	}
-	log.Printf("TestAccount2_Remove AFTER remove: \n %+v \n", res)
-}
-func cleanUpTest() {
 
+	//logrus.Info("Using CleanDB")
+	//cleanDB <- true
+	//cleanUpTest()
+}
+
+//func TestcleanUpTest(t *testing.T) {
+//	cleanUpTest()
+//}
+func cleanUpTest() {
+	testDataBase := mgo.Database{
+		Name:    testDB,
+		Session: mainSession,
+	}
+
+	err := testDataBase.DropDatabase()
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("Test DB ", testDB, " droped.")
+	time.Sleep(10 * time.Millisecond)
+	done <- true
+	return
 }

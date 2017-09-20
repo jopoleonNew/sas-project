@@ -1,11 +1,13 @@
 package vkontakte
 
-import (
-	"gogs.itcloud.pro/SAS-project/sas/app"
-)
+var Config = struct {
+	VKAppID       string
+	VKAppSecret   string
+	VKRedirectURL string
+}{}
 
-var Config *app.ConfigType
-
-func SetParams(config *app.ConfigType) {
-	Config = config
+func SetParams(AppID, AppSecret, RedirectURL string) {
+	Config.VKAppID = AppID
+	Config.VKAppSecret = AppSecret
+	Config.VKRedirectURL = RedirectURL
 }

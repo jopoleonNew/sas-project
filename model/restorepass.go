@@ -1,9 +1,9 @@
 package model
 
 import (
-	"log"
 	"time"
 
+	"github.com/sirupsen/logrus"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -14,11 +14,8 @@ type RestorePass struct {
 	CreatedAt time.Time `json:"createdat" bson:"createdat,omitempty"`
 }
 
+// AddLinkKey creates new activation key document to restoreKeys collection with 5 hours TTL
 func AddLinkKey(email, linkkey string) error {
-	// We store only lowercase username
-	//username = strings.ToLower(username)
-	//log.Println("User.AdvanceUpdate() used with ", u)
-
 	s := mainSession.Clone()
 	defer s.Close()
 	c := s.DB(mainDB.Name).C("restoreKeys")
@@ -29,7 +26,7 @@ func AddLinkKey(email, linkkey string) error {
 	}
 	err := c.Insert(restoreStruct)
 	if err != nil {
-		log.Println("AddLinkKey c.Insert(restoreStruct) error: ", err)
+		logrus.Error("AddLinkKey c.Insert(restoreStruct) error: ", err)
 		return err
 	}
 	sessionTTL := mgo.Index{
@@ -44,30 +41,25 @@ func AddLinkKey(email, linkkey string) error {
 		if err.Error() != "Index with name: createdat_1 already exists with different options" {
 			return nil
 		} else {
-			log.Println("AddLinkKey c.EnsureIndex(sessionTTL) error: ", err)
+			logrus.Error("AddLinkKey c.EnsureIndex(sessionTTL) error: ", err)
 			return err
 		}
 	}
 	return nil
 }
 
+// MatchKey matches given key by user's email with created activation key
 func MatchKey(linkkey string) (email string, ok bool, err error) {
 	s := mainSession.Clone()
 	defer s.Close()
 	c := s.DB(mainDB.Name).C("restoreKeys")
-	//err := c.Find()
-	//pipeline := bson.M{
-	//	"$or": []interface{}{
-	//		bson.M{"email": u.Email},
-	//		bson.M{"username": u.Username},
-	//	},
-	//}
 	var result RestorePass
 	err = c.Find(bson.M{"secretkey": linkkey}).One(&result)
 	if err != nil {
 		return "", false, err
 	}
 	if result.SecretKey == linkkey {
+		// removing matching key, if it matches with given
 		err = c.Remove(bson.M{"secretkey": linkkey})
 		if err != nil {
 			return "", false, err

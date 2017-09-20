@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -48,7 +49,7 @@ func (a *Account) GetCampaignList() ([]Campaign, error) {
 	return result.Result.Campaigns, nil
 }
 
-func (a *Account) GetAgencyLogins() ([]Client, error) {
+func (a *Account) GetAgencyLogins() ([]ClientAg, error) {
 	url := apiURL + "/json/v5/agencyclients"
 	fieldNames := []string{"Login", "Representatives"}
 
@@ -86,8 +87,6 @@ func (a *Account) makeV5GetRequest(url string, fieldNames []string) ([]byte, err
 	if err != nil {
 		return nil, errors.New("json.Marshal error: " + err.Error())
 	}
-
-	client := &http.Client{}
 	r, err := http.NewRequest("POST", url, bytes.NewBuffer(reqbytes))
 	if err != nil {
 		return nil, errors.New("http.NewRequest error: " + err.Error())
@@ -100,8 +99,15 @@ func (a *Account) makeV5GetRequest(url string, fieldNames []string) ([]byte, err
 	r.Header.Add("Client-ID", application.ID)
 
 	//log.Println("makeV5GetRequest body Request: ", r)
-
-	resp, err := client.Do(r)
+	result, err := YPool.SendWork(r)
+	if err != nil {
+		return []byte{}, err
+	}
+	resp, ok := result.(*http.Response)
+	if !ok {
+		return []byte{}, fmt.Errorf("result from worker is not *http.Response type, %v ", result)
+	}
+	//resp, err := client.Do(r)
 
 	if err != nil {
 		return nil, errors.New("http.Request.Do error: " + err.Error())
@@ -141,22 +147,22 @@ func (a *Account) GetStatistics(ids []int, start, end string) ([]CampaignStat, e
 			EndDate:     end,
 		},
 	}
-
 	reqbytes, err := json.Marshal(req)
 	if err != nil {
 		return nil, errors.New("GetStatistics json.Marshal error: " + err.Error())
 	}
-
-	client := http.Client{}
 	r, err := http.NewRequest("POST", url, bytes.NewBuffer(reqbytes))
 	if err != nil {
 		return nil, errors.New("GetStatistics http.NewRequest error: " + err.Error())
 	}
 	r.Header.Add("Content-Type", "application/json; charset=utf-8")
-	//log.Println("GetStatistics body Request: ", r)
-	resp, err := client.Do(r)
+	resultWork, err := YPool.SendWork(r)
 	if err != nil {
-		return nil, errors.New("GetStatistics http.Request.Do error: " + err.Error())
+		return nil, err
+	}
+	resp, ok := resultWork.(*http.Response)
+	if !ok {
+		return nil, fmt.Errorf("result from worker is not *http.Response type, %v ", resultWork)
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
@@ -173,25 +179,21 @@ func (a *Account) GetStatistics(ids []int, start, end string) ([]CampaignStat, e
 			return nil, errors.New("GetStatisticsConc json.Unmarshal error:  " + err.Error())
 		}
 		//ErrorCode, _ := strconv.Atoi(errresult.ErrorCode)
-		return nil, errors.New("GetStatistics Yandex Direct API error: " + strconv.Itoa(errresult.ErrorCode) + " " + errresult.ErrorDescription + errresult.ErrorDetail)
+		return nil, errors.New("GetStatistics Yandex Direct API error: " + strconv.Itoa(errresult.ErrorCode) + " " + errresult.ErrorDescription + " " + errresult.ErrorDetail)
 	}
 	result := new(ResultV4CampStat)
 	err = json.Unmarshal(body, &result)
-	//log.Println("GetStatistics body response: ", string(body))
 	if err != nil {
 		return nil, errors.New("GetStatistics json.Unmarshal error: " + err.Error())
 	}
-	log.Printf("GetStatistics body response: %+v", result)
 
 	return result.Data, nil
 }
 
 func (a *Account) GetStatisticsConc(ids []int, start, end time.Time) ([]CampaignStat, error) {
-	//url := apiURL + "/v4/json"
-
 	fomrmatstart := start.Format(ctLayout)
 	formatend := end.Format(ctLayout)
-	StartGetStatisticsConc := time.Now()
+
 	// Checking yandex conditions:
 	// The number of strings in the method response should not exceed 1000
 	// Number of Campaigns IDs * Days in statistic request < YandexStatThreshold = ~1000
@@ -213,9 +215,10 @@ func (a *Account) GetStatisticsConc(ids []int, start, end time.Time) ([]Campaign
 		log.Println("The number of string: ", int(days)*len(ids))
 		sort.Ints(ids)
 		//log.Printf("%#v", ids)
-		var BigErr error
+
 		var NewIds []int
 		var statsslice []CampaignStat
+		resultChan := make(chan []CampaignStat)
 		// super advanced splitting algorithm
 		idThreshold := (YandexStatThreshold / int(days))
 		// itersAmount - number of iterations to cover all campaings ids
@@ -223,8 +226,15 @@ func (a *Account) GetStatisticsConc(ids []int, start, end time.Time) ([]Campaign
 		wg := sync.WaitGroup{}
 		//wg.Add(itersAmount)
 		// make buffered chanel to control amount of simultaneous goroutines
-		sema := make(chan struct{}, 5)
+		//sema := make(chan struct{}, 5)
 
+		// starting goroutine to listen result channel (resultChan) for appending full
+		// account statistic for later return as result
+		go func() {
+			for res := range resultChan {
+				statsslice = append(statsslice, res...)
+			}
+		}()
 		for j := 0; j < itersAmount; j++ {
 			var reqIds []int
 			for i := idThreshold * j; i < idThreshold*(j+1) && i < (len(ids)); i++ {
@@ -233,156 +243,31 @@ func (a *Account) GetStatisticsConc(ids []int, start, end time.Time) ([]Campaign
 				NewIds = append(NewIds, ids[i])
 			}
 
-			// because of YandexDirectAPI limitation on simultaneous connections
-			// make add only 5 goroutines:
-			// Технические ограничения
-			// Допускается не более пяти (5) одновременных запросов к API от лица одного пользователя.
-
 			wg.Add(1)
-			go func() {
-				defer wg.Done()
-				sema <- struct{}{}
-				defer func() { <-sema }()
-				resultStatistic, err := a.GetStatistics(reqIds, fomrmatstart, formatend)
-				if err != nil {
-					logrus.Error("GetStatisticsConc GetStatistics error: ", err)
-					return
+			go func(ids []int, start, end string) {
+				if len(ids) != 0 {
+					resultStatistic, err := a.GetStatistics(reqIds, start, end)
+					if err != nil {
+						logrus.Error("GetStatisticsConc GetStatistics error: ", err)
+						return
+					}
+					resultChan <- resultStatistic
+					//statsslice = append(statsslice, resultStatistic...)
+				} else {
+					logrus.Warn("a.GetStatistics(reqIds) reqIds is 0 length: ", reqIds)
+					resultChan <- []CampaignStat{}
+					//statsslice = append(statsslice, []CampaignStat{}...)
 				}
-				//req := &RequestV4{
-				//	Method: "GetSummaryStat",
-				//	Token:  a.OAuthToken,
-				//	ParamV4: &ParamV4{
-				//		CampaignIDS: reqIds,
-				//		StartDate:   fomrmatstart,
-				//		EndDate:     formatend,
-				//	},
-				//}
-				//
-				//reqbytes, err := json.Marshal(req)
-				//if err != nil {
-				//	BigErr = errors.New("GetStatisticsConc json.Marshal error: " + err.Error())
-				//	return
-				//}
-				//
-				//client := http.Client{}
-				//r, err := http.NewRequest("POST", url, bytes.NewBuffer(reqbytes))
-				//if err != nil {
-				//	BigErr = errors.New("GetStatisticsConc http.NewRequest error: " + err.Error())
-				//	return
-				//}
-				//r.Header.Add("Content-Type", "application/json; charset=utf-8")
-				//
-				////log.Println("GetStatistics body Request: ", r)
-				//
-				//sentreq := time.Now()
-				//resp, err := client.Do(r)
-				//if err != nil {
-				//	BigErr = errors.New("GetStatisticsConc http.Request.Do error: " + err.Error())
-				//	return
-				//}
-				//defer resp.Body.Close()
-				//body, err := ioutil.ReadAll(resp.Body)
-				//if err != nil {
-				//	BigErr = errors.New("GetStatisticsConc ioutil.ReadAll error: " + err.Error())
-				//	return
-				//}
-				//if string(body) == "" {
-				//	BigErr = errors.New("GetStatisticsConc body response is empty")
-				//	return
-				//}
-				//if strings.Contains(string(body), "error") {
-				//	var errresult = YandexV4Error{}
-				//	err := json.Unmarshal(body, &errresult)
-				//	if err != nil {
-				//		BigErr = errors.New("GetStatisticsConc json.Unmarshal error:  " + err.Error())
-				//		return
-				//	}
-				//	//ErrorCode, _ := strconv.Atoi(errresult.ErrorCode)
-				//	BigErr = errors.New("GetStatistics Yandex Direct API error: " + strconv.Itoa(errresult.ErrorCode) + " " + errresult.ErrorDescription + errresult.ErrorDetail)
-				//	return
-				//}
-				//getreq := time.Since(sentreq)
-				//
-				//log.Println("\n\n  TIME YANDEX REQEST : ", getreq.Seconds())
-				//
-				//result := new(ResultV4CampStat)
-				//
-				//err = json.Unmarshal(body, &result)
-				//if err != nil {
-				//	BigErr = errors.New("GetStatistics json.Unmarshal error: " + err.Error())
-				//	return
-				//}
-				statsslice = append(statsslice, resultStatistic...)
-			}()
+				wg.Done()
+			}(reqIds, fomrmatstart, formatend)
 		}
-		wg.Wait()
-		//close(respChan)
-		if BigErr != nil {
-			return nil, BigErr
-		}
-		log.Println("Returning statsslice time (StartGetStatisticsConc):\n ", time.Since(StartGetStatisticsConc))
 
+		wg.Wait()
+		close(resultChan)
 		return statsslice, nil
-		//return nil, errors.New(">>>>>>>>>The number of strings in the method response should not exceed 1000")
 
 	}
 
-	//req := &RequestV4{
-	//	Method: "GetSummaryStat",
-	//	Token:  a.OAuthToken,
-	//	ParamV4: &ParamV4{
-	//		CampaignIDS: ids,
-	//		StartDate:   fomrmatstart,
-	//		EndDate:     formatend,
-	//	},
-	//}
-	//
-	//reqbytes, err := json.Marshal(req)
-	//if err != nil {
-	//	return nil, errors.New("GetStatisticsConc json.Marshal error: " + err.Error())
-	//}
-	//
-	//client := http.Client{}
-	//r, err := http.NewRequest("POST", url, bytes.NewBuffer(reqbytes))
-	//if err != nil {
-	//	return nil, errors.New("GetStatisticsConc http.NewRequest error: " + err.Error())
-	//}
-	//r.Header.Add("Content-Type", "application/json; charset=utf-8")
-	////log.Println("GetStatisticsConc body Request: ", r)
-	////sentreq := time.Now()
-	////log.Println("GetStatisticsConc client.Do request body ", r)
-	//resp, err := client.Do(r)
-	//if err != nil {
-	//	return nil, errors.New("GetStatisticsConc http.Request.Do error: " + err.Error())
-	//}
-	//defer resp.Body.Close()
-	//body, err := ioutil.ReadAll(resp.Body)
-	//if err != nil {
-	//	return nil, errors.New("GetStatisticsConc ioutil.ReadAll error: " + err.Error())
-	//}
-	//if string(body) == "" {
-	//	return nil, errors.New("GetStatisticsConc body response is empty")
-	//}
-	//if strings.Contains(string(body), "error") {
-	//	var errresult = YandexV4Error{}
-	//	err := json.Unmarshal(body, &errresult)
-	//	if err != nil {
-	//		return nil, errors.New("GetStatisticsConc json.Unmarshal error:  " + err.Error())
-	//	}
-	//	//ErrorCode, _ := strconv.Atoi(errresult.ErrorCode)
-	//	return nil, errors.New("GetStatistics Yandex Direct API error: " + strconv.Itoa(errresult.ErrorCode) + " " + errresult.ErrorDescription + errresult.ErrorDetail)
-	//}
-	////log.Println("GetStatisticsConc client.Do body response ", string(body))
-	//
-	////getreq := sentreq.Sub(sentreq)
-	////log.Println("\n\n$$$$  TIME YANDEX REQEST : ", time.Since(sentreq))
-	//log.Println("Returning statsslice time without concurrenc :\n ", time.Since(StartGetStatisticsConc))
-	//result := new(ResultV4CampStat)
-	//err = json.Unmarshal(body, &result)
-	////log.Println("GetStatistics body response: ", string(body))
-	//if err != nil {
-	//	return nil, errors.New("GetStatisticsConc json.Unmarshal error: " + err.Error())
-	//}
 	resultStatistic, err := a.GetStatistics(ids, fomrmatstart, formatend)
 	if err != nil {
 		return nil, errors.New("GetStatisticsConc a.GetStatistics error: " + err.Error())

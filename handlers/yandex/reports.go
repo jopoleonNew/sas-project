@@ -19,7 +19,7 @@ func ReportTemplateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var data model.TemplateInfoStruct
+	var data model.TemplateInfo
 	data.CurrentUser = username
 	//acc := model.NewAccount()
 	//acc.Username = username

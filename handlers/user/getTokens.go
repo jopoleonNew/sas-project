@@ -29,7 +29,6 @@ func GetToken(w http.ResponseWriter, r *http.Request) {
 		//ctx := context.WithValue(r.Context(), "source", "YouTube")
 		fmt.Fprintf(w, "YouTube account are not availiable now: %s", vars["source"])
 		return
-
 	case "":
 		log.Println("AddAccount Error: no source")
 		return

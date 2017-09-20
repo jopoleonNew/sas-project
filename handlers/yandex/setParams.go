@@ -1,17 +1,14 @@
 package yandex
 
-import (
-	"gogs.itcloud.pro/SAS-project/sas/app"
+//var Config *configuration.ConfigType
+var Config = struct {
+	YandexDirectAppID     string
+	YandexDirectAppSecret string
+}{}
 
-	"github.com/gorilla/sessions"
-)
+func SetParams(AppID, AppSecret string) {
 
-var Config *app.ConfigType
-var store *sessions.CookieStore
+	Config.YandexDirectAppID = AppID
+	Config.YandexDirectAppSecret = AppSecret
 
-func SetParams(config *app.ConfigType) {
-
-	Config = config
-
-	store = sessions.NewCookieStore([]byte(config.SessionSecret))
 }

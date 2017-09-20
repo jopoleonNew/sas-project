@@ -2,15 +2,14 @@ package user
 
 import (
 	"github.com/gorilla/sessions"
-	"gogs.itcloud.pro/SAS-project/sas/app"
 )
 
-var Config *app.ConfigType
+//var Config *config.ConfigType
 var store *sessions.CookieStore
 
-func SetParams(config *app.ConfigType) {
+//var store = session.GetSession()
 
-	Config = config
-
-	store = sessions.NewCookieStore([]byte(config.SessionSecret))
+func SetParams(sessionSecret string) {
+	//Config = c
+	store = sessions.NewCookieStore([]byte(sessionSecret))
 }

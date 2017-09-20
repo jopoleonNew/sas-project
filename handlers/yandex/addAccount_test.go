@@ -12,9 +12,13 @@ import (
 
 	"io/ioutil"
 
-	api "github.com/nk2ge5k/goyad"
-	"github.com/nk2ge5k/goyad/campaigns"
+	api "gogs.itcloud.pro/SAS-project/sas/yandexDirectAPI"
+	"gogs.itcloud.pro/SAS-project/sas/yandexDirectAPI/campaigns"
 )
+
+func init() {
+	api.InitPool(5)
+}
 
 var testAccount []byte
 

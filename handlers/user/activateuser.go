@@ -35,7 +35,7 @@ func ActivateUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	if uInfo.ActivationKey == akey[0] {
 		user.IsActivated = "true"
-		user.AdvanceUpdate()
+		user.Update()
 		//w.Header().Set("message", "User "+user.Username+" successfully activated")
 		http.Redirect(w, r, "/", 301)
 	} else {

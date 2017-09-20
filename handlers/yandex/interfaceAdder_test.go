@@ -17,18 +17,17 @@ import (
 
 	"errors"
 
-	"github.com/nk2ge5k/goyad"
-	"github.com/nk2ge5k/goyad/agencyclients"
-	"github.com/nk2ge5k/goyad/campaigns"
-	"github.com/nk2ge5k/goyad/clients"
-	"github.com/nk2ge5k/goyad/gc"
 	"github.com/sirupsen/logrus"
 	"gogs.itcloud.pro/SAS-project/sas/model"
 	"gogs.itcloud.pro/SAS-project/sas/yandexDirectAPI"
+	"gogs.itcloud.pro/SAS-project/sas/yandexDirectAPI/agencyclients"
+	"gogs.itcloud.pro/SAS-project/sas/yandexDirectAPI/campaigns"
+	"gogs.itcloud.pro/SAS-project/sas/yandexDirectAPI/clients"
+	"gogs.itcloud.pro/SAS-project/sas/yandexDirectAPI/gc"
 )
 
 //type yclient struct {
-//	goyad.Client
+//	yad.Client
 //	AuthURL     string
 //	RedirectURL string
 //	ApiURL      string
@@ -44,7 +43,7 @@ func TestYclient_ParseURL(t *testing.T) {
 	//
 	//defer ts.Close()
 	var tc yclient
-	tc.Token = goyad.Token{Value: "123"}
+	tc.Token = yad.Token{Value: "123"}
 	tc.ApiURL = "localhost:8080"
 	tc.Login = "t"
 
@@ -92,37 +91,10 @@ func TestYclient_ParseURL(t *testing.T) {
 
 func TestYclient_GetToken(t *testing.T) {
 	var tcli yclient
-	//tcli.Token = goyad.Token{Value: "123"}
+	//tcli.Token = yad.Token{Value: "123"}
 	tcli.ApiURL = "/"
 	tcli.Login = "t"
-	//tt := []struct {
-	//	url string
-	//	res struct {
-	//		token string
-	//		err   error
-	//	}
-	//	expected struct {
-	//		msg string
-	//		err error
-	//	}
-	//}{
-	//	{url: "/good", res: struct {
-	//		token string
-	//		err   error
-	//	}{token: "123", err: errors.New("no error")}},
-	//	{url: "/returnerr", res: struct {
-	//		token string
-	//		err   error
-	//	}{token: "123", err: errors.New("no error")}},
-	//	{url: "/codeerr", res: struct {
-	//		token string
-	//		err   error
-	//	}{token: "123", err: errors.New("no error")}},
-	//	{url: "/bad", res: struct {
-	//		token string
-	//		err   error
-	//	}{token: "123", err: errors.New("no error")}},
-	//}
+
 	tserv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Requestid", "12344")
 
@@ -210,7 +182,7 @@ func TestYclient_CollectCampaigns(t *testing.T) {
 	var tcli yclient
 	tcli.ApiUrl = ts.URL + "/"
 	tcli.Login = "t"
-	tcli.Token = goyad.Token{Value: "123"}
+	tcli.Token = yad.Token{Value: "123"}
 	resp, err := tcli.CollectCampaigns()
 	if err != nil {
 		t.Fatalf("tcli.CollectCampaigns() error: %v", err)
@@ -271,7 +243,7 @@ func TestYclient_CollectAgencyClients(t *testing.T) {
 	var tcli yclient
 	tcli.ApiUrl = ts.URL + "/"
 	tcli.Login = "t"
-	tcli.Token = goyad.Token{Value: "123"}
+	tcli.Token = yad.Token{Value: "123"}
 	resp, err := tcli.CollectAgencyClients()
 	if err != nil {
 		t.Fatalf("tcli.CollectCampaigns() error: %v", err)
@@ -314,7 +286,7 @@ func TestYclient_CollectClientInfo(t *testing.T) {
 	var tcli yclient
 	tcli.ApiUrl = ts.URL + "/"
 	tcli.Login = "t"
-	tcli.Token = goyad.Token{Value: "123"}
+	tcli.Token = yad.Token{Value: "123"}
 	resp, err := tcli.CollectClientInfo()
 	if err != nil {
 		t.Fatalf("tcli.CollectCampaigns() error: %v", err)
@@ -366,10 +338,10 @@ func TestYclient_CollectAccountandAddtoBD(t *testing.T) {
 		fmt.Fprintln(w, "{\"result\":{53}}")
 	}))
 	defer ts.Close()
-	//tcli.Token = goyad.Token{Value: "123"}
+	//tcli.Token = yad.Token{Value: "123"}
 	tcli.ApiUrl = ts.URL + "/"
 	tcli.Login = "t"
-	tcli.Token = goyad.Token{Value: "123"}
+	tcli.Token = yad.Token{Value: "123"}
 	fakeDb := FakeAdder{}
 	_, err := tcli.CollectAccountandAddtoBD(&fakeDb)
 	if err != nil {

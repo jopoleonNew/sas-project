@@ -11,15 +11,14 @@ import (
 	"sync"
 	"time"
 
-	"github.com/nk2ge5k/goyad"
-	"github.com/nk2ge5k/goyad/ads"
-	"github.com/nk2ge5k/goyad/agencyclients"
-	"github.com/nk2ge5k/goyad/campaigns"
-	"github.com/nk2ge5k/goyad/clients"
-	"github.com/nk2ge5k/goyad/gc"
 	"github.com/sirupsen/logrus"
 	"gogs.itcloud.pro/SAS-project/sas/model"
 	yad "gogs.itcloud.pro/SAS-project/sas/yandexDirectAPI"
+	"gogs.itcloud.pro/SAS-project/sas/yandexDirectAPI/ads"
+	"gogs.itcloud.pro/SAS-project/sas/yandexDirectAPI/agencyclients"
+	"gogs.itcloud.pro/SAS-project/sas/yandexDirectAPI/campaigns"
+	"gogs.itcloud.pro/SAS-project/sas/yandexDirectAPI/clients"
+	"gogs.itcloud.pro/SAS-project/sas/yandexDirectAPI/gc"
 )
 
 type YandexAccountAdder interface {
@@ -34,7 +33,7 @@ type YandexAccountAdder interface {
 }
 
 type yclient struct {
-	goyad.Client
+	yad.Client
 	AuthURL     string
 	RedirectURL string
 	ApiURL      string
@@ -66,7 +65,7 @@ func (c *yclient) AddYandexAccount(w http.ResponseWriter, r *http.Request) {
 	}
 	c.Creator = creator
 	c.Login = urlValues["accountlogin"]
-	c.Token = goyad.Token{Value: token.AccessToken}
+	c.Token = yad.Token{Value: token.AccessToken}
 	//db := DBstruct{}
 	newCli := yclient{}
 	_, err = c.CollectAccountandAddtoBD(&newCli)
@@ -158,7 +157,7 @@ func (c *yclient) CollectAccountandAddtoBD(db AccountAdder) (info CreateInfo, er
 		// to add is agency, so we must collect agency's clients and then
 		// add new account in DB for each of agency client
 		if strings.Contains(err.Error(), "53") {
-			var client goyad.Client
+			var client yad.Client
 			client.Token = c.Token
 			client.Login = c.Login
 			client.ApiUrl = c.ApiUrl
@@ -211,7 +210,7 @@ func (c *yclient) AddYandexAgencyAccounts(db AccountAdder) (info CreateInfo, err
 	var connectionsLimit = 5
 	chAC := make(chan gc.ClientGetItem, 4) // channel's buffer is the number of simultaneous gorouitenes
 	var wg sync.WaitGroup
-	var client goyad.Client
+	var client yad.Client
 	client.Token = c.Token
 	client.Login = c.Login
 	client.ApiUrl = c.ApiUrl
@@ -231,9 +230,9 @@ func (c *yclient) AddYandexAgencyAccounts(db AccountAdder) (info CreateInfo, err
 				}
 				for _, agencyClient := range ac.Representatives {
 					//collecting ads campaigns from Yandex for every agency client
-					ci := goyad.NewClient()
+					ci := yad.NewClient()
 					ci.Login = agencyClient.Login
-					ci.Token = goyad.Token{Value: client.Token.GetToken()}
+					ci.Token = yad.Token{Value: client.Token.GetToken()}
 					result, err := collectCampaings(ci)
 					if err != nil {
 						logrus.Errorf("cant collect campaings with parameters: collectCampaings(%s, %s) error: %v", ci.Login, ci.Token.GetToken(), err)
@@ -311,7 +310,7 @@ func (c *yclient) CollectClientInfo() (res clients.GetResponse, err error) {
 			"Type",
 		},
 	}
-	var yc goyad.Client
+	var yc yad.Client
 	yc.Token = c.Token
 	yc.Login = c.Login
 	yc.ApiUrl = c.ApiUrl
@@ -334,7 +333,7 @@ func (c *yclient) CollectCampaigns() (res campaigns.GetResponse, err error) {
 			"Type",
 		},
 	}
-	var yc goyad.Client
+	var yc yad.Client
 	yc.Token = c.Token
 	yc.Login = c.Login
 	yc.ApiUrl = c.ApiUrl
@@ -351,7 +350,7 @@ func (c *yclient) CollectAgencyClients() (res agencyclients.GetResponse, err err
 			"AccountQuality", "ClientId", "ClientInfo", "Login", "Phone", "Representatives", "Restrictions", "Type",
 		},
 	}
-	var yc goyad.Client
+	var yc yad.Client
 	yc.Token = c.Token
 	yc.Login = c.Login
 	yc.ApiUrl = c.ApiUrl
@@ -403,7 +402,7 @@ func (c *yclient) AddAccToDB(a model.Account2) error {
 //		}
 //		c.Creator = creator
 //		c.Login = urlValues["accountlogin"]
-//		c.Token = goyad.Token{Value: token.AccessToken}
+//		c.Token = yad.Token{Value: token.AccessToken}
 //	//	db := DBstruct{}
 //		_, err = cc.CollectAccountandAddtoBD(c)
 //		if err != nil {

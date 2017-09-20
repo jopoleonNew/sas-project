@@ -50,7 +50,7 @@ package model
 //	acc.AgencyClients = []string{"test"}
 //	testcamp := []Campaign{}
 //	acc.CampaignsInfo = testcamp
-//	err = acc.AdvanceUpdate()
+//	err = acc.Update()
 //	if err != nil {
 //		t.Error(err)
 //	}
@@ -112,7 +112,7 @@ package model
 //	if exist != expected {
 //		t.Fatalf("Expected %v, got %v", expected, exist)
 //	}
-//	err = acc.AdvanceUpdate()
+//	err = acc.Update()
 //	if err != nil {
 //		t.Error(err)
 //	}
@@ -147,7 +147,7 @@ package model
 //	acc.AgencyClients = []string{"test"}
 //	testcamp := []Campaign{}
 //	acc.CampaignsInfo = testcamp
-//	err = acc.AdvanceUpdate()
+//	err = acc.Update()
 //	if err != nil {
 //		t.Error(err)
 //	}
@@ -184,7 +184,7 @@ package model
 ////	acc.Accountlogin = "test"
 ////	acc.Source = "test"
 ////	acc.YandexRole = "test"
-////	err = acc.AdvanceUpdate()
+////	err = acc.Update()
 ////	if err != nil {
 ////		b.Error(err)
 ////	}

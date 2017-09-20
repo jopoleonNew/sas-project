@@ -12,19 +12,19 @@ import (
 
 var Config *app.ConfigType
 
-//var DBname = Config.DBname
-//var mongoUrl = Config.Mongourl
+//var DBname = cfg.DBname
+//var mongoUrl = cfg.Mongourl
 
 //var DB *mgo.Session
-//var MongoDBHosts = Config.Mongourl
+//var MongoDBHosts = cfg.Mongourl
 
 // const (
-// 	MongoDBHosts = Config.Mongourl
+// 	MongoDBHosts = cfg.Mongourl
 // 	TestDatabase = "DevBase"
 // )
 //
 //func InitMongo() {
-//	Config = app.GetConfig()
+//	cfg = app.GetConfig()
 //	go func() {
 //		if err := StartMgo(); err != nil {
 //			log.Fatal(err)

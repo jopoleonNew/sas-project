@@ -3,11 +3,71 @@ package model
 import (
 	"log"
 	"strconv"
-	//"git.itcloud.pro/egortictac/sas/model"
+	"time"
+
+	"github.com/sirupsen/logrus"
 	"gogs.itcloud.pro/SAS-project/sas/vkontakteAPI"
 	"gogs.itcloud.pro/SAS-project/sas/yandexDirectAPI"
 )
 
+type YandexTime struct {
+	Time time.Time
+}
+
+const ctLayout = "2006-01-02"
+
+func (ct *YandexTime) UnmarshalJSON(b []byte) (err error) {
+	if b[0] == '"' && b[len(b)-1] == '"' {
+		b = b[1 : len(b)-1]
+	}
+	ct.Time, err = time.Parse(ctLayout, string(b))
+	if err != nil {
+		logrus.Fatal("models YandexTime UnmarshalJSON time.Parse error: ", err)
+		return err
+	}
+	return nil
+}
+
+func (ct *YandexTime) MarshalJSON() ([]byte, error) {
+	// if ct.Time.UnixNano() == nilTime {
+	// 	return []byte("null"), nil
+	// }
+	return []byte(strconv.Quote(ct.Time.Format(ctLayout))), nil
+}
+
+type StatisticDataType struct {
+	SessionDepthSearch    interface{} `json:"SessionDepthSearch"`
+	SumSearch             float32     `json:"SumSearch"`
+	ClicksContext         int         `json:"ClicksContext"`
+	SessionDepthContext   interface{} `json:"SessionDepthContext"`
+	StatDate              YandexTime  `json:"StatDate"`
+	GoalCostSearch        interface{} `json:"GoalCostSearch"`
+	GoalConversionContext interface{} `json:"GoalConversionContext"`
+	ShowsContext          interface{} `json:"ShowsContext"`
+	SumContext            interface{} `json:"SumContext"`
+	GoalConversionSearch  interface{} `json:"GoalConversionSearch"`
+	ShowsSearch           interface{} `json:"ShowsSearch"`
+	CampaignID            int         `json:"CampaignID"`
+	GoalCostContext       interface{} `json:"GoalCostContext"`
+	ClicksSearch          int         `json:"ClicksSearch"`
+}
+
+type GetSummaryStatRes struct {
+	Data []StatisticDataType `json:"Data"`
+}
+
+//implementing Sort.sort interface for GetSummaryStatRes struct
+func (p GetSummaryStatRes) Len() int {
+	return len(p.Data)
+}
+
+func (p GetSummaryStatRes) Less(i, j int) bool {
+	return p.Data[i].StatDate.Time.Before(p.Data[j].StatDate.Time)
+}
+
+func (p GetSummaryStatRes) Swap(i, j int) {
+	p.Data[i], p.Data[j] = p.Data[j], p.Data[i]
+}
 func MakeStatisticCollection(username, acclogin string, campaingStat GetSummaryStatRes) error {
 	log.Println("MakeStatisticCollection used")
 

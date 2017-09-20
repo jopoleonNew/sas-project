@@ -1,4 +1,6 @@
-package app
+//
+
+package config
 
 import (
 	"encoding/json"
@@ -6,6 +8,8 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+
+	"github.com/sirupsen/logrus"
 
 	mgo "gopkg.in/mgo.v2"
 )
@@ -27,11 +31,10 @@ type ConfigType struct {
 	Session       *mgo.Session `json:"-"`
 }
 
-var Config = new(ConfigType)
+var cfg = new(ConfigType)
 
 func GetConfig() *ConfigType {
-	//log.Printf("GetConfig values: %+v", Config)
-	return Config
+	return cfg
 }
 
 func InitConf(filename string) error {
@@ -57,20 +60,19 @@ func InitConf(filename string) error {
 	if err != nil {
 		return fmt.Errorf("Can't read config file: %s", err)
 	}
-	log.Println("Config file " + filename + " found. Reading...")
+	log.Println("cfg file " + filename + " found. Reading...")
 
 	if err = json.Unmarshal(data, c); err != nil {
-		fmt.Errorf("Can't read config file: %s", err)
+		logrus.Errorf("Can't read config file: %s", err)
 		return err
 	}
-	Config = c
-	//log.Println("...... Config file values: ", Config)
+	cfg = c
 	return nil
 }
 
 func genConfig(filename string) error {
-	log.Println("NOPE. There is no such config file ", filename)
-	log.Println("Configuration file not found. Created new with name " + filename + ". " +
+	logrus.Warn("NOPE. There is no such config file ", filename)
+	logrus.Warn("Configuration file not found. Created new with name " + filename + ". " +
 		"\n 		     Please, fill it with values you need and RESTART application")
 	f, err := os.Create(filename)
 	if err != nil {

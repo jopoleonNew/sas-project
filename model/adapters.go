@@ -3,8 +3,8 @@ package model
 import (
 	"strconv"
 
-	"github.com/nk2ge5k/goyad/campaigns"
 	"gogs.itcloud.pro/SAS-project/sas/vkontakteAPI"
+	"gogs.itcloud.pro/SAS-project/sas/yandexDirectAPI/campaigns"
 )
 
 func AdaptYandexCampaings(in campaigns.GetResponse) (out []Campaign) {

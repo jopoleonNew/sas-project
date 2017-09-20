@@ -110,10 +110,10 @@ func RestorePasswordHadler(w http.ResponseWriter, r *http.Request) {
 			//u.Username = strings.ToLower(u.Username)
 			user.Salt = string(hashedPassword)
 			user.Password = pass1
-			err = user.AdvanceUpdate()
+			err = user.Update()
 			if err != nil {
-				log.Println("RestorePasswordHadler user.AdvanceUpdate() error: ", err)
-				w.Write([]byte("RestorePasswordHadler user.AdvanceUpdate() error: " + err.Error()))
+				log.Println("RestorePasswordHadler user.Update() error: ", err)
+				w.Write([]byte("RestorePasswordHadler user.Update() error: " + err.Error()))
 			}
 			w.Write([]byte("Пароль успешно изменен"))
 			return

@@ -8,14 +8,14 @@ import (
 	"sync"
 	"time"
 
-	"github.com/nk2ge5k/goyad"
-	"github.com/nk2ge5k/goyad/agencyclients"
-	"github.com/nk2ge5k/goyad/campaigns"
-	"github.com/nk2ge5k/goyad/clients"
-	"github.com/nk2ge5k/goyad/gc"
+	//"gogs.itcloud.pro/SAS-project/sas/yandexDirectAPI"
 	"github.com/sirupsen/logrus"
 	"gogs.itcloud.pro/SAS-project/sas/model"
 	"gogs.itcloud.pro/SAS-project/sas/yandexDirectAPI"
+	"gogs.itcloud.pro/SAS-project/sas/yandexDirectAPI/agencyclients"
+	"gogs.itcloud.pro/SAS-project/sas/yandexDirectAPI/campaigns"
+	"gogs.itcloud.pro/SAS-project/sas/yandexDirectAPI/clients"
+	"gogs.itcloud.pro/SAS-project/sas/yandexDirectAPI/gc"
 )
 
 // GetYandexAuthLink writes to ResponseWriter the Yandex.Direct API Auth Link
@@ -73,8 +73,8 @@ func AddYandexAccount(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("Can't identify username inside request context: %s", creator), http.StatusBadRequest)
 		return
 	}
-	client := goyad.NewClient()
-	client.Token = goyad.Token{Value: oauthresp.AccessToken}
+	client := yad.NewClient()
+	client.Token = yad.Token{Value: oauthresp.AccessToken}
 	client.Login = accountlogin
 	//for testing
 	//apiURL := r.Context().Value("apiurl").(string)
@@ -97,12 +97,12 @@ type CreateInfo struct {
 	CampaignsAmount int
 }
 
-func CollectAccountandAddtoBD(client goyad.Client, creator string) (info CreateInfo, err error) {
+func CollectAccountandAddtoBD(client yad.Client, creator string) (info CreateInfo, err error) {
 	resultCamps, err := collectCampaings(client)
 	if err != nil {
-		//if that error occurs, this means, that the new account that user trying
+		//if that error occurs, that means the new account user trying
 		// to add is agency, so we must collect agency's clients and then
-		// add new account in DB for each of agency client
+		// add new account in DB for each of the agency client
 		if strings.Contains(err.Error(), "53") {
 			_, err := addYandexAgencyAccounts(client, creator)
 			if err != nil {
@@ -113,7 +113,7 @@ func CollectAccountandAddtoBD(client goyad.Client, creator string) (info CreateI
 			logrus.Info("AddYandexAgencyAccounts SUCCESS")
 			return info, nil
 		} else {
-			logrus.Errorln("CollectAccountandAddtoBD unknow error: ", err)
+			logrus.Errorln("CollectAccountandAddtoBD unexpected Yandex API error: ", err)
 			return info, fmt.Errorf("cant recieve campaings from Yandex.Direct inside CollectAccountandAddtoBD function, error: %v", err)
 		}
 		return
@@ -164,7 +164,7 @@ func CollectAccountandAddtoBD(client goyad.Client, creator string) (info CreateI
 	return info, nil
 }
 
-func addYandexAgencyAccounts(client goyad.Client, creator string) (info CreateInfo, err error) {
+func addYandexAgencyAccounts_old(client yad.Client, creator string) (info CreateInfo, err error) {
 	resultA, err := collectAgencyClients(client)
 	if err != nil {
 		logrus.Errorln("addYandexAgencyAccounts collectAgencyClients  error: ", err)
@@ -181,9 +181,9 @@ func addYandexAgencyAccounts(client goyad.Client, creator string) (info CreateIn
 	for _, ac := range resultA.Clients {
 		// iterating through all agency clients to add every client account to DB with appropriate info
 		for _, c := range ac.Representatives {
-			ci := goyad.NewClient()
+			ci := yad.NewClient()
 			ci.Login = c.Login
-			ci.Token = goyad.Token{Value: client.Token.GetToken()}
+			ci.Token = yad.Token{Value: client.Token.GetToken()}
 			//collecting ads campaigns from Yandex for every agency client
 			result, err := collectCampaings(ci)
 			if err != nil {
@@ -258,14 +258,14 @@ func addYandexAgencyAccounts(client goyad.Client, creator string) (info CreateIn
 	return info, nil
 }
 
-func collectAgencyClients(client goyad.Client) (res agencyclients.GetResponse, err error) {
+func collectAgencyClients(client yad.Client) (res agencyclients.GetResponse, err error) {
 	clientInfo := agencyclients.GetRequest{
 		FieldNames: []agencyclients.AgencyClientFieldEnum{
 			"AccountQuality", "ClientId", "ClientInfo", "Login", "Phone", "Representatives", "Restrictions", "Type",
 		},
 	}
-	service2 := agencyclients.New(&client)
-	result, err := service2.Get(clientInfo)
+	service := agencyclients.New(&client)
+	result, err := service.Get(clientInfo)
 	if err != nil {
 		return res, fmt.Errorf("collectAgencyClients service.Get error %v", err)
 	}
@@ -273,7 +273,7 @@ func collectAgencyClients(client goyad.Client) (res agencyclients.GetResponse, e
 	return result, nil
 }
 
-func collectClientInfo(client goyad.Client) (res clients.GetResponse, err error) {
+func collectClientInfo(client yad.Client) (res clients.GetResponse, err error) {
 	clientInfo := clients.GetRequest{
 		FieldNames: []clients.ClientFieldEnum{
 			"ClientId", "ClientInfo", "CountryId", "CreatedAt", "Login", "Representatives", "Type",
@@ -288,7 +288,7 @@ func collectClientInfo(client goyad.Client) (res clients.GetResponse, err error)
 	return result, nil
 }
 
-func collectCampaings(client goyad.Client) (res campaigns.GetResponse, err error) {
+func collectCampaings(client yad.Client) (res campaigns.GetResponse, err error) {
 
 	//DRAFT Кампания создана и еще не отправлена на модерацию.
 	//MODERATION	Кампания находится на модерации.
@@ -317,11 +317,11 @@ func collectCampaings(client goyad.Client) (res campaigns.GetResponse, err error
 	return result, nil
 }
 
-// addYandexAgencyAccounts_old adding all of agency clients as accounts to DB concurrently
-func addYandexAgencyAccounts_old(client goyad.Client, creator string) (info CreateInfo, err error) {
+// addYandexAgencyAccounts adds all of agency clients as accounts to DB concurrently
+func addYandexAgencyAccounts(client yad.Client, creator string) (info CreateInfo, err error) {
 
-	var YandexConnectionsLimit = 5
-	chAC := make(chan gc.ClientGetItem, 4) // channel's buffer is the number of simultaneous gorouitenes
+	var YandexConnectionsLimit = 10
+	chAC := make(chan gc.ClientGetItem, 10) // channel's buffer is the number of simultaneous gorouitenes
 	var wg sync.WaitGroup
 	resultA, err := collectAgencyClients(client)
 	if err != nil {
@@ -339,9 +339,9 @@ func addYandexAgencyAccounts_old(client goyad.Client, creator string) (info Crea
 				}
 				for _, c := range ac.Representatives {
 					//collecting ads campaigns from Yandex for every agency client
-					ci := goyad.NewClient()
+					ci := yad.NewClient()
 					ci.Login = c.Login
-					ci.Token = goyad.Token{Value: client.Token.GetToken()}
+					ci.Token = yad.Token{Value: client.Token.GetToken()}
 					result, err := collectCampaings(ci)
 					if err != nil {
 						logrus.Errorf("cant collect campaings with parameters: collectCampaings(%s, %s) error: %v", ci.Login, ci.Token.GetToken(), err)
@@ -417,7 +417,7 @@ func addYandexAgencyAccounts_old(client goyad.Client, creator string) (info Crea
 	a.CreatedAt = time.Now()
 	err = a.Update()
 	if err != nil {
-		logrus.Errorf("cant add account to DB %v \n error: %v", client.Login, err)
+		logrus.Errorf("addYandexAgencyAccounts error: cant add account to DB %v \n error: %v", client.Login, err)
 		return info, err
 	}
 	close(chAC) // This tells the goroutines there's nothing else to do

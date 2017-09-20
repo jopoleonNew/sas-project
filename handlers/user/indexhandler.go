@@ -33,7 +33,7 @@ func IndexHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	loggedin, err := utils.IsUserLoggedIn(r)
+	loggedin, err := IsUserLoggedIn(r)
 	if err != nil {
 		log.Println("IndexHandler IsUserLoggedIn error: ", err)
 		w.Write([]byte("IndexHandler IsUserLoggedIn error" + err.Error()))
@@ -52,37 +52,7 @@ func IndexHandler(w http.ResponseWriter, r *http.Request) {
 		data.CurrentUser = ""
 	}
 
-	//u := model.NewUser()
-	//u.Username = name
-	//userinfo, err := u.GetInfo()
-	//if err != nil {
-	//	log.Println(err)
-	//
-	//}
 	log.Println("IndexHandler getUsernamefromRequestSession name: ", name)
-	//log.Printf("User Info: %+v\n", userinfo)
-	//objectId := userinfo.Id
-	//log.Println(objectId.Hex())
-	//Idstring = objectId.Hex()
-
-	// if !IsUserLoggedIn(r) {
-	// 	//w.Write([]byte(" you are not logged "))
-	// 	http.Redirect(w, r, "/", 302)
-	// 	return
-	// }
-	//logged, err := utils.IsUserLoggedIn(r)
-	//if err != nil {
-	//	if logged {
-	//		data.CurrentUser = name
-	//	} else {
-	//
-	//		data.CurrentUser = ""
-	//	}
-	//} else {
-	//	log.Println("IndexHandler IsUserLoggedIn error: ", err)
-	//	w.Write([]byte("IndexHandler IsUserLoggedIn error" + err.Error()))
-	//	return
-	//}
 
 	t := template.Must(template.New("index.tmpl").ParseFiles(
 		"static/templates/index.tmpl",
@@ -93,6 +63,25 @@ func IndexHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println("IndexHandler error: ", err)
 		fmt.Fprintf(w, err.Error())
+	}
+
+}
+
+func IsUserLoggedIn(r *http.Request) (bool, error) {
+	session, err := store.Get(r, "sessionSSA")
+	if err != nil {
+		log.Println(err)
+
+	}
+	log.Println("IsUserLoggedIn values: ", session.Values)
+
+	if session.Values["loggedin"] != nil &&
+		session.Values["loggedin"].(string) == "true" &&
+		len(session.Values) == 0 {
+		return true, nil
+	} else {
+		//log.Println("IsUserLoggedIn: user not loggedin: \n RemoteAddres:", r.RemoteAddr, " \n RequestURI: ", r.RequestURI)
+		return false, nil
 	}
 
 }

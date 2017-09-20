@@ -16,8 +16,8 @@ type Application struct {
 
 var application Application
 
-func SetParams(id, secret string) error {
+func SetParams(id, secret string)  {
 	application.ID = id
 	application.Secret = secret
-	return nil
+
 }

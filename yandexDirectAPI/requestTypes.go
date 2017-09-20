@@ -9,7 +9,6 @@ type YandexTokenbody struct {
 	RefreshToken string `json:"refresh_token"`
 }
 
-//TODO: upgrade type to common Yandex API error (DONE)
 type YandexV5Error struct {
 	ErrorDescription string `json:"error_description"`
 	ErrorCode        string `json:"error_code"`

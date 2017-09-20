@@ -3,7 +3,6 @@ package user
 import (
 	"fmt"
 	"html/template"
-	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -31,17 +30,20 @@ func ReportTemplateHandler(w http.ResponseWriter, r *http.Request) {
 		"static/templates/header.tmpl",
 		"static/templates/reports.tmpl")
 	if err != nil {
-		log.Println(err)
+		logrus.Error("ReportTemplateHandler template.New(reports.tmpl).ParseFiles error: ", err)
 		fmt.Fprintf(w, err.Error())
+		return
 	}
 
 	err = t.Execute(w, data)
 	if err != nil {
-		log.Println(err)
+		logrus.Error("ReportTemplateHandler t.Execute(w, data) error: ", err)
 		fmt.Fprintf(w, err.Error())
+		return
 	}
 
 	if r.Method == "POST" {
-		fmt.Fprintf(w, "U send post request")
+		fmt.Fprintf(w, "You've send post request")
+		return
 	}
 }

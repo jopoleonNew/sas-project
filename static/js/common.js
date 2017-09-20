@@ -35,7 +35,6 @@ $("#formcontainer").change(function () {
 			data: {
 				"username": window.userName,
 				"password": window.password,
-
 			},
 			//dataType: "json",
 			type: "POST",
@@ -68,7 +67,6 @@ $("#formcontainer").change(function () {
 			error: function (req, status, err) {
 				//console.log(req.responseText)
 				console.log(req)
-
 				console.log('Something went wrong', status, err);
 				console.log(err)
 

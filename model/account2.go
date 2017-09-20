@@ -18,17 +18,17 @@ type MongoAccount interface {
 	Remove() error
 }
 type Account2 struct {
-	//Username of user created this account
+	// Username of user created this account
 	Creator string `json:"creator" bson:"creator"`
-	//Source is the name of organization which hosts the account.
+	// Source is the name of organization which hosts the account.
 	Source string `json:"source" bson:"source"`
-	//Accountlogin is the login or id of account in organization from Source
+	// Accountlogin is the login or id of account in organization from Source
 	Accountlogin string `json:"accountlogin" bson:"accountlogin"`
-	//Owners is the list of user's usernames who have access to that account
+	// Owners is the list of user's usernames who have access to that account
 	Owners []string `json:"owners" bson:"owners"`
 
 	Email string `json:"email" bson:"email"`
-	//active or notactive
+	// active or notactive
 	Status string `json:"status" bson:"status"`
 
 	// auth token to make request to source API
@@ -37,13 +37,53 @@ type Account2 struct {
 	AppID     string `json:"appid" bson:"appid"`
 	AppSecret string `json:"appsecret" bson:"appsecret"`
 
-	Role          string     `json:"role" bson:"role"`
-	AccountType   string     `json:"accounttype" bson:"accounttype"`
-	AgencyClients []string   `json:"agencyclients" bson:"agencyclients"`
+	Role          string   `json:"role" bson:"role"`
+	AccountType   string   `json:"accounttype" bson:"accounttype"`
+	AgencyClients []string `json:"agencyclients" bson:"agencyclients"`
+
+	// CampaignsInfo stores all campanigns of account adapted from account's source
 	CampaignsInfo []Campaign `json:"campaignsinfo" bson:"campaignsinfo"`
-	CreatedAt     time.Time  `json:"createdat" bson:"createdat"`
-	LastUpdated   time.Time  `json:"lastupdated" bson:"lastupdated"`
-	collName      string     `json:"-"` // mgo Collection name
+
+	CreatedAt   time.Time `json:"createdat" bson:"createdat"`
+	LastUpdated time.Time `json:"lastupdated" bson:"lastupdated"`
+	// mgo Collection name where the account stored
+	collName string `json:"-"`
+}
+
+type Campaign struct {
+	ID     int    `json:"id"`
+	Name   string `json:"name"`
+	Status string `json:"status"`
+	Type   string `json:"type"`
+	Ads    []Ad   `json:"ads"`
+	Owner  string `json:"owner"`
+}
+
+type Ad struct {
+	ID     int
+	CampID int
+	Name   string
+	Status string
+	//cpc - цена за переход в копейках.
+	CPC int
+	//cpm - цена за 1000 показов в копейках.
+	CPM  int
+	Type string
+}
+
+type TemplateInfoStruct struct {
+	CurrentUser string
+	UsingReport string
+	AccountList []Account
+	FullStats   []GetSummaryStatRes
+}
+
+type TemplateInfo struct {
+	CurrentUser    string
+	CurrentAccount Account2
+	UsingReport    string
+	AccountList    []Account2
+	FullStats      []GetSummaryStatRes
 }
 
 func NewAccount2(Creator, Source, Accountlogin, Email string) *Account2 {
@@ -53,6 +93,8 @@ func NewAccount2(Creator, Source, Accountlogin, Email string) *Account2 {
 		Accountlogin: Accountlogin,
 		Email:        Email,
 		collName:     "accountsList",
+		// when new account created, obviously the creator is one of account owners
+		Owners:       []string{Creator},
 	}
 }
 

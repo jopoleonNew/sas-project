@@ -5,6 +5,7 @@ import (
 	"log"
 	"strings"
 
+	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -46,7 +47,7 @@ func (u *UserInfo) Create() error {
 	passbyte := []byte(u.Password)
 	hashedPassword, err := bcrypt.GenerateFromPassword(passbyte, bcrypt.DefaultCost)
 	if err != nil {
-		log.Println("UserInfo.Create() bcrypt.GenerateFromPassword error: ", err)
+		logrus.Error("UserInfo.Create() bcrypt.GenerateFromPassword error: ", err)
 		return err
 	}
 	u.Username = strings.ToLower(u.Username)
@@ -54,7 +55,7 @@ func (u *UserInfo) Create() error {
 	//u.collName = "usersList"
 	changeInfo, err := c.Upsert(bson.M{"username": u.Username}, u)
 	if err != nil {
-		log.Println("AddUserToDB usersListCollecton.Insert error: ", err)
+		logrus.Error("AddUserToDB usersListCollecton.Insert error: ", err)
 		return err
 	}
 	log.Println("User ", u.Username, " Upserted in database: ", changeInfo)
@@ -62,9 +63,8 @@ func (u *UserInfo) Create() error {
 	return nil
 }
 
-func (u *UserInfo) AdvanceUpdate() error {
-
-	log.Println("User.Update() used with ", u)
+func (u *UserInfo) Update() error {
+	//log.Println("User.Update() used with ", u)
 	if u.Username == "" && u.Email == "" {
 		return errors.New("UserInfo.Update() username and email field can't be empty simultaneously")
 	}
@@ -99,7 +99,7 @@ func (u *UserInfo) AdvanceUpdate() error {
 		change1 := bson.M{"$push": bson.M{"accountlist": u.AccountList[0]}}
 		_, err := c.Upsert(colQuerier1, change1)
 		if err != nil {
-			log.Println("a.Update() err: ", err)
+			logrus.Error("a.Update() err: ", err)
 			return err
 		}
 	}
@@ -114,17 +114,16 @@ func (u *UserInfo) AdvanceUpdate() error {
 		log.Println("UserInfo) Update() query: ", colQuerier, " and cahnge: ", change)
 		_, err := c.Upsert(colQuerier, change)
 		if err != nil {
-			log.Println("a.Update() err: ", err)
+			logrus.Error("a.Update() err: ", err)
 			return err
 		}
 	}
-
 	return nil
 }
 
 // RemoveAccount removes account login from AccountList filed of UserInfo struct
 func (u *UserInfo) RemoveAccount() error {
-	log.Println("User.RemoveAccount() used with ", u)
+	//log.Println("User.RemoveAccount() used with ", u)
 	if u.Username == "" {
 		return errors.New("UserInfo.PushAccount() username field can't be empty")
 	}
@@ -137,18 +136,18 @@ func (u *UserInfo) RemoveAccount() error {
 		change1 := bson.M{"$pull": bson.M{"accountlist": u.AccountList[0]}}
 		_, err := c.Upsert(colQuerier1, change1)
 		if err != nil {
-			log.Println("u.PushAccount() err: ", err)
+			logrus.Error("u.PushAccount() err: ", err)
 			return err
 		}
 	}
 	return nil
 }
+
 func (u *UserInfo) IsAccountExist(accountlogin string) (bool, error) {
 	u.Username = strings.ToLower(u.Username)
-	log.Println("UserInfo.IsAccountExist used for: ", u.Username)
 	userinfo, err := u.GetInfo()
 	if err != nil {
-		log.Println("UserInfo.IsAccountExist u.GetInfo() err: ", err)
+		logrus.Error("UserInfo.IsAccountExist u.GetInfo() err: ", err)
 		return false, err
 	}
 	return contains(userinfo.AccountList, accountlogin), nil
@@ -165,16 +164,13 @@ func contains(s []string, e string) bool {
 
 //IsExist checks is user with given username or email exist in DB already.
 func (u *UserInfo) IsExist() (bool, error) {
-
 	u.Username = strings.ToLower(u.Username)
-
-	log.Println("IsExists user used for: ", u.Username)
-
 	s := mainSession.Clone()
 	defer s.Close()
 	c := s.DB(mainDB.Name).C(u.collName)
 	u.Username = strings.ToLower(u.Username)
-	log.Println("IsExists user used for: ", u.Username)
+
+	//check are email and username unique
 	pipeline := bson.M{
 		"$or": []interface{}{
 			bson.M{"email": u.Email},
@@ -186,7 +182,7 @@ func (u *UserInfo) IsExist() (bool, error) {
 		if err == mgo.ErrNotFound {
 			return false, nil
 		} else {
-			log.Println("a.IsExist err: ", err)
+			logrus.Error("a.IsExist err: ", err)
 			return false, err
 		}
 	}
@@ -207,33 +203,30 @@ func (u *UserInfo) GetInfo() (UserInfo, error) {
 	u.Username = strings.ToLower(u.Username)
 	err := c.Find(bson.M{"username": u.Username}).One(&result)
 	if err != nil {
-		log.Println("GetInfo err: ", err)
+		logrus.Error("GetInfo err: ", err)
 		return UserInfo{}, err
 	}
 	return result, nil
 }
 
-func (u *UserInfo) GetAccountList() ([]Account, error) {
-
-	//log.Println(" *UserInfo) GetAccountList() used with", u)
+func (u *UserInfo) GetAccountList() ([]Account2, error) {
 	if u.Username == "" {
-		return nil, errors.New("UserInfo.GetAccountList() username field can't be blank.")
+		return nil, errors.New("UserInfo.GetAccountList() username field can't be blank")
 	}
-
 	u.Username = strings.ToLower(u.Username)
 	s := mainSession.Clone()
 	defer s.Close()
 	c := s.DB(mainDB.Name).C("accountsList")
+	result := make([]Account2, len(u.AccountList))
+	//userinfo, err := u.GetInfo()
+	//if err != nil {
+	//	logrus.Error("GetAccountList u.GetInfo() err: ", err)
+	//	return nil, err
+	//}
 
-	result := make([]Account, len(u.AccountList))
-	userinfo, err := u.GetInfo()
+	err = c.Find(bson.M{"owners": bson.M{"$in": []string{u.Username}}}).All(&result)
 	if err != nil {
-		log.Println("GetAccountList u.GetInfo() err: ", err)
-		return nil, err
-	}
-	err = c.Find(bson.M{"username": u.Username, "accountlogin": bson.M{"$in": userinfo.AccountList}}).All(&result)
-	if err != nil {
-		log.Println("GetAccountList err: ", err)
+		logrus.Error("GetAccountList err: ", err)
 		return nil, err
 	}
 	return result, nil
@@ -242,7 +235,7 @@ func (u *UserInfo) GetAccountList() ([]Account, error) {
 // IsPasswordValid checks if password string equals hashed password from DB
 func (u *UserInfo) IsPasswordValid(password string) (bool, error) {
 	u.Username = strings.ToLower(u.Username)
-	log.Println("ValidateUserPassword GetInfo used by ", u.Username)
+	//log.Println("ValidateUserPassword GetInfo used by ", u.Username)
 	s := mainSession.Clone()
 	defer s.Close()
 	c := s.DB(mainDB.Name).C(u.collName)
@@ -250,11 +243,10 @@ func (u *UserInfo) IsPasswordValid(password string) (bool, error) {
 	u.Username = strings.ToLower(u.Username)
 	err := c.Find(bson.M{"username": u.Username}).One(&result)
 	if err != nil {
-		log.Println("IsPasswordValid c.Find error: ", err)
+		logrus.Error("IsPasswordValid c.Find error: ", err)
 		return false, err
 	}
 	err = bcrypt.CompareHashAndPassword([]byte(result.Salt), []byte(password))
-
 	if err != nil {
 		return false, nil
 	} else {

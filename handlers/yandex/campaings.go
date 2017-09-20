@@ -16,12 +16,6 @@ import (
 // GetCampaingStatsHandler handling requests from client to get statistic about
 // sent campaing ID's sending request to Yandex Direct API
 func GetCampaingStatsHandler(w http.ResponseWriter, r *http.Request) {
-	_, err := store.Get(r, "sessionSSA")
-	if err != nil {
-		log.Println("GetStatSliceHandler store.Get error:", err)
-		w.Write([]byte("GetStatSliceHandler store.Get error " + err.Error()))
-		return
-	}
 	log.Println("GetCampaingStatsHandler used")
 	r.ParseForm()
 	username := r.FormValue("username")
@@ -69,12 +63,6 @@ func GetCampaingStatsHandler(w http.ResponseWriter, r *http.Request) {
 // RefreshCampaignsListHandler handles client's requests to
 // refresh campaigns in DB with given username and account login in FormValue
 func RefreshCampaignsListHandler(w http.ResponseWriter, r *http.Request) {
-	_, err := store.Get(r, "sessionSSA")
-	if err != nil {
-		log.Println("GetStatSliceHandler store.Get error:", err)
-		w.Write([]byte("GetStatSliceHandler store.Get error " + err.Error()))
-		return
-	}
 
 	log.Println("RefreshCampaignsListHandler used")
 	username, err := utils.GetUsernamefromRequestSession(r)
