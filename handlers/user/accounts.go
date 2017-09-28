@@ -6,6 +6,8 @@ import (
 	"log"
 	"net/http"
 
+	"encoding/json"
+
 	"gogs.itcloud.pro/SAS-project/sas/model"
 	"gogs.itcloud.pro/SAS-project/sas/utils"
 )
@@ -83,4 +85,40 @@ func DeleteAccountHandler(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("DeleteAccountHandler acc.Remove() error: " + err.Error()))
 		return
 	}
+}
+func AccountsData(w http.ResponseWriter, r *http.Request) {
+	username := r.Context().Value("username").(string)
+	log.Println("AccountsData used with username: ", username)
+	user := model.NewUser()
+	user.Username = username
+	exist, err := user.IsExist()
+	if err != nil {
+		log.Println("AccountsData u.IsExist() error:", err)
+		w.Write([]byte("AccountsData u.IsExist() error " + err.Error()))
+		return
+	}
+
+	if !exist {
+		w.Write([]byte("No such user found"))
+		//http.Redirect(w, r, "/", 302)
+		return
+	}
+
+	var AccountList []model.Account2
+	acc := model.NewAccount2("", "", "", "")
+	acc.Owners = []string{username}
+	AccountList, err = acc.GetAccountList()
+	if err != nil {
+		log.Println("AccountsData acc.GetAccountList() error:", err)
+		w.Write([]byte("AccountsData acc.GetAccountList() error: " + err.Error()))
+		return
+	}
+	b, err := json.Marshal(AccountList)
+	if err != nil {
+		log.Println("AccountsData json.Marshal(AccountList) error:", err)
+		w.Write([]byte("AccountsData json.Marshal(AccountList) error: " + err.Error()))
+		return
+	}
+	w.Write(b)
+
 }

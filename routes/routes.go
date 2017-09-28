@@ -32,6 +32,7 @@ func LoadRoutes() *mux.Router {
 	r.HandleFunc("/getaccountstat/{source}", mv.CheckIsUserLogged(user.GetAccountStat)).Methods("GET")
 	// receives requests from browser of logged in user to return him statistic of account
 	r.HandleFunc("/getaccountstat/{source}", mv.CheckIsUserLogged(user.GetAccountStat)).Methods("POST")
+	r.HandleFunc("/isloggedin", user.IsLoggedIn).Methods("GET")
 	//r.HandleFunc("/getstatistic/{source}", CheckIsUserLogged(user.GetStatistic))
 
 	// parse template with input forms for {accountlogin} account
@@ -49,9 +50,10 @@ func LoadRoutes() *mux.Router {
 	//http.HandleFunc("/changepass", user.ChangePasswordHandler)  // POST
 
 	r.HandleFunc("/loginsubmit", user.LoginSubmitHandler)
-	r.HandleFunc("/logoutsubmit", user.LogoutSubmitHandler)
+	r.HandleFunc("/logoutsubmit", mv.CheckIsUserLogged(user.LogoutSubmitHandler))
 
 	r.HandleFunc("/accounts", mv.CheckIsUserLogged(user.AccountsHandler))
+	r.HandleFunc("/accountsdata", mv.CheckIsUserLogged(user.AccountsData))
 	//http.HandleFunc("/addaccount", user.AddAccountHandler)
 	r.HandleFunc("/deleteaccount", user.DeleteAccountHandler)
 	// old version

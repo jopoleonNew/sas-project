@@ -10,12 +10,14 @@ import (
 	"flag"
 	"net/http"
 
+	"gogs.itcloud.pro/SAS-project/sas/handlers/adWords"
 	"gogs.itcloud.pro/SAS-project/sas/routes"
 	"gogs.itcloud.pro/SAS-project/sas/shared/config"
-	yad "gogs.itcloud.pro/SAS-project/sas/yandexDirectAPI"
+	"gogs.itcloud.pro/SAS-project/sas/yandexDirectAPI"
 )
 
-// Run starts application, parsing start flags, sets parameters in packages
+// Run starts application, parsing start flags, sets parameters in packages, inits workers pools
+
 func Run() {
 
 	var configFileName string
@@ -40,21 +42,24 @@ func Run() {
 	//yad.InitRequestQueue()
 	yad.InitPool(5)
 	defer yad.YPool.Close()
+
+	//updaters.Start(time.Second * 15)
 	logrus.Info("Server started at port: " + cfg.ServerPort)
 	// loading http routes
 	r := routes.LoadRoutes()
 
-	// starting listener
+	// starting http listener
 	logrus.Fatal(http.ListenAndServe(":"+cfg.ServerPort, r))
 
 }
 
 // SetParams sets parameters in all packages
 func SetParams(c *config.ConfigType) {
-	//	Config = c
+
 	userhandlers.SetParams(c.SessionSecret)
 	yandexhandlers.SetParams(c.YandexDirectAppID, c.YandexDirectAppSecret)
 	vkhandlers.SetParams(c.VKAppID, c.VKAppSecret, c.VKRedirectURL)
+	adWords.SetParams(c.AdWordsAppID, c.AdWordsAppSecret, c.AdWordsRedirectURL)
 	yad.SetParams(c.YandexDirectAppID, c.YandexDirectAppSecret)
 	err := model.SetDBParams(c.Mongourl, c.DBname)
 	if err != nil {

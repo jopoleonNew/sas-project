@@ -11,7 +11,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	mgo "gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2"
 )
 
 type ConfigType struct {
@@ -25,6 +25,10 @@ type ConfigType struct {
 	VKAppID       string `json:"vkappid"`
 	VKAppSecret   string `json:"vkappsecret"`
 	VKRedirectURL string `json:"vkredirecturl"`
+
+	AdWordsAppID       string `json:"adwordsappid"`
+	AdWordsAppSecret   string `json:"adwordsappsecret"`
+	AdWordsRedirectURL string `json:"adwordsredirecturl"`
 
 	SessionSecret string       `json:"sessionsecret"`
 	ServerPort    string       `json:"serverport"`

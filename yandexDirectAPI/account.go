@@ -201,10 +201,10 @@ func (a *Account) GetStatisticsConc(ids []int, start, end time.Time) ([]Campaign
 	days := delta.Hours() / 24
 	//	log.Println(days)
 	//respChan := make(chan *ResultV4CampStat)
-	log.Println("The number of strings: ", int(days)*len(ids))
-	log.Println("The fomrmatstart ", fomrmatstart)
-	log.Println("The formatend ", formatend)
-	log.Println("The ids slice ", ids)
+	//log.Println("The number of strings: ", int(days)*len(ids))
+	//log.Println("The fomrmatstart ", fomrmatstart)
+	//log.Println("The formatend ", formatend)
+	//log.Println("The ids slice ", ids)
 	//numStrings := int(days) * len(ids)
 	if int(days)*len(ids) <= 0 {
 		return nil, errors.New("GetStatisticsConc The number of strings is zero")
@@ -243,7 +243,7 @@ func (a *Account) GetStatisticsConc(ids []int, start, end time.Time) ([]Campaign
 				NewIds = append(NewIds, ids[i])
 			}
 
-			wg.Add(1)
+			wg.Add(itersAmount)
 			go func(ids []int, start, end string) {
 				if len(ids) != 0 {
 					resultStatistic, err := a.GetStatistics(reqIds, start, end)

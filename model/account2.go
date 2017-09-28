@@ -49,6 +49,12 @@ type Account2 struct {
 	// mgo Collection name where the account stored
 	collName string `json:"-"`
 }
+type AccountToken struct {
+	TokenType    string `json:"token_type"`
+	AccessToken  string `json:"access_token"`
+	ExpiresIn    int    `json:"expires_in"`
+	RefreshToken string `json:"refresh_token"`
+}
 
 type Campaign struct {
 	ID     int    `json:"id"`
@@ -94,7 +100,7 @@ func NewAccount2(Creator, Source, Accountlogin, Email string) *Account2 {
 		Email:        Email,
 		collName:     "accountsList",
 		// when new account created, obviously the creator is one of account owners
-		Owners:       []string{Creator},
+		Owners: []string{Creator},
 	}
 }
 
@@ -153,7 +159,7 @@ func (a *Account2) Update() error {
 	change := bson.M{"$set": changeParams}
 	if len(a.Owners) != 0 {
 		colQuerier := bson.M{"accountlogin": a.Accountlogin, "source": a.Source}
-		change1 := bson.M{"$addToSet": bson.M{"owners": a.Owners[0]}}
+		change1 := bson.M{"$addToSet": bson.M{"owners": bson.M{"$each": a.Owners}}}
 		_, err := c.Upsert(colQuerier, change1)
 		if err != nil {
 			logrus.Errorf("a.Update() err: %+v", err)

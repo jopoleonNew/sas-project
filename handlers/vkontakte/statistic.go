@@ -166,7 +166,7 @@ func CollectVKStatistic(w http.ResponseWriter, r *http.Request) {
 func collectStatistic(token string, params map[string]string) (vk.AdStatistic, error) {
 	var stats vk.AdStatistic
 	if token == "" {
-		return stats, fmt.Errorf("Token is empty")
+		return stats, fmt.Errorf("token is empty")
 	}
 	//var camps vk.AdsCampaigns
 	resp, err := vk.Request(token, "ads.getStatistics", params)

@@ -16,6 +16,7 @@
 				var yandexlog = $("#accountloginyandex").val();
 				var youtubelog = $("#accountloginyoutube").val();
 				var vklog = $("#accountloginvk").val();
+                var adwords = $("#accountloginadwords").val();
 
 				if (yandexlog) {
 					window.accountlogin = $("#accountloginyandex").val();
@@ -34,7 +35,12 @@
                 };
 				if (youtubelog) {
 					window.accountlogin = $("#accountloginyoutube").val()
+                    window.sourcename = $(this).attr("id")
 				};
+                if (adwords) {
+                    window.accountlogin = $("#accountloginadwords").val()
+                    window.sourcename = $(this).attr("id")
+                };
 
 
                 console.log("sourcename: ",window.sourcename)
@@ -80,6 +86,31 @@
                                 data,
 								'_blank' // <- This is what makes it open in a new window.
                                        )
+                        },
+                        error: function (req, status, err) {
+                            //console.log(req.responseText)
+                            console.log(req)
+                            console.log('Something went wrong', status, err);
+                            console.log(err)
+                        }
+                    });
+                };
+                if (window.sourcename == "AdWords") {
+                    console.log("Creating new AdWords account")
+                    $.ajax({
+                        data: {
+                            "username": window.currentUser,
+                            "accountlogin": window.accountlogin,
+                        },
+                        //dataType: "json",
+                        type: "POST",
+                        url: window.location.protocol+"//"+window.location.hostname+":"+window.location.port+"/getauthlink/adwords",
+                        success: function (data) {
+                            console.log(data);
+                            window.open(
+                                data,
+                                '_blank' // <- This is what makes it open in a new window.
+                            )
                         },
                         error: function (req, status, err) {
                             //console.log(req.responseText)

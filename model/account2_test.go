@@ -78,7 +78,7 @@ func TestAccount2_Update(t *testing.T) {
 	acc := NewAccount2("test", "test", "test", "test")
 	acc.Role = "test"
 	acc.AgencyClients = []string{"test"}
-	testcamp := []Campaign{}
+	testcamp := []Campaign{{ID: 1, Name: "test1"}, {ID: 2, Name: "test2"}}
 	acc.CampaignsInfo = testcamp
 	err = acc.Update()
 	if err != nil {
@@ -92,6 +92,7 @@ func TestAccount2_Update(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	//test updating Role field
 	acc.Role = "test2"
 	err = acc.Update()
 	if err != nil {
@@ -115,8 +116,9 @@ func TestAccount2_Update(t *testing.T) {
 		t.Fatal(err)
 		//t.Fatal("No error occuers, but expected error: Not found accountlogin: test2")
 	}
-	if result.Owners[0] != "test3" {
-		t.Fatalf("Not enough owners: Got owners: %s, expected: %s", result.Owners, "test3")
+	log.Printf("TestAccount2_Update result: %+v", result)
+	if result.Owners[1] != "test3" {
+		t.Fatalf("Account NOT(!) updated. \n Not enough owners: Got owners: %s, expected: %s", result.Owners, "test3")
 	}
 }
 func TestAccount2_GetInfo(t *testing.T) {
@@ -157,6 +159,7 @@ func TestAccount2_GetAccountList(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	log.Printf("TestAccount2_GetAccountList result list: %+v", res)
 	if res[0].Creator != a.Creator {
 		t.Fatalf("Not equal: %+v \n and %+v", res[0].Creator, a.Creator)
 	}

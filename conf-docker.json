@@ -1,12 +1,20 @@
 {
 	"mongourl": "localhost",
 	"bdname": "ssa",
+
 	"yandexappid": "9d1ef373556e4e7ebabd7894f22f37d8",
 	"yandexappsecret": "3b48e964c3fc4ed4b1121313aea4d48a",
 	"yandexapiurl": "https://api.direct.yandex.ru",
+
 	"vkappid": "6082545",
 	"vkappsecret": "8JD0UiJ1KJL43DNm816q",
 	"vkredirecturl": "https://61a0f030.eu.ngrok.io/gettoken/vkontakte",
+
+
+	"adwordsappid": "312200189145-mjqb025072fb6ipoiqisiap3omtganrd.apps.googleusercontent.com",
+	"adwordsappsecret": "UyCO41vjWKqdqrgMD8pZtXNF",
+	"adwordsredirecturl": "https://1cbe3c38.eu.ngrok.io/gettoken/adwords",
+
 	"sessionsecret": "4ivLAq9MTVtdhEDqr9dm",
 	"serverport": "8080"
 }

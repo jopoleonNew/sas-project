@@ -57,9 +57,8 @@ func GetStatSliceHandler(w http.ResponseWriter, r *http.Request) {
 	for _, camp := range acclist {
 
 		if camp.Source == "Яндекс Директ" {
-
 			var idslice []int
-			if camp.YandexRole == "agency" {
+			if camp.Role == "agency" {
 				acc := model.NewAccount()
 				acc.Username = username
 				acc.Accountlogin = camp.Accountlogin
@@ -94,7 +93,7 @@ func GetStatSliceHandler(w http.ResponseWriter, r *http.Request) {
 			//wg.Add(1)
 			//go func() {
 			//wg.Wait()
-			account := yad.NewAccount(camp.Accountlogin, camp.OauthToken)
+			account := yad.NewAccount(camp.Accountlogin, camp.AuthToken)
 			statres, err := account.GetStatisticsConc(idslice, sttime, endtime)
 			if err != nil {
 				log.Println("GetStatSliceHandlerGetStatSliceHandler GetCampaingsSliceStatistic", err)

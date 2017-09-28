@@ -1,0 +1,26 @@
+{
+    "oauth2.Config": {
+        "ClientID": "546292264965-iie1pr8m7v4l4of303uo9bb17ajdccmu.apps.googleusercontent.com",
+        "ClientSecret": "LMHbtEuUhFGhMx8nXvKs1O2f",
+        "Endpoint": {
+            "AuthURL": "https://accounts.google.com/o/oauth2/auth",
+            "TokenURL": "https://accounts.google.com/o/oauth2/token"
+        },
+        "RedirectURL": "urn:ietf:wg:oauth:2.0:oob",
+        "Scopes": [
+            "https://adwords.google.com/api/adwords"
+        ]
+    },
+    "oauth2.Token": {
+        "access_token": "ya29.GlvPBCtg_KeXdiADnsAOgRM9KNPuuYNU9Sv7SY6AzidjgZ3mCXFKxCjGnPzW0-QOs0KpkQowe4jz5EMkgHo347efCcJ2L7cmfE1OuLpx2E9Zs_6QTUa17S5xF59i",
+        "token_type": "Bearer",
+        "refresh_token": "1/8xfnonQbaQXrIFR2xpGMrJgaD3rzieCM-R112SUAnn0",
+        "expiry": "2017-09-23T22:21:06.1050112+03:00"
+    },
+    "gads.Auth": {
+        "CustomerId": "426-020-5484",
+        "DeveloperToken": "FyZsgbxqs_L0RnJbelnh1A",
+        "UserAgent": "tests (Golang 1.4 github.com/emiddleton/gads)",
+        "PartialFailure": false
+    }
+}

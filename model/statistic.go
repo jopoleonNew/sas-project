@@ -8,6 +8,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"gogs.itcloud.pro/SAS-project/sas/vkontakteAPI"
 	"gogs.itcloud.pro/SAS-project/sas/yandexDirectAPI"
+	"gopkg.in/mgo.v2/bson"
 )
 
 type YandexTime struct {
@@ -134,11 +135,29 @@ func SaveYandexStatistic(accountlogin string, stats []yad.CampaignStat) error {
 	defer s.Close()
 	colname := "yandex" + accountlogin + "stats"
 	c := s.DB("statistic").C(colname)
-	err := c.Insert(struct {
+	_, err := c.Upsert(bson.M{}, struct {
 		Result []yad.CampaignStat `json:"result"`
 	}{stats})
 	if err != nil {
 		log.Println("SaveYandexStatistic input.Insert error: ", err)
+		return err
+	}
+	return nil
+}
+
+func UpdateYandexStatistic(accountlogin string, stats []yad.CampaignStat) error {
+	s := mainSession.Clone()
+	defer s.Close()
+	colname := "yandex" + accountlogin + "stats"
+	c := s.DB("statistic").C(colname)
+	//c.Find
+	//colQuerier := bson.M{"accountlogin": a.Accountlogin, "source": a.Source}
+	change1 := bson.M{"$addToSet": bson.M{"result": stats}}
+	//bson.M{"$addToSet": bson.M{"owners": bson.M{"$each": a.Owners}}}
+	_, err := c.Upsert(bson.M{}, change1)
+	//err := c.Update("result", change1)
+	if err != nil {
+		logrus.Errorf("UpdateYandexStatistic c.Upsert('result', change1) err: %+v", err)
 		return err
 	}
 	return nil

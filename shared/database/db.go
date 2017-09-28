@@ -7,7 +7,7 @@ import (
 	"gopkg.in/mgo.v2"
 )
 
-var mainSession *mgo.Session
+var Session *mgo.Session
 var mainDB mgo.Database
 var err error
 
@@ -19,10 +19,10 @@ func SetDBParams(url, dbname string) error {
 	}
 	//log.Println("SetDBParams of MongoDB used")
 
-	mainSession, err = mgo.DialWithInfo(&info)
+	Session, err = mgo.DialWithInfo(&info)
 	if err != nil {
 		log.Fatal("SetDBParams DialWithInfo fatal error: ", err)
-		mainSession.Close()
+		Session.Close()
 		return err
 	}
 	//mainSession.
@@ -34,7 +34,7 @@ func SetDBParams(url, dbname string) error {
 	//}
 	mainDB = mgo.Database{
 		Name:    dbname,
-		Session: mainSession,
+		Session: Session,
 	}
 	//log.Println("SetDBParams params: ", mainDB)
 	return nil

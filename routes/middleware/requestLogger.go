@@ -10,7 +10,7 @@ import (
 	"gogs.itcloud.pro/SAS-project/sas/shared/config"
 )
 
-func CheckIsUserLogged(next http.HandlerFunc) http.HandlerFunc {
+func LogRequset(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var store = sessions.NewCookieStore([]byte(config.GetConfig().SessionSecret))
 		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")

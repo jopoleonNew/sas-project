@@ -5,11 +5,12 @@ import (
 
 	"time"
 
-	mgo "gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2"
 )
 
 var mainSession *mgo.Session
 var mainDB mgo.Database
+var ImportDB mgo.Database
 var err error
 
 func SetDBParams(url, dbname string) error {
@@ -34,6 +35,10 @@ func SetDBParams(url, dbname string) error {
 	//	return err
 	//}
 	mainDB = mgo.Database{
+		Name:    dbname,
+		Session: mainSession,
+	}
+	ImportDB = mgo.Database{
 		Name:    dbname,
 		Session: mainSession,
 	}
