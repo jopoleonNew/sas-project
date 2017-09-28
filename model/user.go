@@ -111,7 +111,7 @@ func (u *UserInfo) Update() error {
 			},
 		}
 		change := bson.M{"$set": changeParams}
-		log.Println("UserInfo) Update() query: ", colQuerier, " and cahnge: ", change)
+		//log.Println("UserInfo) Update() query: ", colQuerier, " and cahnge: ", change)
 		_, err := c.Upsert(colQuerier, change)
 		if err != nil {
 			logrus.Error("a.Update() err: ", err)

@@ -22,6 +22,7 @@ func LoadRoutes() *mux.Router {
 	// getting auth links for redirecting user in browser to give permision to his account
 	// on {source} service
 	r.HandleFunc("/getauthlink/{source}", mv.CheckIsUserLogged(user.GetAuthLink))
+
 	// receives requests from {source} services with auth tokens in it
 	r.HandleFunc("/gettoken/{source}", mv.CheckIsUserLogged(user.GetToken))
 
@@ -30,7 +31,7 @@ func LoadRoutes() *mux.Router {
 	//TODO: mux := mux.NewRouter() mux.Handle("/", myHandler(???)).Methods("GET")
 	// returns HTML template to user
 	r.HandleFunc("/getaccountstat/{source}", mv.CheckIsUserLogged(user.GetAccountStat)).Methods("GET")
-	// receives requests from browser of logged in user to return him statistic of account
+	// receives requests from browser of logged user to return him statistic of account
 	r.HandleFunc("/getaccountstat/{source}", mv.CheckIsUserLogged(user.GetAccountStat)).Methods("POST")
 	r.HandleFunc("/isloggedin", user.IsLoggedIn).Methods("GET")
 	//r.HandleFunc("/getstatistic/{source}", CheckIsUserLogged(user.GetStatistic))
@@ -61,8 +62,13 @@ func LoadRoutes() *mux.Router {
 
 	r.HandleFunc("/getcampaingstats", yandex.GetCampaingStatsHandler) //POST
 	r.HandleFunc("/refreshdbcampaign", yandex.RefreshCampaignsListHandler)
-	r.HandleFunc("/getreport", yandex.GetStatSliceHandler)
-	r.HandleFunc("/fullreport", yandex.ReportTemplateHandler)
+
+	//deprecated handler, but contains useful code, could be used in test further
+	//r.HandleFunc("/getreport", yandex.GetStatSliceHandler)
+
+	//deprecated handler, need to be refactored of even combined with other
+	//handlers related to statistic gathering
+	//r.HandleFunc("/fullreport", yandex.ReportTemplateHandler)
 
 	//serving static files for templates
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))

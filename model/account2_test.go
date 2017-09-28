@@ -39,7 +39,7 @@ func init() {
 	go func() {
 		for {
 			<-cleanDB
-			fmt.Println("Inside gorutine loop")
+			fmt.Println("Test DB ", testDB, " droped.")
 			cleanUpTest()
 			<-done
 			close(cleanDB)

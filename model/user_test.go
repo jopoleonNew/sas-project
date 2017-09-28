@@ -162,7 +162,7 @@ func TestUserInfo_GetAccountList(t *testing.T) {
 	if res[2].Creator != a3.Creator {
 		t.Fatalf("Not equal: %+v \n and %+v", res[2].Creator, a3.Creator)
 	}
-	cleanDB <- true
+	//cleanDB <- true
 }
 func TestUserInfo_RemoveAccount(t *testing.T) {
 
