@@ -123,6 +123,21 @@ func (e *VKAPIError) Error() string {
 //video_clicks_site (если ids_type равен ad) — переходы на сайт рекламодателя из видеорекламы (для видеорекламы)
 //join_rate (если ids_type равен ad или campaign) — вступления в группу, событие, подписки на публичную страницу или установки приложения (только если в объявлении указана прямая ссылка на соответствующую страницу ВКонтакте)
 type AdStatistic struct {
+	ID    int    `json:"id"`
+	Type  string `json:"type"`
+	Stats []struct {
+		Day              string      `json:"day"`
+		Spent            string      `json:"spent,omitempty"`
+		Impressions      interface{} `json:"impressions,omitempty"`
+		Clicks           int         `json:"clicks,omitempty"`
+		VideoViews       int         `json:"video_views,omitempty"`
+		VideoViews_half  int         `json:"video_views_half,omitempty"`
+		VideoViews_full  int         `json:"video_views_full,omitempty"`
+		VideoClicks_site int         `json:"video_clicks_site,omitempty"`
+		JoinRate         int         `json:"join_rate,omitempty"`
+	} `json:"stats"`
+}
+type AdStatistic_old struct {
 	Response []struct {
 		ID    int    `json:"id"`
 		Type  string `json:"type"`

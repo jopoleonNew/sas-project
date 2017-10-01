@@ -36,7 +36,7 @@ func (ct *YandexTime) MarshalJSON() ([]byte, error) {
 	return []byte(strconv.Quote(ct.Time.Format(ctLayout))), nil
 }
 
-type StatisticDataType struct {
+type CampaignStat struct {
 	SessionDepthSearch    interface{} `json:"SessionDepthSearch"`
 	SumSearch             float32     `json:"SumSearch"`
 	ClicksContext         int         `json:"ClicksContext"`
@@ -54,7 +54,7 @@ type StatisticDataType struct {
 }
 
 type GetSummaryStatRes struct {
-	Data []StatisticDataType `json:"Data"`
+	Data []CampaignStat `json:"Data"`
 }
 
 //implementing Sort.sort interface for GetSummaryStatRes struct
@@ -70,9 +70,23 @@ func (p GetSummaryStatRes) Swap(i, j int) {
 	p.Data[i], p.Data[j] = p.Data[j], p.Data[i]
 }
 
-type StatisticSaver interface {
-	Save()
-	Get()
+type Statistic interface {
+	Save() error
+	Get() error
+	Update() error
+}
+
+type VKstatistic struct {
+	Accountlogin string
+	Stats        []vkontakteAPI.AdStatistic
+}
+type Yandexstatistic struct {
+	Accountlogin string
+	Stats        []yad.CampaignStat
+}
+
+func (vk *VKstatistic) Save() {
+
 }
 
 func SaveVKStatistic(accountlogin string, stats vkontakteAPI.AdStatistic) error {
@@ -107,13 +121,38 @@ func SaveYandexStatistic(accountlogin string, stats []yad.CampaignStat) error {
 	defer s.Close()
 	colname := "yandex" + accountlogin + "stats"
 	c := s.DB("statistic").C(colname)
-	_, err := c.Upsert(bson.M{}, struct {
-		Result []yad.CampaignStat `json:"result"`
-	}{stats})
+
+	var save = make([]interface{}, len(stats))
+	for i, s := range stats {
+		save[i] = s
+	}
+	//err := c.Insert(struct {
+	//	Result []yad.CampaignStat `json:"result"`
+	//}{stats})
+	//if err != nil {
+	//	log.Println("SaveYandexStatistic input.Insert error: ", err)
+	//	return err
+	//}
+	err = c.Insert(save...)
 	if err != nil {
-		log.Println("SaveYandexStatistic input.Insert error: ", err)
+		log.Println("SaveYandexStatistic  c.Insert([]interface{})error: ", err)
 		return err
 	}
+	//var inf []interface{}
+	//byte, err := json.Marshal(stats)
+	//if err != nil {
+	//	log.Println("SaveYandexStatistic input.Insert error: ", err)
+	//	return err
+	//}
+	//err = json.Unmarshal((byte), &inf)
+	//if err != nil {
+	//	log.Println("SaveYandexStatistic input.Insert error: ", err)
+	//	return err
+	//}
+	//err = c.Insert(struct {
+	//	Result []yad.CampaignStat `json:"result"`
+	//}{stats})
+
 	return nil
 }
 
@@ -122,30 +161,27 @@ func UpdateYandexStatistic(accountlogin string, stats []yad.CampaignStat) error 
 	defer s.Close()
 	colname := "yandex" + accountlogin + "stats"
 	c := s.DB("statistic").C(colname)
-	//c.Find
-	//colQuerier := bson.M{"accountlogin": a.Accountlogin, "source": a.Source}
-	change1 := bson.M{"$addToSet": bson.M{"result": stats}}
-	//bson.M{"$addToSet": bson.M{"owners": bson.M{"$each": a.Owners}}}
-	_, err := c.Upsert(bson.M{}, change1)
-	//err := c.Update("result", change1)
-	if err != nil {
-		logrus.Errorf("UpdateYandexStatistic c.Upsert('result', change1) err: %+v", err)
-		return err
+	for _, s := range stats {
+		_, err = c.UpdateAll(bson.M{"campaignid": s.CampaignID, "statdate": bson.M{"time": s.StatDate.Time}}, bson.M{"$set": s})
+		//err := c.Update("result", change1)
+		if err != nil {
+			logrus.Errorf("UpdateYandexStatistic c.UpdateAll error: %+v, \n for state : %+v", err, s)
+			return err
+		}
 	}
 	return nil
 }
+
 func GetYandexStatistic(accountlogin string) ([]yad.CampaignStat, error) {
-	var out struct {
-		Result []yad.CampaignStat `json:"result"`
-	}
+	var out []yad.CampaignStat
 	s := mainSession.Clone()
 	defer s.Close()
 	colname := "yandex" + accountlogin + "stats"
 	c := s.DB("statistic").C(colname)
-	err := c.Find(nil).One(&out)
+	err := c.Find(nil).All(&out)
 	if err != nil {
 		log.Println("GetYandexStatistic input.Insert error: ", err)
-		return out.Result, err
+		return out, err
 	}
-	return out.Result, nil
+	return out, nil
 }
