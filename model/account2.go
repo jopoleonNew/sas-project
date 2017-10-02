@@ -228,6 +228,34 @@ func (a *Account2) Remove() error {
 	return nil
 }
 
+func (a *Account2) DeleteExampleAccs(source string) error {
+	s := mainSession.Clone()
+	defer s.Close()
+	c := s.DB(mainDB.Name).C(a.collName)
+	var exampleAccs []Account2
+	err := c.Find(bson.M{"email": "example"}).All(&exampleAccs)
+	if err != nil {
+		logrus.Errorf("DeleteExampleAccs c.Find(bson.M email: example}) error: %v", err)
+		return fmt.Errorf("DeleteExampleAccs error: %v", err)
+	}
+	_, err = c.RemoveAll(bson.M{"email": "example"})
+	if err != nil {
+		logrus.Errorf("DeleteExampleAccs  c.RemoveAll(bson.M{}) error: %v", err)
+		return fmt.Errorf("DeleteExampleAccs error: %v", err)
+	}
+	for _, a := range exampleAccs {
+		colname := source + a.Accountlogin + "stats"
+		sc := s.DB("statistic").C(colname)
+		err := sc.DropCollection()
+		if err != nil {
+			logrus.Errorf("DeleteExampleAccs sc.DropCollection() with name: %v error: %v", colname, err)
+			return fmt.Errorf("DeleteExampleAccs error: %v", err)
+		}
+	}
+
+	return nil
+}
+
 func (a *Account2) checkMainFields() error {
 	if a.Source == "" {
 		return errors.New("Account's Source field can't be blank.")

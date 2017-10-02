@@ -26,10 +26,10 @@ func AddExmapleAccounts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	for i := 0; i < 3+rand.Intn(5); i++ {
-		err := addGeneralAccount(creator, "example")
+		err := AddVkExampleAccs(creator, "example")
 		if err != nil {
-			logrus.Errorf("addGeneralAccount for creator %v error: %v", creator, err)
-			http.Error(w, fmt.Sprintf("can't add VK account %v, \n error: %+v:", err), http.StatusBadRequest)
+			logrus.Errorf("AddVkExampleAccs for creator %v error: %v", creator, err)
+			http.Error(w, fmt.Sprintf("can't add VK account %v, \n error: %+v:", err), http.StatusInternalServerError)
 			return
 		}
 	}
@@ -38,7 +38,25 @@ func AddExmapleAccounts(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func addGeneralAccount(creator, email string) error {
+func DeleteExampleAccs(w http.ResponseWriter, r *http.Request) {
+	creator := r.Context().Value("username").(string)
+	if creator == "" {
+		logrus.Errorf("DeleteExampleAccs r.Context().Value(username) is empty: ", creator)
+		http.Error(w, fmt.Sprintf("Can't identify username inside DeleteExampleAccs request context: %s", creator), http.StatusBadRequest)
+		return
+	}
+	a := model.NewAccount2("", "", "", "")
+	err := a.DeleteExampleAccs("vk")
+	if err != nil {
+		logrus.Errorf("DeleteExampleAccs a.DeleteExampleAccs(vk) error: %v", err)
+		http.Error(w, fmt.Sprintf("DeleteExampleAccs a.DeleteExampleAccs(yandex) error: %v", err), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(200)
+	return
+}
+
+func AddVkExampleAccs(creator, email string) error {
 	Ncamp := 3 + rand.Intn(3)
 	a := model.NewAccount2(creator, "Vkontakte", strconv.Itoa(1000+rand.Intn(1000)), email)
 	cmpAr := vkontakteAPI.AdsCampaigns{
@@ -134,30 +152,14 @@ func addGeneralAccount(creator, email string) error {
 	now := time.Now()
 	var ctLayout = "2006-01-02"
 	amAds := 4 + rand.Intn(4)
-	stat := vkontakteAPI.AdStatistic{
-		Response: make([]struct {
-			ID    int    `json:"id"`
-			Type  string `json:"type"`
-			Stats []struct {
-				Day              string      `json:"day"`
-				Spent            string      `json:"spent,omitempty"`
-				Impressions      interface{} `json:"impressions,omitempty"`
-				Clicks           int         `json:"clicks,omitempty"`
-				VideoViews       int         `json:"video_views,omitempty"`
-				VideoViews_half  int         `json:"video_views_half,omitempty"`
-				VideoViews_full  int         `json:"video_views_full,omitempty"`
-				VideoClicks_site int         `json:"video_clicks_site,omitempty"`
-				JoinRate         int         `json:"join_rate,omitempty"`
-			} `json:"stats"`
-		}, amAds+1),
-	}
+	stat := make([]vkontakteAPI.AdStatistic, amAds+1)
 
 	for i := 0; i < amAds; i++ {
 		days := 4 - rand.Intn(4)
 		randTime := now.AddDate(0, 0, days).Format(ctLayout)
-		stat.Response[i].ID = a.CampaignsInfo[rand.Intn(len(a.CampaignsInfo))].ID
-		stat.Response[i].Type = "asd"
-		stat.Response[i].Stats = make([]struct {
+		stat[i].ID = a.CampaignsInfo[rand.Intn(len(a.CampaignsInfo))].ID
+		stat[i].Type = "asd"
+		stat[i].Stats = make([]struct {
 			Day              string      `json:"day"`
 			Spent            string      `json:"spent,omitempty"`
 			Impressions      interface{} `json:"impressions,omitempty"`
@@ -169,20 +171,20 @@ func addGeneralAccount(creator, email string) error {
 			JoinRate         int         `json:"join_rate,omitempty"`
 		}, days)
 		for k := 0; k < days; k++ {
-			stat.Response[i].Stats[k].Day = randTime
-			stat.Response[i].Stats[k].Spent = strconv.Itoa(1000 + rand.Intn(1000))
-			stat.Response[i].Stats[k].Impressions = strconv.Itoa(1000 + rand.Intn(1000))
-			stat.Response[i].Stats[k].Clicks = 1000 + rand.Intn(1000)
-			stat.Response[i].Stats[k].VideoViews = 1000 + rand.Intn(1000)
-			stat.Response[i].Stats[k].VideoViews_half = 1000 + rand.Intn(1000)
-			stat.Response[i].Stats[k].VideoViews_full = 1000 + rand.Intn(1000)
-			stat.Response[i].Stats[k].VideoClicks_site = 1000 + rand.Intn(1000)
-			stat.Response[i].Stats[k].JoinRate = 1000 + rand.Intn(1000)
+			stat[i].Stats[k].Day = randTime
+			stat[i].Stats[k].Spent = strconv.Itoa(rand.Intn(1000))
+			stat[i].Stats[k].Impressions = strconv.Itoa(rand.Intn(1000))
+			stat[i].Stats[k].Clicks = rand.Intn(1000)
+			stat[i].Stats[k].VideoViews = rand.Intn(1000)
+			stat[i].Stats[k].VideoViews_half = 0 + rand.Intn(1000)
+			stat[i].Stats[k].VideoViews_full = 0 + rand.Intn(1000)
+			stat[i].Stats[k].VideoClicks_site = 0 + rand.Intn(1000)
+			stat[i].Stats[k].JoinRate = 0 + rand.Intn(1000)
 		}
 	}
 	err = model.SaveVKStatistic(a.Accountlogin, stat)
 	if err != nil {
-		logrus.Errorf("addGeneralAccount model.SaveVKStatistic error: %v", err)
+		logrus.Errorf("AddVkExampleAccs model.SaveVKStatistic error: %v", err)
 
 		return err
 	}

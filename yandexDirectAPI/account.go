@@ -169,7 +169,7 @@ func (a *Account) GetStatistics(ids []int, start, end string) ([]CampaignStat, e
 	if err != nil {
 		return nil, errors.New("GetStatistics ioutil.ReadAll error: " + err.Error())
 	}
-	logrus.Info("GetStatistics response body: ", string(body))
+	//logrus.Info("GetStatistics response body: ", string(body))
 	if string(body) == "" {
 		return nil, errors.New("GetStatisticsConc body response is empty")
 	}

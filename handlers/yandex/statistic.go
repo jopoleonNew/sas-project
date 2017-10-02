@@ -77,7 +77,7 @@ func CollectYandexStatistic(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, fmt.Sprintf("can't find in db 'statistic' stats of account %v \n error: %+v:", a, err), http.StatusBadRequest)
 			return
 		}
-		logrus.Infof("_____________\n\n GetYandexStatistic saved format : %+v", statres)
+		//logrus.Infof("_____________\n\n GetYandexStatistic saved format : %+v", statres)
 		type giveawayStat struct {
 			CampaignID            int            `json:"CampaignID"`
 			Name                  string         `json:"CampName"`

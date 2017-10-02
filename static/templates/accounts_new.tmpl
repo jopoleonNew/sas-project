@@ -32,12 +32,55 @@
     <div class="container">
         <p style="font-size:18px">Здравствуйте {{ .CurrentUser }}. Ваши существующие аккаунты источников данных в базе: </p>
         <br>
+
+        <button type="button" class="btn" onclick="AddTestAccounts()" style="float: left; display: inline-block; margin: 10px">Добавить Тестовые аккаунты</button>
+        <button type="button" class="btn" onclick="DeleteTestAccounts()" style="float: left; display: inline-block; margin: 10px">Удалить Тестовые аккаунты</button>
+        </br>
+        </br>
         </br>
         <button type="button" class="btn btn-info" data-toggle="modal" data-target="#yandexModal">Добавить аккаунт Яндекс Директ</button>
         <button type="button" class="btn btn-info" data-toggle="modal" data-target="#youtubeModal">Добавить аккаунт Youtube</button>
         <button type="button" class="btn btn-info" data-toggle="modal" data-target="#vkModal">Добавить аккаунт Вконтакте</button>
         <button type="button" class="btn btn-info" data-toggle="modal" data-target="#adwordsModal">Добавить аккаунт AdWords</button>
         </br>
+
+
+
+        <div id="exampleresult"></div>
+        <script>
+            function AddTestAccounts() {
+                $.ajax({
+                    data: {},
+                    //dataType: "json",
+                    type: "POST",
+                    url: window.location.protocol+"//"+window.location.hostname+":"+window.location.port+"/gettoken/exampleacc",
+                    success: function (data) {
+                    },
+                    error: function (req, status, err) {
+                        console.log(req)
+                        console.log('Something went wrong', status, err);
+                        console.log(err)
+                        $("#exampleresult").append(status, err);
+                    }
+                });
+            };
+            function DeleteTestAccounts() {
+                $.ajax({
+                    data: {},
+                    //dataType: "json",
+                    type: "POST",
+                    url: window.location.protocol+"//"+window.location.hostname+":"+window.location.port+"/deleteexampleaccounts",
+                    success: function (data) {
+                    },
+                    error: function (req, status, err) {
+                        console.log(req)
+                        console.log('Something went wrong', status, err);
+                        console.log(err)
+                        $("#exampleresult").append(status, err);
+                    }
+                });
+            };
+        </script>
         </br>
         {{ if .AccountList -}}
         {{- range $index, $acc := .AccountList }}

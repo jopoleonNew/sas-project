@@ -89,26 +89,30 @@ func (vk *VKstatistic) Save() {
 
 }
 
-func SaveVKStatistic(accountlogin string, stats vkontakteAPI.AdStatistic) error {
+func SaveVKStatistic(accountlogin string, stats []vkontakteAPI.AdStatistic) error {
 
 	s := mainSession.Clone()
 	defer s.Close()
 	colname := "vk" + accountlogin + "stats"
 	c := s.DB("statistic").C(colname)
-	err := c.Insert(stats)
+	var save = make([]interface{}, len(stats))
+	for i, s := range stats {
+		save[i] = s
+	}
+	err = c.Insert(save...)
 	if err != nil {
 		log.Println("SaveVKStatistic input.Insert error: ", err)
 		return err
 	}
 	return nil
 }
-func GetVKStatistic(accountlogin string) (vkontakteAPI.AdStatistic, error) {
-	var out vkontakteAPI.AdStatistic
+func GetVKStatistic(accountlogin string) ([]vkontakteAPI.AdStatistic, error) {
+	var out []vkontakteAPI.AdStatistic
 	s := mainSession.Clone()
 	defer s.Close()
 	colname := "vk" + accountlogin + "stats"
 	c := s.DB("statistic").C(colname)
-	err := c.Find(nil).One(&out)
+	err := c.Find(nil).All(&out)
 	if err != nil {
 		log.Println("GetVKStatistic input.Insert error: ", err)
 		return out, err
@@ -126,33 +130,12 @@ func SaveYandexStatistic(accountlogin string, stats []yad.CampaignStat) error {
 	for i, s := range stats {
 		save[i] = s
 	}
-	//err := c.Insert(struct {
-	//	Result []yad.CampaignStat `json:"result"`
-	//}{stats})
-	//if err != nil {
-	//	log.Println("SaveYandexStatistic input.Insert error: ", err)
-	//	return err
-	//}
+
 	err = c.Insert(save...)
 	if err != nil {
-		log.Println("SaveYandexStatistic  c.Insert([]interface{})error: ", err)
+		logrus.Errorf("SaveYandexStatistic c.Insert([]interface{})error: %v", err)
 		return err
 	}
-	//var inf []interface{}
-	//byte, err := json.Marshal(stats)
-	//if err != nil {
-	//	log.Println("SaveYandexStatistic input.Insert error: ", err)
-	//	return err
-	//}
-	//err = json.Unmarshal((byte), &inf)
-	//if err != nil {
-	//	log.Println("SaveYandexStatistic input.Insert error: ", err)
-	//	return err
-	//}
-	//err = c.Insert(struct {
-	//	Result []yad.CampaignStat `json:"result"`
-	//}{stats})
-
 	return nil
 }
 

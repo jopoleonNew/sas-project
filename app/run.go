@@ -42,8 +42,8 @@ func Run() {
 	//yad.InitRequestQueue()
 	yad.InitPool(5)
 	defer yad.YPool.Close()
-
-	//updaters.Start(time.Second * 15)
+	//starting background updaters
+	//updaters.Start(time.Second * 50)
 	logrus.Info("Server started at port: " + cfg.ServerPort)
 	// loading http routes
 	r := routes.LoadRoutes()

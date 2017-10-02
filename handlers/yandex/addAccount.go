@@ -81,14 +81,13 @@ func AddYandexAccount(w http.ResponseWriter, r *http.Request) {
 	//if apiURL != "" {
 	//	client.ApiUrl = apiURL
 	//}
+	http.Redirect(w, r, "/accounts", http.StatusSeeOther)
 	_, err = CollectAccountandAddtoBD(client, creator)
 	if err != nil {
 		logrus.Errorf("CollectAccountandAddtoBD error: %v", err)
 		http.Error(w, fmt.Sprintf("CollectAccountandAddtoBD %s, %s error: %v", client, creator, err), http.StatusBadRequest)
 		return
 	}
-	http.Redirect(w, r, "/accounts", http.StatusSeeOther)
-
 }
 
 type CreateInfo struct {
@@ -377,7 +376,10 @@ func addYandexAgencyAccounts(client yad.Client, creator string) (info CreateInfo
 					endTime := startTime.AddDate(-1, 0, 0)
 					statres, err := account.GetStatisticsConc(ids, endTime, startTime)
 					if err != nil {
-						logrus.Errorf("addYandexAgencyAccounts account.GetStatisticsConc %v error: %v", account, err)
+						logrus.Errorf("addYandexAgencyAccounts account.GetStatisticsConc %+v error: %v", account, err)
+						return
+					}
+					if len(statres) == 0 {
 						return
 					}
 					err = model.SaveYandexStatistic(c.Login, statres)

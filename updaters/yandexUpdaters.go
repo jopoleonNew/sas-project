@@ -15,12 +15,12 @@ func Start(timeStep time.Duration) {
 		for {
 			time.Sleep(t)
 			log.Println(" <---- START YANDEX UPDATER ")
-			updater()
+			yandexUpdater()
 			log.Println(" <---- END YANDEX UPDATER ")
 		}
 	}(timeStep)
 }
-func updater() {
+func yandexUpdater() {
 
 	db := model.ImportDB
 
@@ -33,7 +33,11 @@ func updater() {
 		log.Println("updater c.Find(bson.M{}).One(&allAccounts) error: ", err)
 	}
 	for _, acc := range allAccounts {
+		if acc.Role == "agency" {
+			return
+		}
 		go func(a model.Account2) {
+			//fmt.Printf("Current account to update: %v", a.Accountlogin)
 			var idslice []int
 			for _, id := range a.CampaignsInfo {
 				idslice = append(idslice, id.ID)

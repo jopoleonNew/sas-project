@@ -57,6 +57,7 @@ func LoadRoutes() *mux.Router {
 	r.HandleFunc("/accountsdata", mv.CheckIsUserLogged(user.AccountsData))
 	//http.HandleFunc("/addaccount", user.AddAccountHandler)
 	r.HandleFunc("/deleteaccount", user.DeleteAccountHandler)
+	r.HandleFunc("/deleteexampleaccounts", mv.CheckIsUserLogged(user.DeleteExampleAccs))
 	// old version
 	//r.HandleFunc("/getyandexaccesstoken", yandex.GetYandexAccessToken)
 
